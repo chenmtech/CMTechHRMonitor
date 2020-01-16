@@ -24,8 +24,6 @@
   #include "peripheral.h"
 #endif
 #include "gapbondmgr.h"
-#include "hal_i2c.h"
-#include "Dev_Si7021.h"
 #include "CMTechHRMonitor.h"
 #if defined FEATURE_OAD
   #include "oad.h"
@@ -90,28 +88,24 @@ static uint8 scanResponseData[] =
 // GGS 设备名
 static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM Heart Rate Monitor";
 
-// 当前温湿度测量状态
+// 当前测量状态
 static uint8 status = STATUS_STOP;
 
-// 温湿度测量时间间隔，单位：秒, 默认5秒
-static uint16 interval = 5;
+// 测量时间间隔，单位：毫秒，默认2秒
+static uint16 interval = 2000;
 
+// Heart rate measurement value stored in this structure
+static attHandleValueNoti_t heartRateMeas;
 
-/*********************************************************************
- * 局部函数
-*/
+static uint8 heartRateBpm = 73;
 
 static void HRMProcessOSALMsg( osal_event_hdr_t *pMsg ); // OSAL消息处理函数
 static void HRMGapStateCB( gaprole_States_t newState ); // GAP状态改变回调函数
-static void HRMServiceCB( uint8 event ); // 温湿度服务回调函数
+static void HRMServiceCB( uint8 event ); // 心率服务回调函数
 static void HRMStart( void ); // 启动测量
 static void HRMStop( void ); // 停止测量
-static void HRMMeasureAndIndicate(); // 测量并传输数据
+static void HRMNotify(); // notify心率
 static void HRMInitIOPin(); // 初始化IO管脚
-
-/*********************************************************************
- * PROFILE and SERVICE 回调结构体实例
-*/
 
 // GAP Role 回调结构体
 static gapRolesCBs_t HRM_GapStateCBs =
@@ -127,16 +121,12 @@ static gapBondCBs_t HRM_BondCBs =
   NULL                    // Pairing state callback
 };
 
-// 温湿度回调结构体
+// 心率服务回调结构体
 static HRMServiceCBs_t HRM_ServCBs =
 {
-  HRMServiceCB    // 温湿度服务回调函数
+  HRMServiceCB    // 心率服务回调函数
 };
 
-
-/*********************************************************************
- * 公共函数
- */
 extern void HRM_Init( uint8 task_id )
 {
   HRM_TaskID = task_id;
@@ -161,8 +151,6 @@ extern void HRM_Init( uint8 task_id )
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
     // 设置连接参数以及是否请求更新连接参数
-    uint8 enable_update_request = TRUE;
-    GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
     uint16 desired_min_interval = 200;  // units of 1.25ms 
     uint16 desired_max_interval = 1600; // units of 1.25ms
     uint16 desired_slave_latency = 1;
@@ -171,6 +159,8 @@ extern void HRM_Init( uint8 task_id )
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
     GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
     GAPRole_SetParameter( GAPROLE_TIMEOUT_MULTIPLIER, sizeof( uint16 ), &desired_conn_timeout );
+    uint8 enable_update_request = TRUE;
+    GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
   }
   
   // 设置GGS设备名特征值
@@ -191,9 +181,10 @@ extern void HRM_Init( uint8 task_id )
     GAPBondMgr_SetParameter( GAPBOND_BONDING_ENABLED, sizeof ( uint8 ), &bonding );
   }  
 
-  // 设置温湿度计Characteristic Values
+  // 设置心率服务Characteristic Values
   {
-    HRM_SetParameter( HRM_INTERVAL, sizeof(uint16), &interval );
+    uint8 sensLoc = HRM_SENS_LOC_WRIST;
+    HRM_SetParameter( HRM_SENS_LOC, sizeof ( uint8 ), &sensLoc );
   }
   
   // Initialize GATT attributes
@@ -203,7 +194,7 @@ extern void HRM_Init( uint8 task_id )
   DevInfo_AddService( ); // device information service
   
   // 登记温湿度计的服务回调
-  HRM_RegisterAppCBs( &HRM_ServCBs );
+  HRM_Register( &HRM_ServCBs );
   
   //在这里初始化GPIO
   //第一：所有管脚，reset后的状态都是输入加上拉
@@ -235,10 +226,7 @@ static void HRMInitIOPin()
 
   P0 = 0; 
   P1 = 0;   
-  P2 = 0;  
-  
-  // I2C的SDA, SCL设置为GPIO, 输出低电平，否则功耗很大
-  HalI2CSetAsGPIO();
+  P2 = 0; 
 }
 
 extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
@@ -274,10 +262,10 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & HRM_START_PERIODIC_EVT )
   {
-    HRMMeasureAndIndicate();
+    HRMNotify();
 
     if(status == STATUS_START)
-      osal_start_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT, ((uint32)interval)*1000 );
+      osal_start_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT, ((uint32)interval) );
 
     return (events ^ HRM_START_PERIODIC_EVT);
   }
@@ -286,18 +274,6 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   return 0;
 }
 
-
-
-
-/*********************************************************************
- * @fn      simpleBLEPeripheral_ProcessOSALMsg
- *
- * @brief   Process an incoming task message.
- *
- * @param   pMsg - message to process
- *
- * @return  none
- */
 static void HRMProcessOSALMsg( osal_event_hdr_t *pMsg )
 {
   switch ( pMsg->event )
@@ -335,17 +311,17 @@ static void HRMServiceCB( uint8 event )
 {
   switch (event)
   {
-    case HRM_DATA_IND_ENABLED:
+    case HRM_MEAS_NOTI_ENABLED:
       HRMStart();
       
       break;
         
-    case HRM_DATA_IND_DISABLED:
+    case HRM_MEAS_NOTI_DISABLED:
       HRMStop();
       break;
 
-    case HRM_INTERVAL_SET:
-      HRM_GetParameter( HRM_INTERVAL, &interval );
+    case HRM_CTRL_PT_SET:
+      
       break;
       
     default:
@@ -370,13 +346,23 @@ static void HRMStop( void )
   osal_stop_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT ); 
 }
 
-// 测量传输数据
-static void HRMMeasureAndIndicate()
+// 传输心率
+static void HRMNotify()
 {
-  uint16 humid = SI7021_MeasureHumidity();
-  int16 temp = SI7021_ReadTemperature();
-
-  HRM_HRIndicate( gapConnHandle, temp, humid, HRM_TaskID); 
+  uint8 *p = heartRateMeas.value;
+  uint8 flags = 0x00;
+  
+  // build heart rate measurement structure from simulated values
+  *p++ = flags;
+  *p++ = heartRateBpm;
+  
+  heartRateMeas.len = (uint8) (p - heartRateMeas.value);
+  HRM_MeasNotify( gapConnHandle, &heartRateMeas );
+  
+  if (++heartRateBpm == 100)
+  {
+    heartRateBpm = 73;
+  }
 }
 
 /*********************************************************************

@@ -12,24 +12,9 @@
 
 #include "Service_HRMonitor.h"
 
-/*********************************************************************
- * MACROS
- */
-
-/*********************************************************************
- * CONSTANTS
- */
-
 // Position of heart rate measurement value in attribute array
 #define HRM_MEAS_VALUE_POS            2
 
-/*********************************************************************
- * TYPEDEFS
- */
-
-/*********************************************************************
- * GLOBAL VARIABLES
- */
 // Heart rate service
 CONST uint8 HRMServUUID[ATT_BT_UUID_SIZE] =
 { 
@@ -48,29 +33,13 @@ CONST uint8 HRMSensLocUUID[ATT_BT_UUID_SIZE] =
   LO_UINT16(HRM_SENS_LOC_UUID), HI_UINT16(HRM_SENS_LOC_UUID)
 };
 
-// Command characteristic
-CONST uint8 HRMCommandUUID[ATT_BT_UUID_SIZE] =
+// Control point characteristic
+CONST uint8 HRMCtrlPtUUID[ATT_BT_UUID_SIZE] =
 { 
-  LO_UINT16(HRM_COMMAND_UUID), HI_UINT16(HRM_COMMAND_UUID)
+  LO_UINT16(HRM_CTRL_PT_UUID), HI_UINT16(HRM_CTRL_PT_UUID)
 };
 
-/*********************************************************************
- * EXTERNAL VARIABLES
- */
-
-/*********************************************************************
- * EXTERNAL FUNCTIONS
- */
-
-/*********************************************************************
- * LOCAL VARIABLES
- */
-
-static HRMServiceCB_t HRMServiceCB;
-
-/*********************************************************************
- * Profile Attributes - variables
- */
+static HRMServiceCBs_t* HRMServiceCBs;
 
 // Heart Rate Service attribute
 static CONST gattAttrType_t HRMService = { ATT_BT_UUID_SIZE, HRMServUUID };
@@ -85,9 +54,9 @@ static gattCharCfg_t HRMMeasClientCharCfg[GATT_MAX_NUM_CONN];
 static uint8 HRMSensLocProps = GATT_PROP_READ;
 static uint8 HRMSensLoc = 0;
 
-// Command Characteristic
-static uint8 HRMCommandProps = GATT_PROP_WRITE;
-static uint8 HRMCommand = 0;
+// Control point Characteristic
+static uint8 HRMCtrlPtProps = GATT_PROP_WRITE;
+static uint8 HRMCtrlPt = 0;
 
 /*********************************************************************
  * Profile Attributes - Table
@@ -143,35 +112,28 @@ static gattAttribute_t HRMAttrTbl[] =
         &HRMSensLoc 
       },
 
-    // Command Declaration
+    // Control point Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &HRMCommandProps 
+      &HRMCtrlPtProps 
     },
 
-      // Command Value
+      // Control point Value
       { 
-        { ATT_BT_UUID_SIZE, HRMCommandUUID },
+        { ATT_BT_UUID_SIZE, HRMCtrlPtUUID },
         GATT_PERMIT_WRITE, 
         0, 
-        &HRMCommand 
+        &HRMCtrlPt 
       }
 };
 
-
-/*********************************************************************
- * LOCAL FUNCTIONS
- */
 static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen );
 static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset );
 
-/*********************************************************************
- * PROFILE CALLBACKS
- */
 // Heart Rate Service Callbacks
 CONST gattServiceCBs_t HRMCBs =
 {
@@ -180,21 +142,6 @@ CONST gattServiceCBs_t HRMCBs =
   NULL                   // Authorization callback function pointer
 };
 
-/*********************************************************************
- * PUBLIC FUNCTIONS
- */
-
-/*********************************************************************
- * @fn      HRM_AddService
- *
- * @brief   Initializes the Heart Rate service by registering
- *          GATT attributes with the GATT server.
- *
- * @param   services - services to add. This is a bit map and can
- *                     contain more than one service.
- *
- * @return  Success or Failure
- */
 bStatus_t HRM_AddService( uint32 services )
 {
   uint8 status = SUCCESS;
@@ -213,34 +160,13 @@ bStatus_t HRM_AddService( uint32 services )
   return ( status );
 }
 
-/*********************************************************************
- * @fn      HRM_Register
- *
- * @brief   Register a callback function with the Heart Rate Service.
- *
- * @param   pfnServiceCB - Callback function.
- *
- * @return  None.
- */
-extern void HRM_Register( HRMServiceCB_t pfnServiceCB )
+extern void HRM_Register( HRMServiceCBs_t* pfnServiceCBs )
 {
-  HRMServiceCB = pfnServiceCB;
+  HRMServiceCBs = pfnServiceCBs;
+    
+  return;
 }
 
-/*********************************************************************
- * @fn      HRM_SetParameter
- *
- * @brief   Set a Heart Rate parameter.
- *
- * @param   param - Profile parameter ID
- * @param   len - length of data to right
- * @param   value - pointer to data to write.  This is dependent on
- *          the parameter ID and WILL be cast to the appropriate 
- *          data type (example: data type of uint16 will be cast to 
- *          uint16 pointer).
- *
- * @return  bStatus_t
- */
 bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
 {
   bStatus_t ret = SUCCESS;
@@ -263,19 +189,6 @@ bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
   return ( ret );
 }
 
-/*********************************************************************
- * @fn      HRM_GetParameter
- *
- * @brief   Get a Heart Rate parameter.
- *
- * @param   param - Profile parameter ID
- * @param   value - pointer to data to get.  This is dependent on
- *          the parameter ID and WILL be cast to the appropriate 
- *          data type (example: data type of uint16 will be cast to 
- *          uint16 pointer).
- *
- * @return  bStatus_t
- */
 bStatus_t HRM_GetParameter( uint8 param, void *value )
 {
   bStatus_t ret = SUCCESS;
@@ -290,8 +203,8 @@ bStatus_t HRM_GetParameter( uint8 param, void *value )
       *((uint8*)value) = HRMSensLoc;
       break;
       
-    case HRM_COMMAND:
-      *((uint8*)value) = HRMCommand;
+    case HRM_CTRL_PT:
+      *((uint8*)value) = HRMCtrlPt;
       break;  
 
     default:
@@ -302,17 +215,6 @@ bStatus_t HRM_GetParameter( uint8 param, void *value )
   return ( ret );
 }
 
-/*********************************************************************
- * @fn          HRM_MeasNotify
- *
- * @brief       Send a notification containing a heart rate
- *              measurement.
- *
- * @param       connHandle - connection handle
- * @param       pNoti - pointer to notification structure
- *
- * @return      Success or Failure
- */
 bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
 {
   uint16 value = GATTServApp_ReadCharCfg( connHandle, HRMMeasClientCharCfg );
@@ -330,20 +232,6 @@ bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
   return bleIncorrectMode;
 }
                                
-/*********************************************************************
- * @fn          HRM_ReadAttrCB
- *
- * @brief       Read an attribute.
- *
- * @param       connHandle - connection message was received on
- * @param       pAttr - pointer to attribute
- * @param       pValue - pointer to data to be read
- * @param       pLen - length of data to be read
- * @param       offset - offset of the first octet to be read
- * @param       maxLen - maximum length of data to be read
- *
- * @return      Success or Failure
- */
 static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen )
 {
@@ -370,19 +258,6 @@ static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   return ( status );
 }
 
-/*********************************************************************
- * @fn      HRM_WriteAttrCB
- *
- * @brief   Validate attribute data prior to a write operation
- *
- * @param   connHandle - connection message was received on
- * @param   pAttr - pointer to attribute
- * @param   pValue - pointer to data to be written
- * @param   len - length of data
- * @param   offset - offset of the first octet to be written
- *
- * @return  Success or Failure
- */
 static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset )
 {
@@ -391,7 +266,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   uint16 uuid = BUILD_UINT16( pAttr->type.uuid[0], pAttr->type.uuid[1]);
   switch ( uuid )
   {
-    case HRM_COMMAND_UUID:
+    case HRM_CTRL_PT_UUID:
       if ( offset > 0 )
       {
         status = ATT_ERR_ATTR_NOT_LONG;
@@ -400,7 +275,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         status = ATT_ERR_INVALID_VALUE_SIZE;
       }
-      else if (*pValue != HRM_COMMAND_ENERGY_EXP)
+      else if (*pValue != HRM_CTRL_PT_ENERGY_EXP)
       {
         status = HRM_ERR_NOT_SUP;
       }
@@ -408,7 +283,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         *(pAttr->pValue) = pValue[0];
         
-        (*HRMServiceCB)(HRM_COMMAND_SET);
+        (HRMServiceCBs->pfnHRMServiceCB)(HRM_CTRL_PT_SET);
         
       }
       break;
@@ -420,7 +295,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         uint16 charCfg = BUILD_UINT16( pValue[0], pValue[1] );
 
-        (*HRMServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
+        (HRMServiceCBs->pfnHRMServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
                                 HRM_MEAS_NOTI_DISABLED :
                                 HRM_MEAS_NOTI_ENABLED );
       }
@@ -434,16 +309,6 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   return ( status );
 }
 
-/*********************************************************************
- * @fn          HRM_HandleConnStatusCB
- *
- * @brief       Heart Rate Service link status change handler function.
- *
- * @param       connHandle - connection handle
- * @param       changeType - type of change
- *
- * @return      none
- */
 void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
 { 
   // Make sure this is not loopback connection
