@@ -25,7 +25,21 @@ extern bStatus_t utilExtractUuid16(gattAttribute_t *pAttr, uint16 *pUuid)
   return status;
 }
 
-
+//—” ±us
+extern void delayus(uint16 us)
+{
+  while(us--)
+  {
+    /* 32 NOPs == 1 usecs */
+    asm("nop"); asm("nop"); asm("nop"); asm("nop"); asm("nop");
+    asm("nop"); asm("nop"); asm("nop"); asm("nop"); asm("nop");
+    asm("nop"); asm("nop"); asm("nop"); asm("nop"); asm("nop");
+    asm("nop"); asm("nop"); asm("nop"); asm("nop"); asm("nop");
+    asm("nop"); asm("nop"); asm("nop"); asm("nop"); asm("nop");
+    asm("nop"); asm("nop"); asm("nop"); asm("nop"); asm("nop");
+    asm("nop"); asm("nop");
+  }
+}
 
 
 

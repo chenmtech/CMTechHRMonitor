@@ -12,7 +12,7 @@
 // 从属性中提取16位UUID
 extern bStatus_t utilExtractUuid16(gattAttribute_t *pAttr, uint16 *pValue);
 
-
+extern void delayus(uint16 us); // 延时us
 
 
 
