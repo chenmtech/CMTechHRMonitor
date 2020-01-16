@@ -2,7 +2,7 @@
 
 <project>
   <fileVersion>2</fileVersion>
-  <fileChecksum>3407684265</fileChecksum>
+  <fileChecksum>738442870</fileChecksum>
   <configuration>
     <name>CC2541</name>
     <outputs/>
@@ -1698,10 +1698,6 @@
       <name>$PROJ_DIR$\..\Source\CMTechHRMonitor.c</name>
       <outputs>
         <tool>
-          <name>ICC8051</name>
-          <file> 332</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
           <file> 321</file>
         </tool>
@@ -1709,7 +1705,7 @@
       <inputs>
         <tool>
           <name>ICC8051</name>
-          <file> 259 260 239 34 195 295 37 35 36 39 44 46 45 231 262 189 38 302 227 225 230 229 232 293 251 253 284 333 258 250 226 235 194 277 320</file>
+          <file> 259 260 239 34 195 295 37 35 36 39 44 46 45 231 262 189 38 302 227 225 230 229 232 293 251 253 284 333 258 250 226 235 194</file>
         </tool>
         <tool>
           <name>BICOMP</name>
@@ -1778,17 +1774,21 @@
       <inputs>
         <tool>
           <name>ICC8051</name>
-          <file> 259 260 239 34 195 295 37 35 36 39 44 231 225 230 227 228 253 250 226 235 273 333</file>
+          <file> 259 260 239 34 195 295 37 35 36 39 44 231 225 230 227 228 253 333</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 239 34 195 295 37 35 36 39 44 231 225 230 227 228 253 250 226 235 273 333</file>
+          <file> 239 34 195 295 37 35 36 39 44 231 225 230 227 228 253 333</file>
         </tool>
       </inputs>
     </file>
     <forcedrebuild>
       <name>$PROJ_DIR$\..\..\Profiles\OAD\oad_target.c</name>
       <tool>ICC8051</tool>
+    </forcedrebuild>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
     </forcedrebuild>
   </configuration>
 </project>

@@ -1,4 +1,7 @@
 
+/*********************************************************************
+ * INCLUDES
+ */
 #include "bcomdef.h"
 #include "OSAL.h"
 #include "linkdb.h"
@@ -6,63 +9,93 @@
 #include "gatt.h"
 #include "gatt_uuid.h"
 #include "gattservapp.h"
-#include "gapbondmgr.h"
-#include "cmutil.h"
 
 #include "Service_HRMonitor.h"
 
-/*
-* 常量
-*/
-// 温湿度服务UUID
-CONST uint8 HRMServUUID[ATT_UUID_SIZE] =
+/*********************************************************************
+ * MACROS
+ */
+
+/*********************************************************************
+ * CONSTANTS
+ */
+
+// Position of heart rate measurement value in attribute array
+#define HRM_MEAS_VALUE_POS            2
+
+/*********************************************************************
+ * TYPEDEFS
+ */
+
+/*********************************************************************
+ * GLOBAL VARIABLES
+ */
+// Heart rate service
+CONST uint8 HRMServUUID[ATT_BT_UUID_SIZE] =
 { 
-  CM_UUID(HRM_SERV_UUID)
+  LO_UINT16(HRM_SERV_UUID), HI_UINT16(HRM_SERV_UUID)
 };
 
-// 温湿度数据UUID
-CONST uint8 HRMDataUUID[ATT_UUID_SIZE] =
+// Heart rate measurement characteristic
+CONST uint8 HRMMeasUUID[ATT_BT_UUID_SIZE] =
 { 
-  CM_UUID(HRM_DATA_UUID)
+  LO_UINT16(HRM_MEAS_UUID), HI_UINT16(HRM_MEAS_UUID)
 };
 
-// 测量时间间隔UUID
-CONST uint8 HRMIntervalUUID[ATT_BT_UUID_SIZE] =
+// Sensor location characteristic
+CONST uint8 HRMSensLocUUID[ATT_BT_UUID_SIZE] =
 { 
-  LO_UINT16(HRM_INTERVAL_UUID), HI_UINT16(HRM_INTERVAL_UUID)
+  LO_UINT16(HRM_SENS_LOC_UUID), HI_UINT16(HRM_SENS_LOC_UUID)
 };
 
-// 测量间隔范围UUID
-CONST uint8 HRMIRangeUUID[ATT_BT_UUID_SIZE] =
+// Command characteristic
+CONST uint8 HRMCommandUUID[ATT_BT_UUID_SIZE] =
 { 
-  LO_UINT16(HRM_IRANGE_UUID), HI_UINT16(HRM_IRANGE_UUID)
+  LO_UINT16(HRM_COMMAND_UUID), HI_UINT16(HRM_COMMAND_UUID)
 };
 
+/*********************************************************************
+ * EXTERNAL VARIABLES
+ */
 
-/*
-* 局部变量
-*/
-// 温湿度服务属性类型值
-static CONST gattAttrType_t HRMService = { ATT_UUID_SIZE, HRMServUUID };
+/*********************************************************************
+ * EXTERNAL FUNCTIONS
+ */
 
-// 温湿度数据
-static uint8 HRMDataProps = GATT_PROP_INDICATE;
-static attHandleValueInd_t dataInd;
-static int16* pTemp = (int16*)dataInd.value; 
-static uint16* pHumid = (uint16*)(dataInd.value+2);
-static gattCharCfg_t HRMDataConfig[GATT_MAX_NUM_CONN];
+/*********************************************************************
+ * LOCAL VARIABLES
+ */
 
-// 测量时间间隔，units of second
-static uint8 HRMIntervalProps = GATT_PROP_READ | GATT_PROP_WRITE;
-static uint16 HRMInterval = 5;  
+static HRMServiceCB_t HRMServiceCB;
 
-// 测量间隔范围
-static HRMIRange_t  HRMIRange = {1,3600};
+/*********************************************************************
+ * Profile Attributes - variables
+ */
 
-// 服务的属性表
+// Heart Rate Service attribute
+static CONST gattAttrType_t HRMService = { ATT_BT_UUID_SIZE, HRMServUUID };
+
+// Heart Rate Measurement Characteristic
+// Note characteristic value is not stored here
+static uint8 HRMMeasProps = GATT_PROP_NOTIFY;
+static uint8 HRMMeas = 0;
+static gattCharCfg_t HRMMeasClientCharCfg[GATT_MAX_NUM_CONN];
+
+// Sensor Location Characteristic
+static uint8 HRMSensLocProps = GATT_PROP_READ;
+static uint8 HRMSensLoc = 0;
+
+// Command Characteristic
+static uint8 HRMCommandProps = GATT_PROP_WRITE;
+static uint8 HRMCommand = 0;
+
+/*********************************************************************
+ * Profile Attributes - Table
+ */
+
 static gattAttribute_t HRMAttrTbl[] = 
 {
-  // HRM 服务
+  // Heart Rate Service
   { 
     { ATT_BT_UUID_SIZE, primaryServiceUUID }, /* type */
     GATT_PERMIT_READ,                         /* permissions */
@@ -70,214 +103,348 @@ static gattAttribute_t HRMAttrTbl[] =
     (uint8 *)&HRMService                /* pValue */
   },
 
-    // 实时温湿度数据特征值声明
+    // Heart Rate Measurement Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &HRMDataProps 
+      &HRMMeasProps 
     },
 
-      // 温湿度数据特征值
+      // Heart Rate Measurement Value
       { 
-        { ATT_UUID_SIZE, HRMDataUUID },
+        { ATT_BT_UUID_SIZE, HRMMeasUUID },
+        0, 
+        0, 
+        &HRMMeas 
+      },
+
+      // Heart Rate Measurement Client Characteristic Configuration
+      { 
+        { ATT_BT_UUID_SIZE, clientCharCfgUUID },
+        GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
+        0, 
+        (uint8 *) &HRMMeasClientCharCfg 
+      },      
+
+    // Sensor Location Declaration
+    { 
+      { ATT_BT_UUID_SIZE, characterUUID },
+      GATT_PERMIT_READ, 
+      0,
+      &HRMSensLocProps 
+    },
+
+      // Sensor Location Value
+      { 
+        { ATT_BT_UUID_SIZE, HRMSensLocUUID },
         GATT_PERMIT_READ, 
         0, 
-        dataInd.value 
-      }, 
-      
-      // 温湿度数据CCC
-      {
-        { ATT_BT_UUID_SIZE, clientCharCfgUUID },
-        GATT_PERMIT_READ | GATT_PERMIT_WRITE,
-        0,
-        (uint8 *)HRMDataConfig
+        &HRMSensLoc 
       },
 
-    // 测量时间间隔特征值声明
-    {
+    // Command Declaration
+    { 
       { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
+      GATT_PERMIT_READ, 
       0,
-      &HRMIntervalProps
+      &HRMCommandProps 
     },
 
-      // 测量时间间隔特征值
-      {
-        { ATT_BT_UUID_SIZE, HRMIntervalUUID },
-        GATT_PERMIT_READ | GATT_PERMIT_WRITE,
-        0,
-        (uint8*)&HRMInterval
-      },
-      
+      // Command Value
       { 
-        { ATT_BT_UUID_SIZE, HRMIRangeUUID },
-        GATT_PERMIT_READ,
+        { ATT_BT_UUID_SIZE, HRMCommandUUID },
+        GATT_PERMIT_WRITE, 
         0, 
-        (uint8 *)&HRMIRange 
-      },
+        &HRMCommand 
+      }
 };
 
 
-/*
-* 局部函数
-*/
-// 保存应用层给的回调函数结构体
-static HRMServiceCBs_t * HRMService_AppCBs = NULL;
-
-// 服务给协议栈的回调函数
-// 读属性回调
+/*********************************************************************
+ * LOCAL FUNCTIONS
+ */
 static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen );
-
-// 写属性回调
 static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset );
 
-
-// 服务给协议栈的回调结构体
-CONST gattServiceCBs_t HRMServCBs =
+/*********************************************************************
+ * PROFILE CALLBACKS
+ */
+// Heart Rate Service Callbacks
+CONST gattServiceCBs_t HRMCBs =
 {
-  HRM_ReadAttrCB,      // Read callback function pointer
-  HRM_WriteAttrCB,     // Write callback function pointer
-  NULL                       // Authorization callback function pointer
+  HRM_ReadAttrCB,  // Read callback function pointer
+  HRM_WriteAttrCB, // Write callback function pointer
+  NULL                   // Authorization callback function pointer
 };
 
+/*********************************************************************
+ * PUBLIC FUNCTIONS
+ */
 
+/*********************************************************************
+ * @fn      HRM_AddService
+ *
+ * @brief   Initializes the Heart Rate service by registering
+ *          GATT attributes with the GATT server.
+ *
+ * @param   services - services to add. This is a bit map and can
+ *                     contain more than one service.
+ *
+ * @return  Success or Failure
+ */
+bStatus_t HRM_AddService( uint32 services )
+{
+  uint8 status = SUCCESS;
+
+  // Initialize Client Characteristic Configuration attributes
+  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, HRMMeasClientCharCfg );
+
+  if ( services & HRM_SERVICE )
+  {
+    // Register GATT attribute list and CBs with GATT Server App
+    status = GATTServApp_RegisterService( HRMAttrTbl, 
+                                          GATT_NUM_ATTRS( HRMAttrTbl ),
+                                          &HRMCBs );
+  }
+
+  return ( status );
+}
+
+/*********************************************************************
+ * @fn      HRM_Register
+ *
+ * @brief   Register a callback function with the Heart Rate Service.
+ *
+ * @param   pfnServiceCB - Callback function.
+ *
+ * @return  None.
+ */
+extern void HRM_Register( HRMServiceCB_t pfnServiceCB )
+{
+  HRMServiceCB = pfnServiceCB;
+}
+
+/*********************************************************************
+ * @fn      HRM_SetParameter
+ *
+ * @brief   Set a Heart Rate parameter.
+ *
+ * @param   param - Profile parameter ID
+ * @param   len - length of data to right
+ * @param   value - pointer to data to write.  This is dependent on
+ *          the parameter ID and WILL be cast to the appropriate 
+ *          data type (example: data type of uint16 will be cast to 
+ *          uint16 pointer).
+ *
+ * @return  bStatus_t
+ */
+bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
+{
+  bStatus_t ret = SUCCESS;
+  switch ( param )
+  {
+     case HRM_MEAS_CHAR_CFG:
+      // Need connection handle
+      //HRMMeasClientCharCfg.value = *((uint16*)value);
+      break;      
+
+    case HRM_SENS_LOC:
+      HRMSensLoc = *((uint8*)value);
+      break;
+
+    default:
+      ret = INVALIDPARAMETER;
+      break;
+  }
+  
+  return ( ret );
+}
+
+/*********************************************************************
+ * @fn      HRM_GetParameter
+ *
+ * @brief   Get a Heart Rate parameter.
+ *
+ * @param   param - Profile parameter ID
+ * @param   value - pointer to data to get.  This is dependent on
+ *          the parameter ID and WILL be cast to the appropriate 
+ *          data type (example: data type of uint16 will be cast to 
+ *          uint16 pointer).
+ *
+ * @return  bStatus_t
+ */
+bStatus_t HRM_GetParameter( uint8 param, void *value )
+{
+  bStatus_t ret = SUCCESS;
+  switch ( param )
+  {
+    case HRM_MEAS_CHAR_CFG:
+      // Need connection handle
+      //*((uint16*)value) = HRMMeasClientCharCfg.value;
+      break;      
+
+    case HRM_SENS_LOC:
+      *((uint8*)value) = HRMSensLoc;
+      break;
+      
+    case HRM_COMMAND:
+      *((uint8*)value) = HRMCommand;
+      break;  
+
+    default:
+      ret = INVALIDPARAMETER;
+      break;
+  }
+  
+  return ( ret );
+}
+
+/*********************************************************************
+ * @fn          HRM_MeasNotify
+ *
+ * @brief       Send a notification containing a heart rate
+ *              measurement.
+ *
+ * @param       connHandle - connection handle
+ * @param       pNoti - pointer to notification structure
+ *
+ * @return      Success or Failure
+ */
+bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
+{
+  uint16 value = GATTServApp_ReadCharCfg( connHandle, HRMMeasClientCharCfg );
+
+  // If notifications enabled
+  if ( value & GATT_CLIENT_CFG_NOTIFY )
+  {
+    // Set the handle
+    pNoti->handle = HRMAttrTbl[HRM_MEAS_VALUE_POS].handle;
+  
+    // Send the notification
+    return GATT_Notification( connHandle, pNoti, FALSE );
+  }
+
+  return bleIncorrectMode;
+}
+                               
+/*********************************************************************
+ * @fn          HRM_ReadAttrCB
+ *
+ * @brief       Read an attribute.
+ *
+ * @param       connHandle - connection message was received on
+ * @param       pAttr - pointer to attribute
+ * @param       pValue - pointer to data to be read
+ * @param       pLen - length of data to be read
+ * @param       offset - offset of the first octet to be read
+ * @param       maxLen - maximum length of data to be read
+ *
+ * @return      Success or Failure
+ */
 static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen )
 {
   bStatus_t status = SUCCESS;
-  uint16 uuid;
 
-  // If attribute permissions require authorization to read, return error
-  if ( gattPermitAuthorRead( pAttr->permissions ) )
-  {
-    // Insufficient authorization
-    return ( ATT_ERR_INSUFFICIENT_AUTHOR );
-  }
-  
   // Make sure it's not a blob operation (no attributes in the profile are long)
   if ( offset > 0 )
   {
     return ( ATT_ERR_ATTR_NOT_LONG );
   }
-  
-  if (utilExtractUuid16(pAttr, &uuid) == FAILURE) {
-    // Invalid handle
-    *pLen = 0;
-    return ATT_ERR_ATTR_NOT_FOUND;
-  }
-  
-  switch ( uuid )
+ 
+  uint16 uuid = BUILD_UINT16( pAttr->type.uuid[0], pAttr->type.uuid[1]);
+
+  if (uuid == HRM_SENS_LOC_UUID)
   {
-    // 读测量时间间隔值  
-    case HRM_INTERVAL_UUID:
-      *pLen = 2;
-      VOID osal_memcpy(pValue, &HRMInterval, 2);
-      break;
-      
-    // 读测量间隔范围值   
-    case HRM_IRANGE_UUID:
-      *pLen = 4;
-       VOID osal_memcpy( pValue, &HRMIRange, 4 ) ;
-      break;   
-      
-    default:
-      *pLen = 0;
-      status = ATT_ERR_ATTR_NOT_FOUND;
-      break;
-  }  
-  
-  return status;
+    *pLen = 1;
+    pValue[0] = *pAttr->pValue;
+  }
+  else
+  {
+    status = ATT_ERR_ATTR_NOT_FOUND;
+  }
+
+  return ( status );
 }
 
-
+/*********************************************************************
+ * @fn      HRM_WriteAttrCB
+ *
+ * @brief   Validate attribute data prior to a write operation
+ *
+ * @param   connHandle - connection message was received on
+ * @param   pAttr - pointer to attribute
+ * @param   pValue - pointer to data to be written
+ * @param   len - length of data
+ * @param   offset - offset of the first octet to be written
+ *
+ * @return  Success or Failure
+ */
 static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset )
 {
   bStatus_t status = SUCCESS;
-  uint16 uuid;
-  uint16 interval;
-  
-  // If attribute permissions require authorization to write, return error
-  if ( gattPermitAuthorWrite( pAttr->permissions ) )
-  {
-    // Insufficient authorization
-    return ( ATT_ERR_INSUFFICIENT_AUTHOR );
-  }
-  
-  if (utilExtractUuid16(pAttr, &uuid) == FAILURE) {
-    return ATT_ERR_ATTR_NOT_FOUND;
-  }
-  
+ 
+  uint16 uuid = BUILD_UINT16( pAttr->type.uuid[0], pAttr->type.uuid[1]);
   switch ( uuid )
   {
-    // 写温湿度数据的CCC  
-    case GATT_CLIENT_CHAR_CFG_UUID:
-      if(pAttr->handle == HRMAttrTbl[HRM_DATA_CHAR_CFG_POS].handle)
-      {
-        status = GATTServApp_ProcessCCCWriteReq( connHandle, pAttr, pValue, len,
-                                              offset, GATT_CLIENT_CFG_INDICATE );
-        if(status == SUCCESS)
-        {
-          uint16 value = BUILD_UINT16( pValue[0], pValue[1] );
-          uint8 event = (value == GATT_CFG_NO_OPERATION) ? HRM_DATA_IND_DISABLED : HRM_DATA_IND_ENABLED;
-          HRMService_AppCBs->pfnHRMServiceCB(event);
-        }
-      }
-      else 
-      {
-        status = ATT_ERR_INVALID_HANDLE;
-      }
-      break;
-
-    // 写测量间隔
-    case HRM_INTERVAL_UUID:
-      // Validate the value
-      // Make sure it's not a blob oper
-      if ( offset == 0 )
-      {
-        if ( len != 2 )
-        {
-          status = ATT_ERR_INVALID_VALUE_SIZE;
-        }
-      }
-      else
+    case HRM_COMMAND_UUID:
+      if ( offset > 0 )
       {
         status = ATT_ERR_ATTR_NOT_LONG;
       }
-      
-      interval = (uint16)*pValue;
-      
-      //validate range
-      if ((interval >= HRMIRange.high) | ((interval <= HRMIRange.low) & (interval != 0)))
+      else if (len != 1)
       {
-        status = ATT_ERR_INVALID_VALUE;
+        status = ATT_ERR_INVALID_VALUE_SIZE;
       }
-      
-      // Write the value
-      if ( status == SUCCESS )
+      else if (*pValue != HRM_COMMAND_ENERGY_EXP)
       {
-        uint8 *pCurValue = (uint8 *)pAttr->pValue;        
-        // *pCurValue = *pValue; 
-        VOID osal_memcpy( pCurValue, pValue, 2 ) ;
+        status = HRM_ERR_NOT_SUP;
+      }
+      else
+      {
+        *(pAttr->pValue) = pValue[0];
         
-        //notify application of write
-        HRMService_AppCBs->pfnHRMServiceCB(HRM_INTERVAL_SET);
+        (*HRMServiceCB)(HRM_COMMAND_SET);
+        
       }
       break;
-    
+
+    case GATT_CLIENT_CHAR_CFG_UUID:
+      status = GATTServApp_ProcessCCCWriteReq( connHandle, pAttr, pValue, len,
+                                               offset, GATT_CLIENT_CFG_NOTIFY );
+      if ( status == SUCCESS )
+      {
+        uint16 charCfg = BUILD_UINT16( pValue[0], pValue[1] );
+
+        (*HRMServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
+                                HRM_MEAS_NOTI_DISABLED :
+                                HRM_MEAS_NOTI_ENABLED );
+      }
+      break;       
+ 
     default:
-      // Should never get here!
       status = ATT_ERR_ATTR_NOT_FOUND;
       break;
   }
 
-  return status;
+  return ( status );
 }
 
-extern void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
+/*********************************************************************
+ * @fn          HRM_HandleConnStatusCB
+ *
+ * @brief       Heart Rate Service link status change handler function.
+ *
+ * @param       connHandle - connection handle
+ * @param       changeType - type of change
+ *
+ * @return      none
+ */
+void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
 { 
   // Make sure this is not loopback connection
   if ( connHandle != LOOPBACK_CONNHANDLE )
@@ -287,141 +454,11 @@ extern void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
          ( ( changeType == LINKDB_STATUS_UPDATE_STATEFLAGS ) && 
            ( !linkDB_Up( connHandle ) ) ) )
     { 
-      GATTServApp_InitCharCfg( connHandle, HRMDataConfig );
+      GATTServApp_InitCharCfg( connHandle, HRMMeasClientCharCfg );
     }
   }
 }
 
 
-
-
-
-
-
-
-
-
-/*
- * 公共函数
-*/
-
-// 加载服务
-extern bStatus_t HRM_AddService( uint32 services )
-{
-  uint8 status = SUCCESS;
-
-  // Initialize Client Characteristic Configuration attributes
-  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, HRMDataConfig );
-
-  // Register with Link DB to receive link status change callback
-  VOID linkDB_Register( HRM_HandleConnStatusCB );  
-  
-  if ( services & HRM_SERVICE )
-  {
-    // Register GATT attribute list and CBs with GATT Server App
-    status = GATTServApp_RegisterService( HRMAttrTbl, 
-                                          GATT_NUM_ATTRS( HRMAttrTbl ),
-                                          &HRMServCBs );
-  }
-
-  return ( status );
-}
-
-// 登记应用层给的回调
-extern bStatus_t HRM_RegisterAppCBs( HRMServiceCBs_t *appCallbacks )
-{
-  if ( appCallbacks )
-  {
-    HRMService_AppCBs = appCallbacks;
-    
-    return ( SUCCESS );
-  }
-  else
-  {
-    return ( bleAlreadyInRequestedMode );
-  }
-}
-
-// 设置本服务的特征参数
-extern bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
-{
-  bStatus_t ret = SUCCESS;
-
-  switch ( param )
-  {
-    // 设置测量时间间隔
-    case HRM_INTERVAL:
-      if ( len == 2 )
-      {
-        osal_memcpy(&HRMInterval, (uint8*)value, 2);
-      }
-      else
-      {
-        ret = INVALIDPARAMETER;
-      }
-      break;
-    
-    // 设置测量间隔范围  
-    case HRM_IRANGE:    
-      if(len == 4)
-      {
-        HRMIRange = *((HRMIRange_t*)value);
-      }
-      else
-      {
-        ret = INVALIDPARAMETER;
-      }
-      break;  
-
-    default:
-      ret = INVALIDPARAMETER;
-      break;
-  }  
-  
-  return ( ret );
-}
-
-// 获取本服务特征参数
-extern bStatus_t HRM_GetParameter( uint8 param, void *value )
-{
-  bStatus_t ret = SUCCESS;
-  
-  switch ( param )
-  {
-    // 获取测量时间间隔
-    case HRM_INTERVAL:
-      *((uint16*)value) = HRMInterval;
-      break;
-   
-    // 获取测量间隔范围  
-    case HRM_IRANGE:
-      *((HRMIRange_t*)value) = HRMIRange;
-      break;      
-
-    default:
-      ret = INVALIDPARAMETER;
-      break;
-  }
-  
-  return ( ret );
-}
-
-extern bStatus_t HRM_HRIndicate( uint16 connHandle, int16 temp, uint16 humid, uint8 taskId )
-{
-  uint16 value = GATTServApp_ReadCharCfg( connHandle, HRMDataConfig );
-
-  // If indications enabled
-  if ( value & GATT_CLIENT_CFG_INDICATE )
-  {
-    *pTemp = temp;
-    *pHumid = humid;
-    // Set the handle (uses stored relative handle to lookup actual handle)
-    dataInd.handle = HRMAttrTbl[HRM_DATA_CHAR_CFG_POS].handle;
-    dataInd.len = 4;
-  
-    // Send the Indication
-    return GATT_Indication( connHandle, &dataInd, FALSE, taskId );
-  }
-
-  return bleIncorrectMode;
-}
+/*********************************************************************
+*********************************************************************/
