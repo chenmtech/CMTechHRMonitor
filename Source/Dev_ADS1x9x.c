@@ -3,11 +3,6 @@
 #include "hal_mcu.h"
 #include "CMUtil.h"
 
-
-/*
- * 局部常量
-*/
-
 // ADS芯片类型
 #define TYPE_ADS1191    0
 #define TYPE_ADS1192    1
@@ -18,9 +13,8 @@
 #define DATA_LEN  6               
 
 
-//当用内部测试信号时的寄存器值
+/*使用内部测试信号配置*/
 const static uint8 test1mVRegs[12] = {  
-  /*使用内部测试信号配置*/
   0x52,
   //CONFIG1
 #if (SR_SPS == 125)
@@ -50,7 +44,7 @@ const static uint8 test1mVRegs[12] = {
   0x0C                      //
 };	
 
-// 正常采样时寄存器的值
+/*采集正常心电信号配置*/
 const static uint8 normalECGRegs[12] = {  
   //DEVID
   0x52,
@@ -81,41 +75,15 @@ const static uint8 normalECGRegs[12] = {
   0x0C                      //
 };
 
-
-/*
- * 局部变量
-*/
-// 重启后读出来的缺省寄存器值
-static uint8 defaultRegs[12];
-
-// 芯片类型
-static uint8 type;
-
-// 用于保存采样数据后的回调函数
-static ADS_DataCB_t ADS_DataCB;
-
-// 接收到的3字节状态
-static uint8 status[3] = {0};
-
-//读取的通道数据字节
-static uint8 data[4];
-
-// 每次读取的数据长度
-static uint8 dataLength = DATA_LEN;
+static uint8 defaultRegs[12]; // 重启后读出来的缺省寄存器值
+static uint8 type; // 芯片类型
+static ADS_DataCB_t ADS_DataCB; // 采样后的回调函数
+static uint8 status[3] = {0}; // 接收到的3字节状态
+static uint8 data[4]; //读取的通道数据字节
 
 
-/****************************************************************
- * 局部函数
-****************************************************************/
-
-
-// 执行命令
-static void execute(uint8 cmd);
-
-// 读一个采样值
-static void ADS1291_ReadOneSample(void);
-
-
+static void execute(uint8 cmd); // 执行命令
+static void ADS1291_ReadOneSample(void); // 读一个采样值
 
 /******************************************************************************
 //执行一个命令
@@ -137,14 +105,27 @@ static void execute(uint8 cmd)
   ADS_CS_HIGH();
 }
 
-
-
-
-
-/*************************************************************
- * 公共函数
-****************************************************************/
-
+/******************************************************************************
+ * 读一个样本
+ * ADS1291是高精度（24bit）单通道芯片
+******************************************************************************/
+static void ADS1291_ReadOneSample(void)
+{  
+  ADS_CS_LOW();
+  
+  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  
+  data[3] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
+  data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
+  
+  ADS_CS_HIGH();
+  
+  if(ADS_DataCB != 0)
+    ADS_DataCB(data[2], data[3]);
+}
 
 // ADS 初始化
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
@@ -160,9 +141,9 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
   type = (defaultRegs[0] & 0x03);
   
   // 设置正常采集寄存器值
-  //ADS1x9x_SetRegsAsNormalECGSignal();
+  ADS1x9x_SetRegsAsNormalECGSignal();
   // 设置采集内部测试信号时的寄存器值
-  ADS1x9x_SetRegsAsTestSignal();
+  //ADS1x9x_SetRegsAsTestSignal();
   
   //设置采样数据后的回调函数
   ADS_DataCB = pfnADS_DataCB_t;
@@ -285,46 +266,6 @@ extern void ADS1x9x_SetRegsAsNormalECGSignal()
   ADS1x9x_WriteAllRegister(normalECGRegs);   
 }
 
-// 设置为采集1mV测试信号
-extern void ADS1x9x_ChangeToTestSignal() 
-{
-  //ADS1x9x_WriteRegister(0x02, 0xA3);
-  //ADS1x9x_WriteRegister(0x04, 0x65);
-  ADS_CS_LOW();
-  delayus(100);
-  SPI_ADS_SendByte(SDATAC);  
-  delayus(100);
-  SPI_ADS_SendByte(0x02 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0xA3);
-  SPI_ADS_SendByte(0x04 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0x65);
-  
-  delayus(100);
-  ADS_CS_HIGH();
-}
-
-// 设置为采集ECG信号
-extern void ADS1x9x_ChangeToEcgSignal() 
-{
-  //ADS1x9x_WriteRegister(0x02, 0xA0);
-  //ADS1x9x_WriteRegister(0x04, 0x60);
-  ADS_CS_LOW();
-  delayus(100);
-  SPI_ADS_SendByte(SDATAC);  
-  delayus(100);
-  SPI_ADS_SendByte(0x02 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0xA0);
-  SPI_ADS_SendByte(0x04 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0x60);
-  
-  delayus(100);
-  ADS_CS_HIGH();
-}
-
 // 写多个寄存器值
 extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len)
 {
@@ -368,32 +309,50 @@ __interrupt void PORT0_ISR(void)
     P0IFG &= ~(1<<1);   //clear P0_1 IFG 
     P0IF = 0;   //clear P0 interrupt flag
     
-    if(type == TYPE_ADS1291)
-      ADS1291_ReadOneSample();
+    ADS1291_ReadOneSample();
   }
   
   HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
 }
 
-
-/******************************************************************************
- * 读一个样本
- * ADS1291是高精度（24bit）单通道芯片
-******************************************************************************/
-static void ADS1291_ReadOneSample(void)
-{  
+/*
+// 设置为采集1mV测试信号
+extern void ADS1x9x_ChangeToTestSignal() 
+{
+  //ADS1x9x_WriteRegister(0x02, 0xA3);
+  //ADS1x9x_WriteRegister(0x04, 0x65);
   ADS_CS_LOW();
+  delayus(100);
+  SPI_ADS_SendByte(SDATAC);  
+  delayus(100);
+  SPI_ADS_SendByte(0x02 | 0x40);
+  SPI_ADS_SendByte(0);  
+  SPI_ADS_SendByte(0xA3);
+  SPI_ADS_SendByte(0x04 | 0x40);
+  SPI_ADS_SendByte(0);  
+  SPI_ADS_SendByte(0x65);
   
-  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
-  
-  data[3] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
-  data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
-  
+  delayus(100);
   ADS_CS_HIGH();
-  
-  if(ADS_DataCB != 0)
-    ADS_DataCB(data[2], data[3]);
 }
+
+// 设置为采集ECG信号
+extern void ADS1x9x_ChangeToEcgSignal() 
+{
+  //ADS1x9x_WriteRegister(0x02, 0xA0);
+  //ADS1x9x_WriteRegister(0x04, 0x60);
+  ADS_CS_LOW();
+  delayus(100);
+  SPI_ADS_SendByte(SDATAC);  
+  delayus(100);
+  SPI_ADS_SendByte(0x02 | 0x40);
+  SPI_ADS_SendByte(0);  
+  SPI_ADS_SendByte(0xA0);
+  SPI_ADS_SendByte(0x04 | 0x40);
+  SPI_ADS_SendByte(0);  
+  SPI_ADS_SendByte(0x60);
+  
+  delayus(100);
+  ADS_CS_HIGH();
+}
+*/

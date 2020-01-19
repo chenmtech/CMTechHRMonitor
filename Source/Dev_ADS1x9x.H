@@ -35,8 +35,6 @@
 #define WREG		0x40		//Write n nnnn registers starting at address r rrrr
                                         //first byte 010r rrrr (2xh)(2) - second byte 000n nnnn(2)
 
-
-//设备寄存器地址
 //Device Settings(Read-Only Registers)
 #define ADS1x9x_REG_DEVID               (0x0000u)
 
@@ -57,62 +55,24 @@
 #define ADS1x9x_REG_RESP2               (0x000Au)
 #define ADS1x9x_REG_GPIO                (0x000Bu)
 
-
-//采样到数据后的回调处理函数类型
-typedef void (*ADS_DataCB_t)(uint8 low, uint8 high); 
+typedef void (*ADS_DataCB_t)(uint8 low, uint8 high); //采样到数据后的回调处理函数类型
 
 
-
-
-
-
-/****************************************************************
- * 外部函数
-****************************************************************/
-// 初始化
-extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t);
-
-// 唤醒
-extern void ADS1x9x_WakeUp(void);
-
-// 待机
-extern void ADS1x9x_StandBy(void);
-
-// 重启
-extern void ADS1x9x_Reset(void);
-
-// 启动转换
-extern void ADS1x9x_StartConvert(void);
-
-// 停止转换
-extern void ADS1x9x_StopConvert(void);
-
-// 读一个寄存器
-extern uint8 ADS1x9x_ReadRegister(uint8 address);
-
-// 读多个寄存器
-extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len);
-
-// 读所有寄存器
-extern void ADS1x9x_ReadAllRegister(uint8 * pRegs);
-
-// 写一个寄存器
-extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte);
-
-// 写多个寄存器
-extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len);
-
-// 写所有寄存器
-extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs);
-
-//设置为采集内部测试信号
-extern void ADS1x9x_SetRegsAsTestSignal();
-
-// 设置为采集正常ECG信号
-extern void ADS1x9x_SetRegsAsNormalECGSignal();
-
-extern void ADS1x9x_ChangeToTestSignal();
-
-extern void ADS1x9x_ChangeToEcgSignal();
+extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // 初始化
+extern void ADS1x9x_WakeUp(void); // 唤醒
+extern void ADS1x9x_StandBy(void); // 待机
+extern void ADS1x9x_Reset(void); // 重启
+extern void ADS1x9x_StartConvert(void); // 启动转换
+extern void ADS1x9x_StopConvert(void); // 停止转换
+extern uint8 ADS1x9x_ReadRegister(uint8 address); // 读一个寄存器
+extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len); // 读多个寄存器
+extern void ADS1x9x_ReadAllRegister(uint8 * pRegs); // 读所有寄存器
+extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte); // 写一个寄存器
+extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len); // 写多个寄存器
+extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs); // 写所有寄存器
+extern void ADS1x9x_SetRegsAsTestSignal(); //设置为采集内部测试信号
+extern void ADS1x9x_SetRegsAsNormalECGSignal(); // 设置为采集正常ECG信号
+//extern void ADS1x9x_ChangeToTestSignal();
+//extern void ADS1x9x_ChangeToEcgSignal();
 
 #endif

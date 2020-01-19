@@ -11,24 +11,12 @@
 //#include "DCand50HzFilter.h"
 
 
-/*****************************************************
- * 常量
- */
-
-// 停止状态
-#define STATE_STOP              0x00
-// 启动采集ECG状态
-#define STATE_START_ECG         0x01
-// 启动采集1mV定标信号状态
-#define STATE_START_1MV         0x02
+#define STATE_STOP 0x00 // 停止状态
+#define STATE_START_ECG 0x01 // 启动采集ECG状态
+#define STATE_START_1MV 0x02 // 启动采集1mV定标信号状态
 
 
-/*****************************************************
- * 局部变量
- */
-
-// 当前状态
-static uint8 state = STATE_STOP;
+static uint8 state = STATE_STOP; // 当前状态
 
 // 数据包，指向Service_ECGMonitor中的ecgData
 static uint8 *pBuf;
@@ -123,7 +111,7 @@ extern void ECGFunc_StartEcg()
   // 这里一定要延时，否则容易死机
   delayus(1000);
   
-  ADS1x9x_ChangeToEcgSignal();
+  ADS1x9x_SetRegsAsNormalECGSignal();
   byteCnt = 0;
   packNum = 0;
   pBuf = ECGMonitor_GetECGDataPointer();
@@ -154,7 +142,7 @@ extern void ECGFunc_Start1mV()
   // 这里一定要延时，否则容易死机
   delayus(1000);
 
-  ADS1x9x_ChangeToTestSignal();  
+  ADS1x9x_SetRegsAsTestSignal();  
   byteCnt = 0;
   packNum = 0;
   pBuf = ECGMonitor_GetECGDataPointer();
