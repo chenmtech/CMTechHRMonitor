@@ -1,17 +1,20 @@
 
 #include "App_HRFunc.h"
-#include "hal_types.h"
+#include "CMUtil.h"
+#include "Dev_ADS1x9x.h"
 
-// Time interval constants.
+#define STATE_STOP 0x00 // 停止状态
+#define STATE_START 0x01 // 启动态
 
-#define MS80	16
-#define MS95	19
-#define MS150	30
-#define MS200	40
-#define MS360	72
-#define MS450	90
-#define MS1000	200
-#define MS1500	300
+// 毫秒数对应的样本数，采样频率为125Hz
+#define MS80	10
+#define MS95	12
+#define MS150	19
+#define MS200	25
+#define MS360	45
+#define MS450	56
+#define MS1000	125
+#define MS1500	188
 
 #define WINDOW_WIDTH	MS80
 #define FILTER_DELAY	21 + MS200
@@ -23,9 +26,12 @@ static int N0 = 0, N1 = 0, N2 = 0, N3 = 0, N4 = 0, N5 = 0, N6 = 0, N7 = 0 ;
 static int RR0=0, RR1=0, RR2=0, RR3=0, RR4=0, RR5=0, RR6=0, RR7=0 ;
 static int QSum = 0, NSum = 0, RRSum = 0 ;
 static int det_thresh, sbcount ;
-static int tempQSum, tempNSum, tempRRSum ;
+//static int tempQSum, tempNSum, tempRRSum ;
 static int QN0=0, QN1=0 ;
-static int Reg0=0 ;
+//static int Reg0=0 ;
+
+static uint8 state = STATE_STOP; // 当前状态
+
 
 static void UpdateQ(int16 newQ);
 static void UpdateN(int16 newN);
@@ -34,7 +40,74 @@ static int16 lpfilt( int16 datum ,int init);
 static int16 hpfilt( int16 datum, int init );
 static int16 deriv1( int16 x0, int init );
 static int16 mvwint( int16 datum, int init);
+static int16 mvwint10( int16 datum, int init);
 static int16 Peak( int16 datum, int init );
+static int16 PICQRSDet(int16 x, int init);
+static void DetectQRS(int16 x);
+
+extern void HRFunc_Init()
+{
+  PICQRSDet(0, 1);
+  
+  state = STATE_STOP;
+  
+  // 初始化ADS1x9x，设置数据处理回调函数
+  ADS1x9x_Init(DetectQRS);
+  
+  delayus(1000);
+}
+
+extern void HRFunc_Start()
+{
+  switch(state) {
+    case STATE_START_ECG:
+      return;
+    case STATE_START_1MV:
+      ADS1x9x_StopConvert();
+      break;
+    case STATE_STOP:
+      ADS1x9x_WakeUp();
+      break;
+    default:
+      return;
+  }
+  
+  // 这里一定要延时，否则容易死机
+  delayus(1000);
+  
+  ADS1x9x_SetRegsAsNormalECGSignal();
+  byteCnt = 0;
+  packNum = 0;
+  pBuf = ECGMonitor_GetECGDataPointer();
+  
+  delayus(1000);
+  
+  ADS1x9x_StartConvert();
+  state = STATE_START_ECG;
+  
+  delayus(1000);
+}
+
+extern void ECGFunc_Stop()
+{
+  if(state != STATE_STOP)
+  {
+    ADS1x9x_StopConvert();
+    state = STATE_STOP; 
+    ADS1x9x_StandBy();
+  }
+  
+  delayus(2000);
+}
+
+/******************************************************************************
+*  HRFunc_DetectQRS takes 16-bit ECG samples (5 uV/LSB) as input and returns the
+*  detection delay when a QRS is detected.
+******************************************************************************/
+static void DetectQRS(int16 x)
+{
+  PICQRSDet(x, 0);
+}
 
 /******************************************************************************
 *  PICQRSDet takes 16-bit ECG samples (5 uV/LSB) as input and returns the
@@ -42,20 +115,20 @@ static int16 Peak( int16 datum, int init );
 *  resets the QRS detector.
 ******************************************************************************/
  
-int16 PICQRSDet(int16 x, int init)
+static int16 PICQRSDet(int16 x, int init)
 {
   static int16 tempPeak, initMax ;
   static uint8 preBlankCnt=0, qpkcnt=0, initBlank=0 ;
   static int16 count, sbpeak, sbloc ;
   int16 QrsDelay = 0 ;
-  int16 temp0, temp1 ;
+  //int16 temp0, temp1 ;
   
   if(init)
   {		
     hpfilt(0,1) ;
     lpfilt(0,1) ;
     deriv1(0,1) ;
-    mvwint(0,1) ;
+    mvwint10(0,1) ;
     Peak(0,1) ;
     qpkcnt = count = sbpeak = 0 ;
     QSum = NSum = 0 ;
@@ -74,7 +147,7 @@ int16 PICQRSDet(int16 x, int init)
   x = hpfilt(x,0) ;
   x = deriv1(x,0) ;
   if(x < 0) x = -x ;
-  x = mvwint(x,0) ;
+  x = mvwint10(x,0) ;
   x = Peak(x,0) ;
   
   
@@ -405,6 +478,32 @@ static int16 mvwint(int16 datum, int init)
   sum += d0 ;
   
   return(sum>>2) ;
+}
+
+// 由于采样频率改为125Hz，80ms只需要10个样本，进行moving average window
+static int16 mvwint10(int16 datum, int init)
+{
+  static uint16 sum = 0 ;
+  static uint16 d0,d1,d2,d3,d4,d5,d6,d7,d8,d9;
+  
+  if(init)
+  {
+    d0=d1=d2=d3=d4=d5=d6=d7=d8=d9=0 ;
+    sum = 0 ;
+  }
+  sum -= d9 ;
+  d9=d8 ;
+  d8=d7 ;
+  d7=d6 ;
+  d6=d5 ;
+  d5=d4 ;
+  d4=d3 ;
+  d3=d2 ;
+  d2=d1 ;
+  d1=d0 ;
+  sum += d0 ;
+  
+  return sum/10;
 }
 
 

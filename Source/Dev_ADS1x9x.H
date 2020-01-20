@@ -13,7 +13,7 @@
 #include <bcomdef.h>
 
 
-#define SR_SPS          250  // 采样频率
+#define SR_SPS          125  // 采样频率
 
 //SPI Command
 #define WAKEUP		0x02		//Wake-up from standby mode
@@ -55,7 +55,7 @@
 #define ADS1x9x_REG_RESP2               (0x000Au)
 #define ADS1x9x_REG_GPIO                (0x000Bu)
 
-typedef void (*ADS_DataCB_t)(uint8 low, uint8 high); //采样到数据后的回调处理函数类型
+typedef void (*ADS_DataCB_t)(int16 data); //采样到数据后的回调处理函数类型
 
 
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // 初始化

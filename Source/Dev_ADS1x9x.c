@@ -123,8 +123,9 @@ static void ADS1291_ReadOneSample(void)
   
   ADS_CS_HIGH();
   
-  if(ADS_DataCB != 0)
-    ADS_DataCB(data[2], data[3]);
+  if(ADS_DataCB != 0) {
+    ADS_DataCB((int16)(((data[2]) & 0x00FF) + (((data[3]) & 0x00FF) << 8)));
+  }
 }
 
 // ADS ³õÊ¼»¯
