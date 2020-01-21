@@ -30,6 +30,8 @@
   #include "oad_target.h"
 #endif
 
+#include "App_HRFunc.h"
+
 /*********************************************************************
  * 常量
 */
@@ -96,8 +98,6 @@ static uint16 interval = 2000;
 
 // Heart rate measurement value stored in this structure
 static attHandleValueNoti_t heartRateMeas;
-
-static uint8 heartRateBpm = 73;
 
 static void HRMProcessOSALMsg( osal_event_hdr_t *pMsg ); // OSAL消息处理函数
 static void HRMGapStateCB( gaprole_States_t newState ); // GAP状态改变回调函数
@@ -200,9 +200,9 @@ extern void HRM_Init( uint8 task_id )
   //第一：所有管脚，reset后的状态都是输入加上拉
   //第二：对于不用的IO，建议不连接到外部电路，且设为输入上拉
   //第三：对于会用到的IO，就要根据具体外部电路连接情况进行有效设置，防止耗电
-  {
-    HRMInitIOPin();
-  }
+  HRMInitIOPin();
+  
+  HRFunc_Init();
   
   HCI_EXT_ClkDivOnHaltCmd( HCI_EXT_ENABLE_CLK_DIVIDE_ON_HALT );  
 
@@ -297,9 +297,8 @@ static void HRMGapStateCB( gaprole_States_t newState )
             newState != GAPROLE_CONNECTED)
   {
     HRMStop();
-    
     HRMInitIOPin();
-    
+    HRFunc_Init();
     HRM_HandleConnStatusCB( gapConnHandle, LINKDB_STATUS_UPDATE_REMOVED );
   }
   
@@ -313,7 +312,6 @@ static void HRMServiceCB( uint8 event )
   {
     case HRM_MEAS_NOTI_ENABLED:
       HRMStart();
-      
       break;
         
     case HRM_MEAS_NOTI_DISABLED:
@@ -335,6 +333,7 @@ static void HRMStart( void )
 {  
   if(status == STATUS_STOP) {
     status = STATUS_START;
+    HRFunc_Start();
     osal_start_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT, interval);
   }
 }
@@ -343,6 +342,7 @@ static void HRMStart( void )
 static void HRMStop( void )
 {  
   status = STATUS_STOP;
+  HRFunc_Stop();
   osal_stop_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT ); 
 }
 
@@ -354,15 +354,10 @@ static void HRMNotify()
   
   // build heart rate measurement structure from simulated values
   *p++ = flags;
-  *p++ = heartRateBpm;
+  *p++ = HRFunc_CalBPM();
   
   heartRateMeas.len = (uint8) (p - heartRateMeas.value);
   HRM_MeasNotify( gapConnHandle, &heartRateMeas );
-  
-  if (++heartRateBpm == 100)
-  {
-    heartRateBpm = 73;
-  }
 }
 
 /*********************************************************************

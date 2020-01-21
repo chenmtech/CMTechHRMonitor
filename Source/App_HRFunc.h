@@ -9,5 +9,8 @@
 #include "hal_types.h"
 
 extern void HRFunc_Init();
+extern void HRFunc_Start();
+extern void HRFunc_Stop();
+extern uint8 HRFunc_CalBPM();
 
 #endif

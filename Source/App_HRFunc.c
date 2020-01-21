@@ -3,10 +3,7 @@
 #include "CMUtil.h"
 #include "Dev_ADS1x9x.h"
 
-#define STATE_STOP 0x00 // 停止状态
-#define STATE_START 0x01 // 启动态
-
-// 毫秒数对应的样本数，采样频率为125Hz
+// 毫秒对应的样本数，采样频率为125Hz
 #define MS80	10
 #define MS95	12
 #define MS150	19
@@ -26,11 +23,13 @@ static int N0 = 0, N1 = 0, N2 = 0, N3 = 0, N4 = 0, N5 = 0, N6 = 0, N7 = 0 ;
 static int RR0=0, RR1=0, RR2=0, RR3=0, RR4=0, RR5=0, RR6=0, RR7=0 ;
 static int QSum = 0, NSum = 0, RRSum = 0 ;
 static int det_thresh, sbcount ;
-//static int tempQSum, tempNSum, tempRRSum ;
 static int QN0=0, QN1=0 ;
-//static int Reg0=0 ;
 
-static uint8 state = STATE_STOP; // 当前状态
+static int RRCount = 0 ;
+static int InitBeatFlag = 1 ;
+
+static int RRBuf[9] = {0};
+static int RRNum = 0;
 
 
 static void UpdateQ(int16 newQ);
@@ -43,70 +42,82 @@ static int16 mvwint( int16 datum, int init);
 static int16 mvwint10( int16 datum, int init);
 static int16 Peak( int16 datum, int init );
 static int16 PICQRSDet(int16 x, int init);
-static void DetectQRS(int16 x);
+static int16 calRRInterval(int16 x);
+static void processEcgData(int16 x);
 
 extern void HRFunc_Init()
 {
   PICQRSDet(0, 1);
-  
-  state = STATE_STOP;
-  
+  RRCount = 0;
+  InitBeatFlag = 1;
+  RRNum = 0;  
   // 初始化ADS1x9x，设置数据处理回调函数
-  ADS1x9x_Init(DetectQRS);
-  
+  ADS1x9x_Init(processEcgData);  
   delayus(1000);
 }
 
 extern void HRFunc_Start()
-{
-  switch(state) {
-    case STATE_START_ECG:
-      return;
-    case STATE_START_1MV:
-      ADS1x9x_StopConvert();
-      break;
-    case STATE_STOP:
-      ADS1x9x_WakeUp();
-      break;
-    default:
-      return;
-  }
-  
+{  
+  ADS1x9x_WakeUp();
   // 这里一定要延时，否则容易死机
   delayus(1000);
-  
-  ADS1x9x_SetRegsAsNormalECGSignal();
-  byteCnt = 0;
-  packNum = 0;
-  pBuf = ECGMonitor_GetECGDataPointer();
-  
-  delayus(1000);
-  
   ADS1x9x_StartConvert();
-  state = STATE_START_ECG;
-  
   delayus(1000);
 }
 
-extern void ECGFunc_Stop()
+extern void HRFunc_Stop()
 {
-  if(state != STATE_STOP)
-  {
-    ADS1x9x_StopConvert();
-    state = STATE_STOP; 
-    ADS1x9x_StandBy();
-  }
-  
+  ADS1x9x_StopConvert();
+  ADS1x9x_StandBy();
   delayus(2000);
 }
 
-/******************************************************************************
-*  HRFunc_DetectQRS takes 16-bit ECG samples (5 uV/LSB) as input and returns the
-*  detection delay when a QRS is detected.
-******************************************************************************/
-static void DetectQRS(int16 x)
+extern uint8 HRFunc_CalBPM()
 {
-  PICQRSDet(x, 0);
+  if(RRNum == 0) return 0;
+  int16 RRAver = 0;
+  for(int i = 0; i < RRNum; i++)
+  {
+    RRAver += RRBuf[i];
+  }
+  RRAver /= RRNum;
+  RRNum = 0;
+  int16 BPM = 7500/RRAver; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
+  if(BPM > 255) BPM = 255;
+  return (uint8)BPM;
+}
+
+static void processEcgData(int16 x)
+{
+  int16 rr = calRRInterval(x);
+  if(rr == 0) return;
+  RRBuf[RRNum++] = rr;
+  if(RRNum >= 9) RRNum = 8;
+}
+
+static int16 calRRInterval(int16 x)
+{
+  int16 rr = 0;
+  int16 detectDelay = 0;
+  
+  RRCount++;
+  detectDelay = PICQRSDet(x, 0);
+  
+  if(detectDelay != 0)
+  {
+    if(InitBeatFlag)
+    {
+      InitBeatFlag = 0;
+    }
+    else
+    {
+      rr = RRCount - detectDelay;
+    }
+    RRCount = detectDelay;
+    return rr;
+  }
+ 
+  return 0;
 }
 
 /******************************************************************************
@@ -480,7 +491,7 @@ static int16 mvwint(int16 datum, int init)
   return(sum>>2) ;
 }
 
-// 由于采样频率改为125Hz，80ms只需要10个样本，进行moving average window
+// 由于采样频率改为125Hz，移动平均窗宽为80ms，只需要10个样本。所以修改了此函数
 static int16 mvwint10(int16 datum, int init)
 {
   static uint16 sum = 0 ;
@@ -501,9 +512,9 @@ static int16 mvwint10(int16 datum, int init)
   d3=d2 ;
   d2=d1 ;
   d1=d0 ;
-  sum += d0 ;
+  sum += (d0>>1) ;
   
-  return sum/10;
+  return sum/5;
 }
 
 
