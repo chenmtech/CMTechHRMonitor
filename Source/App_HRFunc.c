@@ -186,15 +186,15 @@ static int16 PICQRSDet(int16 x, int init)
   
   else if(x)				// If we were holding a peak, but
   {				// this ones bigger, save it and
-  if(x > tempPeak)		// start counting to 200 ms again.
-    {
-      tempPeak = x ;
-      preBlankCnt = MS200 ;
-      x = 0 ;
-    }
-  else if(--preBlankCnt == 0)
-    x = tempPeak ;
-  else x = 0 ;
+    if(x > tempPeak)		// start counting to 200 ms again.
+      {
+        tempPeak = x ;
+        preBlankCnt = MS200 ;
+        x = 0 ;
+      }
+    else if(--preBlankCnt == 0)
+      x = tempPeak ;
+    else x = 0 ;
   }
   
   // Initialize the qrs peak buffer with the first eight
@@ -512,9 +512,9 @@ static int16 mvwint10(int16 datum, int init)
   d3=d2 ;
   d2=d1 ;
   d1=d0 ;
-  sum += (d0>>1) ;
+  sum += d0 ;
   
-  return sum/5;
+  return sum/10;
 }
 
 

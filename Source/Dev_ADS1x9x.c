@@ -80,6 +80,7 @@ static uint8 type; // 芯片类型
 static ADS_DataCB_t ADS_DataCB; // 采样后的回调函数
 static uint8 status[3] = {0}; // 接收到的3字节状态
 static uint8 data[4]; //读取的通道数据字节
+static int16 ecg;
 
 
 static void execute(uint8 cmd); // 执行命令
@@ -105,28 +106,6 @@ static void execute(uint8 cmd)
   ADS_CS_HIGH();
 }
 
-/******************************************************************************
- * 读一个样本
- * ADS1291是高精度（24bit）单通道芯片
-******************************************************************************/
-static void ADS1291_ReadOneSample(void)
-{  
-  ADS_CS_LOW();
-  
-  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
-  
-  data[3] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
-  data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
-  
-  ADS_CS_HIGH();
-  
-  if(ADS_DataCB != 0) {
-    ADS_DataCB((int16)(((data[2]) & 0x00FF) + (((data[3]) & 0x00FF) << 8)));
-  }
-}
 
 // ADS 初始化
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
@@ -314,6 +293,32 @@ __interrupt void PORT0_ISR(void)
   }
   
   HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
+}
+
+
+/******************************************************************************
+ * 读一个样本
+ * ADS1291是高精度（24bit）单通道芯片
+******************************************************************************/
+static void ADS1291_ReadOneSample(void)
+{  
+  ADS_CS_LOW();
+  
+  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  
+  data[3] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
+  data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
+  
+  ecg = (int16)(((data[2]) & 0x00FF) + (((data[3]) & 0x00FF) << 8));
+  
+  ADS_CS_HIGH();
+  
+  if(ADS_DataCB != 0) {
+    ADS_DataCB(ecg);
+  }
 }
 
 /*

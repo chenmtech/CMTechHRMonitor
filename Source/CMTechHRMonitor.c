@@ -183,7 +183,7 @@ extern void HRM_Init( uint8 task_id )
 
   // 设置心率服务Characteristic Values
   {
-    uint8 sensLoc = HRM_SENS_LOC_WRIST;
+    uint8 sensLoc = HRM_SENS_LOC_CHEST;
     HRM_SetParameter( HRM_SENS_LOC, sizeof ( uint8 ), &sensLoc );
   }
   
