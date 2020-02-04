@@ -75,14 +75,13 @@ extern void HRFunc_Stop()
 extern uint8 HRFunc_CalBPM()
 {
   if(RRNum == 0) return 0;
-  int16 RRAver = 0;
+  int16 RRSum = 0;
   for(int i = 0; i < RRNum; i++)
   {
-    RRAver += RRBuf[i];
+    RRSum += RRBuf[i];
   }
-  RRAver /= RRNum;
+  int16 BPM = 7500L*RRNum/RRSum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   RRNum = 0;
-  int16 BPM = 7500/RRAver; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   if(BPM > 255) BPM = 255;
   return (uint8)BPM;
 }
@@ -501,6 +500,7 @@ static int16 mvwint10(int16 datum, int init)
   {
     d0=d1=d2=d3=d4=d5=d6=d7=d8=d9=0 ;
     sum = 0 ;
+    return 0;
   }
   sum -= d9 ;
   d9=d8 ;
@@ -512,9 +512,10 @@ static int16 mvwint10(int16 datum, int init)
   d3=d2 ;
   d2=d1 ;
   d1=d0 ;
+  d0 = (datum>>1);
   sum += d0 ;
   
-  return sum/10;
+  return sum/5;
 }
 
 
@@ -535,6 +536,7 @@ static int16 Peak( int16 datum, int init )
   {
     max = 0 ;
     timeSinceMax = 0 ;
+    lastDatum = 0;
     return(0) ;
   }
           

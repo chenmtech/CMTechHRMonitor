@@ -46,42 +46,11 @@
   <configuration>
     <name>CC2541DK-MINI Keyfob</name>
     <outputs>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL_CMTechTempHumid.r51</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_queue.r51</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\Service_PairPwd.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_dma.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_crc.r51</file>
-      <file>$PROJ_DIR$\..\Source\Service_Timer.c</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_HRFunc.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_HRFunc.r51</file>
-      <file>$PROJ_DIR$\..\Source\Service_Timer.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_adc.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_aes.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_crc.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_dma.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_flash.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_i2c.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_key.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_board_cfg.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_lcd.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_led.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_sleep.c</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Exe\CMTechHRMonitor.hex</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\List\CMTechHRMonitor.map</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor_Main.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_HRMonitor.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_HRMonitor.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor_Main.pbi</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_startup.c</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_CMTechHRMonitor.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_CMTechHRMonitor.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_ClockBLE.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_Memory.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\osal_snv.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_Timers.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\gatt_uuid.r51</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_queue.r51</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL_CMTechTempHumid.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\peripheral.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OnBoard.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_GAPConfig.pbi</file>
@@ -111,6 +80,37 @@
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMUtil.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_Battery.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_SI7021.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_HRFunc.pbi</file>
+      <file>$PROJ_DIR$\..\Source\Service_Timer.c</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_HRFunc.r51</file>
+      <file>$PROJ_DIR$\..\Source\Service_Timer.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_adc.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_aes.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_crc.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_dma.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_flash.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_i2c.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_key.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_lcd.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_board_cfg.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_led.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_sleep.c</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Exe\CMTechHRMonitor.hex</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\List\CMTechHRMonitor.map</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor_Main.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_HRMonitor.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_HRMonitor.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor_Main.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_CMTechHRMonitor.r51</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_startup.c</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_CMTechHRMonitor.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_ClockBLE.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_Memory.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\osal_snv.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_Timers.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\gatt_uuid.r51</file>
       <file>$PROJ_DIR$\..\..\..\..\Components\ble\controller\include\ll_timer2.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_flash.pbi</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\App_GAPConfig.r51</file>
@@ -122,8 +122,8 @@
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_startup.pbi</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_timer.pbi</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_uart.pbi</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Clock.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\npi.pbi</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Clock.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL.pbi</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\osal_bufmgr.pbi</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\osal_cbtimer.pbi</file>
@@ -147,8 +147,8 @@
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\gap.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\gapbondmgr.r51</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_uart.r51</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Memory.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\gatt_uuid.r51</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Memory.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\peripheral.r51</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\OnBoard.r51</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\App_GAPConfig.pbi</file>
@@ -165,12 +165,79 @@
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_crc.pbi</file>
       <file>$PROJ_DIR$\..\..\..\..\Components\ble\controller\include\ll_math.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_dma.pbi</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Timers.h</file>
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\CMTechHRMonitor.pbd</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Timers.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\osal_bufmgr.h</file>
       <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_Tasks.h</file>
       <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\osal_snv.h</file>
       <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\OSAL_PwrMgr.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\osal_bufmgr.h</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_lcd.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_sleep.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_led.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_startup.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_timer.pbi</file>
+      <file>$PROJ_DIR$\..\Source\App_ECGFunc.h</file>
+      <file>$PROJ_DIR$\..\Source\App_ECGFunc.c</file>
+      <file>$PROJ_DIR$\..\Source\App_GAPConfig.c</file>
+      <file>$PROJ_DIR$\..\Source\App_GATTConfig.c</file>
+      <file>$PROJ_DIR$\..\Source\App_GATTConfig.h</file>
+      <file>$PROJ_DIR$\..\Source\CMTechTempHumid.c</file>
+      <file>$PROJ_DIR$\..\Source\CMTechTempHumid.h</file>
+      <file>$PROJ_DIR$\..\Source\CMTechTempHumid_Main.c</file>
+      <file>$PROJ_DIR$\..\Source\Dev_SI7021.cpp</file>
+      <file>$PROJ_DIR$\..\Source\Dev_Si7021.h</file>
+      <file>$PROJ_DIR$\..\Source\hal_queue.c</file>
+      <file>$PROJ_DIR$\..\Source\hal_queue.h</file>
+      <file>$PROJ_DIR$\..\Source\OSAL_CMTechTempHumid.c</file>
+      <file>$PROJ_DIR$\..\Source\Service_PairPwd.c</file>
+      <file>$PROJ_DIR$\..\Source\Service_PairPwd.h</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_led.r51</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_lcd.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_spi_ADS.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_ECGFunc.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_ADS1x9x.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_ECGFunc.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_ADS1x9x.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_spi_ADS.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_drivers.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_adc.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_aes.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_flash.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_i2c.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_key.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_lcd.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_led.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_sleep.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_startup.r51</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_timer.r51</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\Service_DevInfo.r51</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\Service_Battery.r51</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\ble\controller\include\ll_sleep.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL_Memory.pbi</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\osal_cbtimer.h</file>
+      <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL_PwrMgr.pbi</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_dma.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_i2c.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_mcu.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_types.h</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_Battery.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_SI7021.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_queue.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_CMTechTempHumid.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_Battery.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_DevInfo.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_PairPwd.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_TempHumid.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_Timer.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_drivers.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_adc.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_aes.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_crc.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_dma.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_flash.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_i2c.pbi</file>
+      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_key.pbi</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL.pbi</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\npi.pbi</file>
       <file>$PROJ_DIR$\CMTechHRMonitor\Obj\osal_bufmgr.pbi</file>
@@ -231,73 +298,49 @@
       <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_i2c.r51</file>
       <file>$PROJ_DIR$\..\..\common\cc2540\ti_51ew_cc2540b.xcl</file>
       <file>$PROJ_DIR$\..\Source\app_gapconfig.h</file>
-      <file>$PROJ_DIR$\..\Source\App_GAPConfig.c</file>
-      <file>$PROJ_DIR$\..\Source\App_GATTConfig.c</file>
-      <file>$PROJ_DIR$\..\Source\App_GATTConfig.h</file>
-      <file>$PROJ_DIR$\..\Source\CMTechTempHumid.c</file>
-      <file>$PROJ_DIR$\..\Source\CMTechTempHumid.h</file>
-      <file>$PROJ_DIR$\..\Source\CMTechTempHumid_Main.c</file>
-      <file>$PROJ_DIR$\..\Source\Dev_SI7021.cpp</file>
-      <file>$PROJ_DIR$\..\Source\Dev_Si7021.h</file>
-      <file>$PROJ_DIR$\..\Source\hal_queue.c</file>
-      <file>$PROJ_DIR$\..\Source\hal_queue.h</file>
-      <file>$PROJ_DIR$\..\Source\OSAL_CMTechTempHumid.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_PairPwd.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_PairPwd.h</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_led.r51</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\hal_lcd.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_spi_ADS.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_ECGFunc.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_ADS1x9x.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\App_ECGFunc.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_ADS1x9x.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_spi_ADS.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_drivers.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_adc.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_aes.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_flash.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_i2c.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_key.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_lcd.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_led.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_sleep.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_startup.r51</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_timer.r51</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\Service_DevInfo.r51</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\Service_Battery.r51</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\ble\controller\include\ll_sleep.h</file>
-      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\osal\include\osal_cbtimer.h</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL_Memory.pbi</file>
-      <file>$PROJ_DIR$\CMTechTempHumid\Obj\OSAL_PwrMgr.pbi</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_dma.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_i2c.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_mcu.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_types.h</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_Battery.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Dev_SI7021.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_queue.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\OSAL_CMTechTempHumid.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_Battery.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_DevInfo.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_PairPwd.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_TempHumid.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\Service_Timer.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_drivers.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_adc.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_aes.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_crc.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_dma.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_flash.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_i2c.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_key.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_lcd.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_sleep.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_led.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_startup.pbi</file>
-      <file>$PROJ_DIR$\CMTechHRMonitor\Obj\hal_timer.pbi</file>
-      <file>$PROJ_DIR$\..\Source\App_ECGFunc.h</file>
-      <file>$PROJ_DIR$\..\Source\App_ECGFunc.c</file>
+      <file>$PROJ_DIR$\..\Source\App_HRFunc.h</file>
+      <file>$PROJ_DIR$\..\Source\App_HRFunc.c</file>
+      <file>$PROJ_DIR$\..\Source\CMTechHRMonitor.c</file>
+      <file>$PROJ_DIR$\..\Source\CMTechHRMonitor.h</file>
+      <file>$PROJ_DIR$\..\Source\CMTechHRMonitor_Main.c</file>
+      <file>$PROJ_DIR$\..\Source\CMUtil.c</file>
+      <file>$PROJ_DIR$\..\Source\CMUtil.h</file>
+      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.c</file>
+      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.h</file>
+      <file>$PROJ_DIR$\..\Source\Dev_Battery.c</file>
+      <file>$PROJ_DIR$\..\Source\Dev_Battery.h</file>
+      <file>$PROJ_DIR$\..\Source\hal_spi_ADS.c</file>
+      <file>$PROJ_DIR$\..\Source\hal_spi_ADS.h</file>
+      <file>$PROJ_DIR$\..\Source\OSAL_CMTechHRMonitor.c</file>
+      <file>$PROJ_DIR$\..\Source\Service_Battery.c</file>
+      <file>$PROJ_DIR$\..\Source\Service_Battery.h</file>
+      <file>$PROJ_DIR$\..\Source\Service_DevInfo.c</file>
+      <file>$PROJ_DIR$\..\Source\Service_DevInfo.h</file>
+      <file>$PROJ_DIR$\..\Source\Service_HRMonitor.c</file>
+      <file>$PROJ_DIR$\..\Source\Service_HRMonitor.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\common\hal_drivers.c</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_adc.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_assert.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_board.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_defs.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_drivers.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_flash.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_key.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_lcd.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_led.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_sleep.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_timer.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_uart.h</file>
+      <file>$PROJ_DIR$\..\..\..\..\Components\services\saddr\saddr.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_board_cfg.h</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_adc.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_aes.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_crc.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_dma.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_flash.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_i2c.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_key.c</file>
+      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_lcd.c</file>
       <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_led.c</file>
       <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_sleep.c</file>
       <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_startup.c</file>
@@ -343,341 +386,22 @@
       <file>$PROJ_DIR$\buildConfig.cfg</file>
       <file>$PROJ_DIR$\..\..\common\cc2540\OnBoard.c</file>
       <file>$PROJ_DIR$\..\..\common\cc2540\OnBoard.h</file>
-      <file>$PROJ_DIR$\..\Source\App_HRFunc.h</file>
-      <file>$PROJ_DIR$\..\Source\App_HRFunc.c</file>
-      <file>$PROJ_DIR$\..\Source\CMTechHRMonitor.c</file>
-      <file>$PROJ_DIR$\..\Source\CMTechHRMonitor.h</file>
-      <file>$PROJ_DIR$\..\Source\CMTechHRMonitor_Main.c</file>
-      <file>$PROJ_DIR$\..\Source\CMUtil.c</file>
-      <file>$PROJ_DIR$\..\Source\CMUtil.h</file>
-      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.c</file>
-      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.h</file>
-      <file>$PROJ_DIR$\..\Source\Dev_Battery.c</file>
-      <file>$PROJ_DIR$\..\Source\Dev_Battery.h</file>
-      <file>$PROJ_DIR$\..\Source\hal_spi_ADS.c</file>
-      <file>$PROJ_DIR$\..\Source\hal_spi_ADS.h</file>
-      <file>$PROJ_DIR$\..\Source\OSAL_CMTechHRMonitor.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_Battery.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_Battery.h</file>
-      <file>$PROJ_DIR$\..\Source\Service_DevInfo.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_DevInfo.h</file>
-      <file>$PROJ_DIR$\..\Source\Service_HRMonitor.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_HRMonitor.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\common\hal_drivers.c</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_adc.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_assert.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_board.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_defs.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_drivers.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_flash.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_key.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_lcd.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_led.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_sleep.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_timer.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\hal\include\hal_uart.h</file>
-      <file>$PROJ_DIR$\..\..\..\..\Components\services\saddr\saddr.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_board_cfg.h</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_adc.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_aes.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_crc.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_dma.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_flash.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_i2c.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_key.c</file>
-      <file>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_lcd.c</file>
     </outputs>
     <file>
       <name>[ROOT_NODE]</name>
       <outputs>
         <tool>
           <name>XLINK</name>
-          <file> 59 21 20</file>
+          <file> 28 50 49</file>
         </tool>
       </outputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Service_Timer.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 236</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 168</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 287 264 272 303 8</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 287 264 272 303 8</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_adc.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 238</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 207</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 318 227 320 16 226 321 93</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 318 227 320 16 226 321 93</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_aes.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 239</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 208</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 92 90 91 89 227 321 101 119 164 224 320 16 226 93</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 92 90 91 89 227 321 101 119 164 224 320 16 226 93</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_crc.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 240</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 4</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 320 16 226 321 227 93 165</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 320 16 226 321 227 93 165</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_dma.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 241</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 3</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 224 320 16 226 321 227 93 329</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 224 320 16 226 321 227 93 329</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_flash.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 242</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 209</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 16 226 321 227 93 224 320 323</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 16 226 321 227 93 224 320 323</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_i2c.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 243</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 210</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 16 226 321 227 93 319 225 89</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 16 226 321 227 93 319 225 89</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_key.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 244</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 211</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 226 321 227 93 322 318 320 16 324 92 90 91 89 101 119</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 226 321 227 93 322 318 320 16 324 92 90 91 89 101 119</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_lcd.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 245</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 212</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 227 325 320 16 226 321 93 92 90 91 89 101 119 296 327 319</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 227 325 320 16 226 321 93 92 90 91 89 101 119 296 327 319</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_led.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 247</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 213</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 226 321 227 93 322 326 320 16 92 90 91 89 101 119</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 226 321 227 93 322 326 320 16 92 90 91 89 101 119</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_sleep.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 246</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 214</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 227 226 321 93 320 16 327 326 324 92 90 91 89 101 119 121 123 322 319 219 276 65 117</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 227 226 321 93 320 16 327 326 324 92 90 91 89 101 119 121 123 322 319 219 276 65 117</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_startup.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 248</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 215</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 320 16 226 321 227 93</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 320 16 226 321 227 93</file>
-        </tool>
-      </inputs>
     </file>
     <file>
       <name>$PROJ_DIR$\CMTechHRMonitor\Obj\CMTechHRMonitor.pbd</name>
       <inputs>
         <tool>
           <name>BILINK</name>
-          <file> 6 22 26 42 202 228 125 29 129 130 131 133 138 232 233 25 134 135 136 238 239 240 241 237 242 243 244 245 247 246 205 248 249 161 126 127 128 132 137</file>
+          <file> 34 51 55 11 149 175 192 58 196 197 198 200 205 179 180 54 201 202 203 185 186 187 188 184 189 190 191 125 127 126 152 128 129 228 193 194 195 199 204</file>
         </tool>
       </inputs>
     </file>
@@ -686,428 +410,45 @@
       <outputs>
         <tool>
           <name>XLINK</name>
-          <file> 21 20</file>
+          <file> 50 49</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>XLINK</name>
-          <file> 183 7 30 23 62 204 63 155 28 31 32 158 34 37 153 166 24 98 99 35 207 208 4 3 206 209 210 211 212 213 214 200 215 216 100 154 156 157 33 36 273 274 148</file>
+          <file> 250 36 59 52 31 151 32 222 56 60 61 225 63 6 220 233 53 98 99 64 154 155 2 1 153 156 157 158 159 160 161 147 162 163 100 221 223 224 62 5 316 317 215</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\CMTechTempHumid\Exe\CMTechTempHumid.d51</name>
-      <inputs>
-        <tool>
-          <name>XLINK</name>
-          <file> 183 67 114 115 97 96 95 94 48 0 51 52 53 55 104 218 217 2 175 174 56 57 102 177 178 179 180 176 181 182 139 199 198 1 44 43 45 46 47 49 50 54 103 273 274 148</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\CMTechTempHumid\Obj\CMTechTempHumid.pbd</name>
-      <inputs>
-        <tool>
-          <name>BILINK</name>
-          <file> 105 106 107 108 109 110 111 78 113 81 222 223 170 82 140 141 142 143 144 171 172 173 146 147 116 118 145 66 68 69 70 71 112 72 73 74 75 77 79 80 169 83</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\CMTechTempHumid\Obj\CMTechHRMonitor.pbd</name>
-      <inputs>
-        <tool>
-          <name>BILINK</name>
-          <file> 105 106 107 108 109 110 111 78 113 81 222 223 170 82 140 141 142 143 144 171 172 173 146 147 116 118 145 66 68 69 70 71 112 72 73 74 75 77 79 80 169 83</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Service_TempHumid.c</name>
+      <name>$PROJ_DIR$\..\Source\Service_Timer.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
+          <file> 183</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
           <file> 235</file>
         </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 167</file>
-        </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 287 264 272 303 160</file>
+          <file> 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 330 307 315 258 37</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 287 264 272 303 160</file>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 330 307 315 258 37</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_timer.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_adc.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 249</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 216</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_uart.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 161</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 100</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 16 226 321 227 93 322 329 320 92 90 91 89 101 119 123</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 16 226 321 227 93 322 329 320 92 90 91 89 101 119 123</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\App_GAPConfig.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 38</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 149</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 264 92 90 91 101 119 272 288 287 292 184 303 265 263 268 122</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 264 92 90 91 101 119 272 288 287 292 184 303 265 263 268 122</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\App_GATTConfig.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 39</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 150</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 265 92 90 91 101 119 263 268 290 187 160 8 197 312</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 265 92 90 91 101 119 263 268 290 187 160 8 197 312</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\CMTechTempHumid.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 40</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 60</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 123 122 269 296 261 93 327 265 263 268 267 270 319 288 290 314 160 292 287 264 272 260 192 189</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 123 122 269 296 261 93 327 265 263 268 267 270 319 288 290 314 160 292 287 264 272 260 192 189</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\CMTechTempHumid_Main.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 41</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 61</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 262 324 320 331 261 321 93 328 322 326 92 90 91 89 101 119 121 123 122 296 327</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 262 324 320 331 261 321 93 328 322 326 92 90 91 89 101 119 121 123 122 296 327</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Dev_SI7021.cpp</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 229</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 64</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 192 260 89 262 321 92 90 91 101 119</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 192 260 89 262 321 92 90 91 101 119</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\hal_queue.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 230</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 151</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 194 276 89 262 321 92 90 91 101 119</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 194 276 89 262 321 92 90 91 101 119</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\OSAL_CMTechTempHumid.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 231</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 152</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 262 92 90 91 89 321 101 119 121 322 270 276 87 267 319 329 320 331 261 93 88 124 86 221 268 264 272 288 287 265 263 290 292 189</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 262 92 90 91 89 321 101 119 121 322 270 276 87 267 319 329 320 331 261 93 88 124 86 221 268 264 272 288 287 265 263 290 292 189</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Service_PairPwd.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 234</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 287 264 272 303 197</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 287 264 272 303 197</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\App_ECGFunc.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 201</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 203</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 93 322 262 261 321 92 90 91 89 101 119 303 276 265 263 268 250 305 309</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 93 322 262 261 321 92 90 91 89 101 119 303 276 265 263 268 250 305 309</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_led.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 247</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 213</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 261 321 262 93 322 326 320 331 92 90 91 89 101 119</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 261 321 262 93 322 326 320 331 92 90 91 89 101 119</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_sleep.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 246</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 214</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 262 261 321 93 320 331 327 326 324 92 90 91 89 101 119 121 123 322 319 219 276 65 117</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 262 261 321 93 320 331 327 326 324 92 90 91 89 101 119 121 123 322 319 219 276 65 117</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_startup.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 248</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 215</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 320 331 261 321 262 93</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 320 331 261 321 262 93</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_timer.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 249</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 216</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_uart.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 161</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 100</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 331 261 321 262 93 322 329 320 92 90 91 89 101 119 123</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 331 261 321 262 93 322 329 320 92 90 91 89 101 119 123</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\common\npi\npi_np\npi.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 126</file>
+          <file> 185</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1117,20 +458,20 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 262 320 331 261 321 93 271 329</file>
+          <file> 273 174 275 46 173 276 93</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 262 320 331 261 321 93 271 329</file>
+          <file> 336 337 273 174 275 46 173 276 93</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_aes.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 125</file>
+          <file> 186</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1140,20 +481,66 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 220 91 89 262 321 320 331 261 93 92 90 101 119 121 123 76 296 327 322</file>
+          <file> 92 90 91 89 174 276 102 120 231 171 275 46 173 93</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 220 91 89 262 321 320 331 261 93 92 90 101 119 121 123 76 296 327 322</file>
+          <file> 336 337 92 90 91 89 174 276 102 120 231 171 275 46 173 93</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\osal_bufmgr.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_crc.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 127</file>
+          <file> 187</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 2</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 275 46 173 276 174 93 232</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 275 46 173 276 174 93 232</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_dma.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 188</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 1</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 171 275 46 173 276 174 93 284</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 171 275 46 173 276 174 93 284</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_flash.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 189</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1163,20 +550,20 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 92 90 91 89 262 321 101 119 296 261 93 327 124</file>
+          <file> 46 173 276 174 93 171 275 278</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 92 90 91 89 262 321 101 119 296 261 93 327 124</file>
+          <file> 336 337 46 173 276 174 93 171 275 278</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\osal_cbtimer.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_i2c.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 128</file>
+          <file> 190</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1186,66 +573,20 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 92 90 91 89 262 321 101 119 121 221</file>
+          <file> 46 173 276 174 93 274 172 89</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 92 90 91 89 262 321 101 119 121 221</file>
+          <file> 336 337 46 173 276 174 93 274 172 89</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_ClockBLE.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_key.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 129</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 31</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 89 262 321 296 261 93 327 92 90 91 101 119 76</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 89 262 321 296 261 93 327 92 90 91 101 119 76</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_Memory.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 130</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 32</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 89 262 321 92 90 91 101 119 296 261 93 327 319</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 89 262 321 92 90 91 101 119 296 261 93 327 319</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_PwrMgr.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 131</file>
+          <file> 191</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1255,204 +596,231 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 89 262 321 296 261 93 327 92 90 91 101 119 121 123</file>
+          <file> 173 276 174 93 277 273 275 46 279 92 90 91 89 102 120</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 89 262 321 296 261 93 327 92 90 91 101 119 121 123</file>
+          <file> 336 337 173 276 174 93 277 273 275 46 279 92 90 91 89 102 120</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\mcu\cc2540\osal_snv.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_lcd.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 132</file>
+          <file> 125</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 33</file>
+          <file> 159</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 318 262 320 331 261 321 93 323 89 92 90 91 101 119 122 319 330</file>
+          <file> 174 280 275 46 173 276 93 92 90 91 89 102 120 339 282 274</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 318 262 320 331 261 321 93 323 89 92 90 91 101 119 122 319 330</file>
+          <file> 336 337 174 280 275 46 173 276 93 92 90 91 89 102 120 339 282 274</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_Timers.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_led.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 133</file>
+          <file> 127</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 34</file>
+          <file> 160</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 89 262 321 296 261 93 327 92 90 91 101 119 328 320 331</file>
+          <file> 173 276 174 93 277 281 275 46 92 90 91 89 102 120</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 89 262 321 296 261 93 327 92 90 91 101 119 328 320 331</file>
+          <file> 336 337 173 276 174 93 277 281 275 46 92 90 91 89 102 120</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\gap.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_sleep.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 134</file>
+          <file> 126</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 98</file>
+          <file> 161</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 276 89 262 321 264 92 90 91 101 119 272</file>
+          <file> 174 173 276 93 275 46 282 281 279 92 90 91 89 102 120 122 124 277 274 166 319 65 117</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 264 92 90 91 101 119 272</file>
+          <file> 336 337 174 173 276 93 275 46 282 281 279 92 90 91 89 102 120 122 124 277 274 166 319 65 117</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\gapbondmgr.c</name>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_startup.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 135</file>
+          <file> 128</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 99</file>
+          <file> 162</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 122 264 272 269 265 263 268 266 267 270 319 290 288 287</file>
+          <file> 275 46 173 276 174 93</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 122 264 272 269 265 263 268 266 267 270 319 290 288 287</file>
+          <file> 336 337 275 46 173 276 174 93</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\ble\host\gatt_uuid.c</name>
+      <name>$PROJ_DIR$\CMTechTempHumid\Exe\CMTechTempHumid.d51</name>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 250 67 114 115 97 96 95 94 17 4 20 21 22 24 104 165 164 0 242 241 25 26 101 244 245 246 247 243 248 249 206 146 145 3 13 12 14 15 16 18 19 23 103 316 317 215</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\CMTechTempHumid\Obj\CMTechTempHumid.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 105 106 107 108 109 110 111 78 113 81 168 170 237 82 207 208 209 210 211 238 239 240 213 214 116 118 212 66 68 69 70 71 112 72 73 74 75 76 79 80 236 83</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\CMTechTempHumid\Obj\CMTechHRMonitor.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 105 106 107 108 109 110 111 78 113 81 168 170 237 82 207 208 209 210 211 238 239 240 213 214 116 118 212 66 68 69 70 71 112 72 73 74 75 76 79 80 236 83</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\App_ECGFunc.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 136</file>
+          <file> 148</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 35</file>
+          <file> 150</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 89 262 321 92 90 91 101 119 265 276 263 268 266</file>
+          <file> 93 277 305 304 276 92 90 91 89 102 120 258 319 308 306 311 130 260 264</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 89 262 321 92 90 91 101 119 265 276 263 268 266</file>
+          <file> 336 337 93 277 305 304 276 92 90 91 89 102 120 258 319 308 306 311 130 260 264</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\peripheral.c</name>
+      <name>$PROJ_DIR$\..\Source\App_GAPConfig.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 137</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 36</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 87 267 270 319 329 320 331 261 93 88 124 86 268 264 272 269 263 265 122 292 287</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 87 267 270 319 329 320 331 261 93 88 124 86 268 264 272 269 263 265 122 292 287</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\common\cc2540\OnBoard.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 138</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 37</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 296 261 93 327 92 90 91 101 119 326 320 331 324</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 296 261 93 327 92 90 91 101 119 326 320 331 324</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\App_HRFunc.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 6</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
           <file> 7</file>
         </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 216</file>
+        </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 297 262 303 276 89 321 265 92 90 91 101 119 263 268 305 309 93</file>
+          <file> 319 89 305 276 307 92 90 91 102 120 315 331 330 335 251 258 308 306 311 123</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 297 262 303 276 89 321 265 92 90 91 101 119 263 268 305 309 93</file>
+          <file> 336 337 319 89 305 276 307 92 90 91 102 120 315 331 330 335 251 258 308 306 311 123</file>
         </tool>
       </inputs>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\CMTechHRMonitor.c</name>
+      <name>$PROJ_DIR$\..\Source\App_GATTConfig.c</name>
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 22</file>
+          <file> 8</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 217</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 308 92 90 91 102 120 306 311 333 134 227 37 144 267</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 308 92 90 91 102 120 306 311 333 134 227 37 144 267</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\CMTechTempHumid.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 29</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 124 123 312 339 304 93 282 308 306 311 310 313 274 331 333 269 227 335 330 307 315 303 139 136</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 124 123 312 339 304 93 282 308 306 311 310 313 274 331 333 269 227 335 330 307 315 303 139 136</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\CMTechTempHumid_Main.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 10</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1462,11 +830,210 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 123 122 269 296 261 93 327 265 263 268 267 270 319 288 290 314 316 292 287 264 272 300 297</file>
+          <file> 305 279 275 286 304 276 93 283 277 281 92 90 91 89 102 120 122 124 123 339 282</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 123 122 269 296 261 93 327 265 263 268 267 270 319 288 290 314 316 292 287 264 272 300 297</file>
+          <file> 336 337 305 279 275 286 304 276 93 283 277 281 92 90 91 89 102 120 122 124 123 339 282</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Dev_SI7021.cpp</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 176</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 33</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 139 303 89 305 276 92 90 91 102 120</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 139 303 89 305 276 92 90 91 102 120</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\hal_queue.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 177</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 218</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 141 319 89 305 276 92 90 91 102 120</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 141 319 89 305 276 92 90 91 102 120</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\OSAL_CMTechTempHumid.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 178</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 219</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 305 92 90 91 89 276 102 120 122 277 313 319 87 310 274 284 275 286 304 93 88 121 86 169 311 307 315 331 330 308 306 333 335 136</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 305 92 90 91 89 276 102 120 122 277 313 319 87 310 274 284 275 286 304 93 88 121 86 169 311 307 315 331 330 308 306 333 335 136</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Service_PairPwd.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 181</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 330 307 315 258 144</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 330 307 315 258 144</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Service_TempHumid.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 182</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 234</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 330 307 315 258 227</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 330 307 315 258 227</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_timer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 129</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 163</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541TempHumid\hal_uart.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 228</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 100</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 46 173 276 174 93 277 284 275 92 90 91 89 102 120 124</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 46 173 276 174 93 277 284 275 92 90 91 89 102 120 124</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\App_HRFunc.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 34</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 36</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 252 305 258 319 89 276 308 92 90 91 102 120 306 311 260 264 93</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 252 305 258 319 89 276 308 92 90 91 102 120 306 311 260 264 93</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\CMTechHRMonitor.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 51</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 59</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 124 123 312 339 304 93 282 308 306 311 310 313 274 331 333 269 271 335 330 307 315 255 252</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 124 123 312 339 304 93 282 308 306 311 310 313 274 331 333 269 271 335 330 307 315 255 252</file>
         </tool>
       </inputs>
     </file>
@@ -1475,21 +1042,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 26</file>
+          <file> 55</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 23</file>
+          <file> 52</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 262 324 320 331 261 321 93 328 322 326 92 90 91 89 101 119 121 123 122 296 327</file>
+          <file> 305 279 275 286 304 276 93 283 277 281 92 90 91 89 102 120 122 124 123 339 282</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 262 324 320 331 261 321 93 328 322 326 92 90 91 89 101 119 121 123 122 296 327</file>
+          <file> 336 337 305 279 275 286 304 276 93 283 277 281 92 90 91 89 102 120 122 124 123 339 282</file>
         </tool>
       </inputs>
     </file>
@@ -1498,21 +1065,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 42</file>
+          <file> 11</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 62</file>
+          <file> 31</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 303 276 89 262 321 265 92 90 91 101 119 263 268</file>
+          <file> 258 319 89 305 276 308 92 90 91 102 120 306 311</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 303 276 89 262 321 265 92 90 91 101 119 263 268</file>
+          <file> 336 337 258 319 89 305 276 308 92 90 91 102 120 306 311</file>
         </tool>
       </inputs>
     </file>
@@ -1521,21 +1088,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 202</file>
+          <file> 149</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 204</file>
+          <file> 151</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 305 309 93 276 89 262 321 261 303 265 92 90 91 101 119 263 268</file>
+          <file> 260 264 93 319 89 305 276 304 258 308 92 90 91 102 120 306 311</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 305 309 93 276 89 262 321 261 303 265 92 90 91 101 119 263 268</file>
+          <file> 336 337 260 264 93 319 89 305 276 304 258 308 92 90 91 102 120 306 311</file>
         </tool>
       </inputs>
     </file>
@@ -1544,21 +1111,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 228</file>
+          <file> 175</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 63</file>
+          <file> 32</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 307 318 262 320 331 261 321 93</file>
+          <file> 262 273 305 275 286 304 276 93</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 307 318 262 320 331 261 321 93</file>
+          <file> 336 337 262 273 305 275 286 304 276 93</file>
         </tool>
       </inputs>
     </file>
@@ -1567,21 +1134,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 205</file>
+          <file> 152</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 200</file>
+          <file> 147</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 309 93 276 89 262 321</file>
+          <file> 264 93 319 89 305 276</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 309 93 276 89 262 321</file>
+          <file> 336 337 264 93 319 89 305 276</file>
         </tool>
       </inputs>
     </file>
@@ -1590,21 +1157,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 29</file>
+          <file> 58</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 28</file>
+          <file> 56</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 262 92 90 91 89 321 101 119 121 322 270 276 87 267 319 329 320 331 261 93 88 124 86 221 268 264 272 288 287 265 263 290 292 300</file>
+          <file> 305 92 90 91 89 276 102 120 122 277 313 319 87 310 274 284 275 286 304 93 88 121 86 169 311 307 315 331 330 308 306 333 335 255</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 262 92 90 91 89 321 101 119 121 322 270 276 87 267 319 329 320 331 261 93 88 124 86 221 268 264 272 288 287 265 263 290 292 300</file>
+          <file> 336 337 305 92 90 91 89 276 102 120 122 277 313 319 87 310 274 284 275 286 304 93 88 121 86 169 311 307 315 331 330 308 306 333 335 255</file>
         </tool>
       </inputs>
     </file>
@@ -1613,7 +1180,76 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 232</file>
+          <file> 179</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 220</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 258 267</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 258 267</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Service_DevInfo.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 180</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 233</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 269</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 269</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Service_HRMonitor.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 54</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 53</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 271</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 312 306 311 308 309 333 271</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\hal\common\hal_drivers.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 184</file>
         </tool>
         <tool>
           <name>ICC8051</name>
@@ -1623,80 +1259,11 @@
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 303 312</file>
+          <file> 273 305 275 286 304 276 93 300 302 277 279 280 281 282 283 284 92 90 91 89 102 120 124</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 303 312</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Service_DevInfo.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 233</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 166</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 314</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 314</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Service_HRMonitor.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 25</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 24</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 316</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 276 89 262 321 92 90 91 101 119 269 263 268 265 266 290 316</file>
-        </tool>
-      </inputs>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\..\Components\hal\common\hal_drivers.c</name>
-      <outputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 237</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 206</file>
-        </tool>
-      </outputs>
-      <inputs>
-        <tool>
-          <name>BICOMP</name>
-          <file> 318 262 320 331 261 321 93 257 259 322 324 325 326 327 328 329 92 90 91 89 101 119 123</file>
-        </tool>
-        <tool>
-          <name>ICC8051</name>
-          <file> 293 294 318 262 320 331 261 321 93 257 259 322 324 325 326 327 328 329 92 90 91 89 101 119 123</file>
+          <file> 336 337 273 305 275 286 304 276 93 300 302 277 279 280 281 282 283 284 92 90 91 89 102 120 124</file>
         </tool>
       </inputs>
     </file>
@@ -1705,21 +1272,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 238</file>
+          <file> 185</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 207</file>
+          <file> 154</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 318 262 320 331 261 321 93</file>
+          <file> 273 305 275 286 304 276 93</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 318 262 320 331 261 321 93</file>
+          <file> 336 337 273 305 275 286 304 276 93</file>
         </tool>
       </inputs>
     </file>
@@ -1728,21 +1295,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 239</file>
+          <file> 186</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 208</file>
+          <file> 155</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 92 90 91 89 262 321 101 119 257 259 320 331 261 93</file>
+          <file> 92 90 91 89 305 276 102 120 300 302 275 286 304 93</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 92 90 91 89 262 321 101 119 257 259 320 331 261 93</file>
+          <file> 336 337 92 90 91 89 305 276 102 120 300 302 275 286 304 93</file>
         </tool>
       </inputs>
     </file>
@@ -1751,21 +1318,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 240</file>
+          <file> 187</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 4</file>
+          <file> 2</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 320 331 261 321 262 93 258</file>
+          <file> 275 286 304 276 305 93 301</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 320 331 261 321 262 93 258</file>
+          <file> 336 337 275 286 304 276 305 93 301</file>
         </tool>
       </inputs>
     </file>
@@ -1774,21 +1341,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 241</file>
+          <file> 188</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 3</file>
+          <file> 1</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 259 320 331 261 321 262 93 329</file>
+          <file> 302 275 286 304 276 305 93 284</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 259 320 331 261 321 262 93 329</file>
+          <file> 336 337 302 275 286 304 276 305 93 284</file>
         </tool>
       </inputs>
     </file>
@@ -1797,21 +1364,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 242</file>
+          <file> 189</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 209</file>
+          <file> 156</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 331 261 321 262 93 259 320 323</file>
+          <file> 286 304 276 305 93 302 275 278</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 331 261 321 262 93 259 320 323</file>
+          <file> 336 337 286 304 276 305 93 302 275 278</file>
         </tool>
       </inputs>
     </file>
@@ -1820,21 +1387,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 243</file>
+          <file> 190</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 210</file>
+          <file> 157</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 331 261 321 262 93 319 260 89</file>
+          <file> 286 304 276 305 93 274 303 89</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 331 261 321 262 93 319 260 89</file>
+          <file> 336 337 286 304 276 305 93 274 303 89</file>
         </tool>
       </inputs>
     </file>
@@ -1843,21 +1410,21 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 244</file>
+          <file> 191</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 211</file>
+          <file> 158</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 261 321 262 93 322 318 320 331 324 92 90 91 89 101 119</file>
+          <file> 304 276 305 93 277 273 275 286 279 92 90 91 89 102 120</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 261 321 262 93 322 318 320 331 324 92 90 91 89 101 119</file>
+          <file> 336 337 304 276 305 93 277 273 275 286 279 92 90 91 89 102 120</file>
         </tool>
       </inputs>
     </file>
@@ -1866,21 +1433,454 @@
       <outputs>
         <tool>
           <name>BICOMP</name>
-          <file> 245</file>
+          <file> 125</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 212</file>
+          <file> 159</file>
         </tool>
       </outputs>
       <inputs>
         <tool>
           <name>BICOMP</name>
-          <file> 262 325 320 331 261 321 93 92 90 91 89 101 119 296 327 319</file>
+          <file> 305 280 275 286 304 276 93 92 90 91 89 102 120 339 282 274</file>
         </tool>
         <tool>
           <name>ICC8051</name>
-          <file> 293 294 262 325 320 331 261 321 93 92 90 91 89 101 119 296 327 319</file>
+          <file> 336 337 305 280 275 286 304 276 93 92 90 91 89 102 120 339 282 274</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_led.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 127</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 160</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 304 276 305 93 277 281 275 286 92 90 91 89 102 120</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 304 276 305 93 277 281 275 286 92 90 91 89 102 120</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_sleep.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 126</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 161</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 305 304 276 93 275 286 282 281 279 92 90 91 89 102 120 122 124 277 274 166 319 65 117</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 305 304 276 93 275 286 282 281 279 92 90 91 89 102 120 122 124 277 274 166 319 65 117</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_startup.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 128</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 162</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 275 286 304 276 305 93</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 275 286 304 276 305 93</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_timer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 129</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 163</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\target\CC2541HRMonitor\hal_uart.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 228</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 100</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 286 304 276 305 93 277 284 275 92 90 91 89 102 120 124</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 286 304 276 305 93 277 284 275 92 90 91 89 102 120 124</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\common\npi\npi_np\npi.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 193</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 221</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 305 275 286 304 276 93 314 284</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 305 275 286 304 276 93 314 284</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 192</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 222</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 167 91 89 305 276 275 286 304 93 92 90 102 120 122 124 77 339 282 277</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 167 91 89 305 276 275 286 304 93 92 90 102 120 122 124 77 339 282 277</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\osal_bufmgr.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 194</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 223</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 92 90 91 89 305 276 102 120 339 304 93 282 121</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 92 90 91 89 305 276 102 120 339 304 93 282 121</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\osal_cbtimer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 195</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 224</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 92 90 91 89 305 276 102 120 122 169</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 92 90 91 89 305 276 102 120 122 169</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_ClockBLE.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 196</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 60</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 89 305 276 339 304 93 282 92 90 91 102 120 77</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 89 305 276 339 304 93 282 92 90 91 102 120 77</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_Memory.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 197</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 61</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 89 305 276 92 90 91 102 120 339 304 93 282 274</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 89 305 276 92 90 91 102 120 339 304 93 282 274</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_PwrMgr.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 198</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 225</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 89 305 276 339 304 93 282 92 90 91 102 120 122 124</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 89 305 276 339 304 93 282 92 90 91 102 120 122 124</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\mcu\cc2540\osal_snv.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 199</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 62</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 273 305 275 286 304 276 93 278 89 92 90 91 102 120 123 274 285</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 273 305 275 286 304 276 93 278 89 92 90 91 102 120 123 274 285</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\osal\common\OSAL_Timers.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 200</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 63</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 89 305 276 339 304 93 282 92 90 91 102 120 283 275 286</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 89 305 276 339 304 93 282 92 90 91 102 120 283 275 286</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\gap.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 201</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 98</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 307 92 90 91 102 120 315</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 307 92 90 91 102 120 315</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\gapbondmgr.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 202</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 99</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 123 307 315 312 308 306 311 309 310 313 274 333 331 330</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 123 307 315 312 308 306 311 309 310 313 274 333 331 330</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\..\Components\ble\host\gatt_uuid.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 203</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 64</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 89 305 276 92 90 91 102 120 308 319 306 311 309</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 89 305 276 92 90 91 102 120 308 319 306 311 309</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\peripheral.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 204</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 5</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 92 90 91 102 120 87 310 313 274 284 275 286 304 93 88 121 86 311 307 315 312 306 308 123 335 330</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 92 90 91 102 120 87 310 313 274 284 275 286 304 93 88 121 86 311 307 315 312 306 308 123 335 330</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\common\cc2540\OnBoard.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 205</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 6</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 319 89 305 276 339 304 93 282 92 90 91 102 120 281 275 286 279</file>
+        </tool>
+        <tool>
+          <name>ICC8051</name>
+          <file> 336 337 319 89 305 276 339 304 93 282 92 90 91 102 120 281 275 286 279</file>
         </tool>
       </inputs>
     </file>
