@@ -74,13 +74,13 @@ extern void HRFunc_Stop()
 
 extern uint8 HRFunc_CalBPM()
 {
-  if(RRNum == 0) return 0;
-  int16 RRSum = 0;
+  if(RRNum == 0) return 1;
+  int32 sum = 0;
   for(int i = 0; i < RRNum; i++)
   {
-    RRSum += RRBuf[i];
+    sum += RRBuf[i];
   }
-  int16 BPM = 7500L*RRNum/RRSum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
+  int16 BPM = 7500L*RRNum/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   RRNum = 0;
   if(BPM > 255) BPM = 255;
   return (uint8)BPM;
