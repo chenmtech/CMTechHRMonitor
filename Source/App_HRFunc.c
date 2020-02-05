@@ -37,7 +37,6 @@ static void UpdateRR(int16 newRR);
 static int16 lpfilt( int16 datum ,int init);
 static int16 hpfilt( int16 datum, int init );
 static int16 deriv1( int16 x0, int init );
-static int16 deriv2( int16 x0, int init );
 static int16 mvwint( int16 datum, int init);
 static int16 mvwint10( int16 datum, int init);
 static int16 Peak( int16 datum, int init );
@@ -463,21 +462,6 @@ static int16 deriv1( int16 x0, int init )
   x4 = x3 ;
   x3 = x2 ;
   x2 = x1 ;
-  x1 = x0 ;
-  return(output);
-}
-
-static int16 deriv2( int16 x0, int init )
-{
-  static int16 x1;
-  int16 output;
-  if(init) {
-    x1 = 0 ;
-    return 0;
-  }
-  
-  output = x0-x1 ;
-  
   x1 = x0 ;
   return(output);
 }
