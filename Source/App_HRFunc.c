@@ -3,7 +3,7 @@
 #include "CMUtil.h"
 #include "Dev_ADS1x9x.h"
 
-// 毫秒对应的样本数，采样频率为125Hz
+// 毫秒对应的样本数
 #define MS80	10
 #define MS95	12
 #define MS150	19
@@ -25,11 +25,10 @@ static int QSum = 0, NSum = 0, RRSum = 0 ;
 static int det_thresh, sbcount ;
 static int QN0=0, QN1=0 ;
 
-static int RRCount = 0 ;
-static int InitBeatFlag = 1 ;
-
-static int RRBuf[9] = {0};
-static int RRNum = 0;
+static uint8 InitBeatFlag = 1 ;
+static uint16 RRCount = 0 ;
+static uint16 RRBuf[9] = {0};
+static uint8 RRNum = 0;
 
 
 static void UpdateQ(int16 newQ);
@@ -38,18 +37,19 @@ static void UpdateRR(int16 newRR);
 static int16 lpfilt( int16 datum ,int init);
 static int16 hpfilt( int16 datum, int init );
 static int16 deriv1( int16 x0, int init );
+static int16 deriv2( int16 x0, int init );
 static int16 mvwint( int16 datum, int init);
 static int16 mvwint10( int16 datum, int init);
 static int16 Peak( int16 datum, int init );
 static int16 PICQRSDet(int16 x, int init);
-static int16 calRRInterval(int16 x);
+static uint16 calRRInterval(int16 x);
 static void processEcgData(int16 x);
 
 extern void HRFunc_Init()
 {
   PICQRSDet(0, 1);
-  RRCount = 0;
   InitBeatFlag = 1;
+  RRCount = 0;
   RRNum = 0;  
   // 初始化ADS1x9x，设置数据处理回调函数
   ADS1x9x_Init(processEcgData);  
@@ -72,31 +72,48 @@ extern void HRFunc_Stop()
   delayus(2000);
 }
 
-extern uint8 HRFunc_CalBPM()
+extern uint8 HRFunc_SetData(uint8* p)
 {
-  if(RRNum == 0) return 1;
+  int i = 0;
+  if(RRNum == 0) return 0;
+  
   int32 sum = 0;
-  for(int i = 0; i < RRNum; i++)
+  for(i = 0; i < RRNum; i++)
   {
     sum += RRBuf[i];
   }
   int16 BPM = 7500L*RRNum/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
-  RRNum = 0;
   if(BPM > 255) BPM = 255;
-  return (uint8)BPM;
+  
+  uint8* pTmp = p;
+  /* 包含RRInterval
+  *p++ = 0x10;
+  *p++ = (uint8)BPM;
+  for(i = 0; i < RRNum; i++)
+  {
+    *p++ = LO_UINT16(RRBuf[i]);
+    *p++ = HI_UINT16(RRBuf[i]);
+  }
+  */
+  *p++ = 0x00;
+  *p++ = (uint8)BPM;
+  
+  RRNum = 0;
+  return (uint8)(p-pTmp);
 }
+
 
 static void processEcgData(int16 x)
 {
-  int16 RR = calRRInterval(x);
+  uint16 RR = calRRInterval(x);
   if(RR == 0) return;
   RRBuf[RRNum++] = RR;
   if(RRNum >= 9) RRNum = 8;
 }
 
-static int16 calRRInterval(int16 x)
+static uint16 calRRInterval(int16 x)
 {
-  int16 RR = 0;
+  uint16 RR = 0;
   int16 detectDelay = 0;
   
   RRCount++;
@@ -110,7 +127,7 @@ static int16 calRRInterval(int16 x)
     }
     else
     {
-      RR = RRCount - detectDelay;
+      RR = (uint16)(RRCount - detectDelay);
     }
     RRCount = detectDelay;
     return RR;
@@ -450,6 +467,20 @@ static int16 deriv1( int16 x0, int init )
   return(output);
 }
 
+static int16 deriv2( int16 x0, int init )
+{
+  static int16 x1;
+  int16 output;
+  if(init) {
+    x1 = 0 ;
+    return 0;
+  }
+  
+  output = x0-x1 ;
+  
+  x1 = x0 ;
+  return(output);
+}
 
 /*****************************************************************************
 * mvwint() implements a moving window integrator, averaging
@@ -500,7 +531,6 @@ static int16 mvwint10(int16 datum, int init)
   {
     d0=d1=d2=d3=d4=d5=d6=d7=d8=d9=0 ;
     sum = 0 ;
-    return 0;
   }
   sum -= d9 ;
   d9=d8 ;
@@ -512,10 +542,11 @@ static int16 mvwint10(int16 datum, int init)
   d3=d2 ;
   d2=d1 ;
   d1=d0 ;
-  d0 = (datum>>1);
+  if(datum > 20) d0 = 20 ;
+  else d0 = datum ;
   sum += d0 ;
   
-  return sum/5;
+  return sum/10;
 }
 
 
@@ -528,7 +559,7 @@ static int16 mvwint10(int16 datum, int init)
 
 static int16 Peak( int16 datum, int init )
 {
-  static int16 max = 0, lastDatum ;
+  static int16 max = 0, lastDatum = 0;
   static int timeSinceMax = 0 ;
   int16 pk = 0 ;
   
@@ -536,8 +567,6 @@ static int16 Peak( int16 datum, int init )
   {
     max = 0 ;
     timeSinceMax = 0 ;
-    lastDatum = 0;
-    return(0) ;
   }
           
   if(timeSinceMax > 0)

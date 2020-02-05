@@ -349,17 +349,10 @@ static void HRMStop( void )
 // ´«ÊäĞÄÂÊ
 static void HRMNotify()
 {
-  uint8 bpm = HRFunc_CalBPM();
-  //if(bpm == 0) return;
-  
   uint8 *p = heartRateMeas.value;
-  uint8 flags = 0x00;
-  
-  // build heart rate measurement structure from simulated values
-  *p++ = flags;
-  *p++ = bpm;
-  
-  heartRateMeas.len = (uint8) (p - heartRateMeas.value);
+  uint8 len = HRFunc_SetData(p);
+  if(len == 0) return;  
+  heartRateMeas.len = len;
   HRM_MeasNotify( gapConnHandle, &heartRateMeas );
 }
 
