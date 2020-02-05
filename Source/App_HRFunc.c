@@ -88,15 +88,15 @@ extern uint8 HRFunc_CalBPM()
 
 static void processEcgData(int16 x)
 {
-  int16 rr = calRRInterval(x);
-  if(rr == 0) return;
-  RRBuf[RRNum++] = rr;
+  int16 RR = calRRInterval(x);
+  if(RR == 0) return;
+  RRBuf[RRNum++] = RR;
   if(RRNum >= 9) RRNum = 8;
 }
 
 static int16 calRRInterval(int16 x)
 {
-  int16 rr = 0;
+  int16 RR = 0;
   int16 detectDelay = 0;
   
   RRCount++;
@@ -110,10 +110,10 @@ static int16 calRRInterval(int16 x)
     }
     else
     {
-      rr = RRCount - detectDelay;
+      RR = RRCount - detectDelay;
     }
     RRCount = detectDelay;
-    return rr;
+    return RR;
   }
  
   return 0;

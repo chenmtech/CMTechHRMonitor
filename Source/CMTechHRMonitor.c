@@ -350,7 +350,7 @@ static void HRMStop( void )
 static void HRMNotify()
 {
   uint8 bpm = HRFunc_CalBPM();
-  if(bpm == 0) return;
+  //if(bpm == 0) return;
   
   uint8 *p = heartRateMeas.value;
   uint8 flags = 0x00;
