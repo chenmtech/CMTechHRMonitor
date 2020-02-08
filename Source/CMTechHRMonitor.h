@@ -13,6 +13,7 @@
 
 #define HRM_START_DEVICE_EVT                   0x0001     // 设备启动事件
 #define HRM_START_PERIODIC_EVT                 0x0002     // 周期测量启动事件
+#define HRM_BATT_PERIODIC_EVT                  0x0004     // periodic battery measurement event
 
 
 /*********************************************************************

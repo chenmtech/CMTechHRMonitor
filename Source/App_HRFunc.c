@@ -42,7 +42,8 @@ static int16 mvwint10( int16 datum, int init);
 static int16 Peak( int16 datum, int init );
 static int16 PICQRSDet(int16 x, int init);
 static uint16 calRRInterval(int16 x);
-static void processEcgData(int16 x);
+static void processEcgData(int16 x, uint8 status);
+
 
 extern void HRFunc_Init()
 {
@@ -85,29 +86,59 @@ extern uint8 HRFunc_SetData(uint8* p)
   if(BPM > 255) BPM = 255;
   
   uint8* pTmp = p;
-  /* °üº¬RRInterval
-  *p++ = 0x10;
-  *p++ = (uint8)BPM;
-  for(i = 0; i < RRNum; i++)
-  {
-    *p++ = LO_UINT16(RRBuf[i]);
-    *p++ = HI_UINT16(RRBuf[i]);
-  }
-  */
+  
+  //include bpm only
   *p++ = 0x00;
   *p++ = (uint8)BPM;
+  
+  /*
+  //include bpm and RRInterval
+  *p++ = 0x10;
+  *p++ = (uint8)BPM;
+  uint16 MS1024 = 0;
+  for(i = 0; i < RRNum; i++)
+  {
+    MS1024 = (uint16)(RRBuf[i]*8.192); // transform into the number with 1/1024 second unit, which is required in BLE.
+    *p++ = LO_UINT16(MS1024);
+    *p++ = HI_UINT16(MS1024);
+  }
+  */
+  
+  /*
+  // include bpm and Q&N as RRInterval for debug
+  *p++ = 0x10;
+  *p++ = (uint8)BPM;
+  *p++ = LO_UINT16(Q0);
+  *p++ = HI_UINT16(Q0);
+  *p++ = LO_UINT16(Q1);
+  *p++ = HI_UINT16(Q1);
+  *p++ = LO_UINT16(Q2);
+  *p++ = HI_UINT16(Q2);
+  *p++ = LO_UINT16(Q3);
+  *p++ = HI_UINT16(Q3);  
+  *p++ = LO_UINT16(N0);
+  *p++ = HI_UINT16(N0);
+  *p++ = LO_UINT16(N1);
+  *p++ = HI_UINT16(N1);
+  *p++ = LO_UINT16(N2);
+  *p++ = HI_UINT16(N2);
+  *p++ = LO_UINT16(N3);
+  *p++ = HI_UINT16(N3);   
+  */
   
   RRNum = 0;
   return (uint8)(p-pTmp);
 }
 
-
-static void processEcgData(int16 x)
+static void processEcgData(int16 x, uint8 status)
 {
-  uint16 RR = calRRInterval(x);
-  if(RR == 0) return;
-  RRBuf[RRNum++] = RR;
-  if(RRNum >= 9) RRNum = 8;
+  if(!status)
+  {
+    uint16 RR = calRRInterval(x);
+    if(RR == 0) return;
+    RRBuf[RRNum++] = RR;
+    if(RRNum >= 9) RRNum = 8;
+  }
 }
 
 static uint16 calRRInterval(int16 x)

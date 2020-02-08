@@ -7,7 +7,7 @@
 
 #include "hal_adc.h"
 
-// 测量电池电量百分比
+// measure battery level
 extern uint8 Battery_Measure();
 
 #endif

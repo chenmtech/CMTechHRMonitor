@@ -55,7 +55,7 @@
 #define ADS1x9x_REG_RESP2               (0x000Au)
 #define ADS1x9x_REG_GPIO                (0x000Bu)
 
-typedef void (*ADS_DataCB_t)(int16 data); //采样到数据后的回调处理函数类型
+typedef void (*ADS_DataCB_t)(int16 data, uint8 status); // callback function to handle one sample data
 
 
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // 初始化

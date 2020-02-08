@@ -18,6 +18,7 @@
 #include "gattservapp.h"
 #include "Service_DevInfo.h"
 #include "Service_HRMonitor.h"
+#include "service_battery.h"
 #if defined ( PLUS_BROADCASTER )
   #include "peripheralBroadcaster.h"
 #else
@@ -32,9 +33,6 @@
 
 #include "App_HRFunc.h"
 
-/*********************************************************************
- * 常量
-*/
 #define INVALID_CONNHANDLE                    0xFFFF
 
 // 停止测量状态
@@ -42,6 +40,8 @@
 
 // 开始测量状态
 #define STATUS_START          1   
+
+#define DEFAULT_BATT_PERIOD 10000
 
 
 /*********************************************************************
@@ -106,6 +106,7 @@ static void HRMStart( void ); // 启动测量
 static void HRMStop( void ); // 停止测量
 static void HRMNotify(); // notify心率
 static void HRMInitIOPin(); // 初始化IO管脚
+static void BatteryServiceCB( uint8 event );
 
 // GAP Role 回调结构体
 static gapRolesCBs_t HRM_GapStateCBs =
@@ -125,6 +126,11 @@ static gapBondCBs_t HRM_BondCBs =
 static HRMServiceCBs_t HRM_ServCBs =
 {
   HRMServiceCB    // 心率服务回调函数
+};
+
+static batteryServiceCBs_t Battery_ServCBs =
+{
+  BatteryServiceCB    
 };
 
 extern void HRM_Init( uint8 task_id )
@@ -192,9 +198,13 @@ extern void HRM_Init( uint8 task_id )
   GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
   HRM_AddService( GATT_ALL_SERVICES ); // 温湿度服务
   DevInfo_AddService( ); // device information service
+  Battery_AddService(GATT_ALL_SERVICES); // battery service
   
   // 登记温湿度计的服务回调
   HRM_Register( &HRM_ServCBs );
+  
+  // register battery service callback
+  Battery_RegisterAppCBs(&Battery_ServCBs);
   
   //在这里初始化GPIO
   //第一：所有管脚，reset后的状态都是输入加上拉
@@ -270,6 +280,20 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     return (events ^ HRM_START_PERIODIC_EVT);
   }
   
+  if ( events & HRM_BATT_PERIODIC_EVT )
+  {
+    if (gapProfileState == GAPROLE_CONNECTED)
+    {
+      // perform battery level check
+      Battery_MeasLevel(gapConnHandle);
+      
+      // Restart timer
+      osal_start_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT, DEFAULT_BATT_PERIOD );
+    }
+
+    return (events ^ HRM_BATT_PERIODIC_EVT);
+  }
+  
   // Discard unknown events
   return 0;
 }
@@ -299,7 +323,7 @@ static void HRMGapStateCB( gaprole_States_t newState )
     HRMStop();
     HRMInitIOPin();
     HRFunc_Init();
-    HRM_HandleConnStatusCB( gapConnHandle, LINKDB_STATUS_UPDATE_REMOVED );
+    osal_stop_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT );
   }
   
   gapProfileState = newState;
@@ -354,6 +378,23 @@ static void HRMNotify()
   if(len == 0) return;  
   heartRateMeas.len = len;
   HRM_MeasNotify( gapConnHandle, &heartRateMeas );
+}
+
+static void BatteryServiceCB( uint8 event )
+{
+  if (event == BATTERY_LEVEL_NOTI_ENABLED)
+  {
+    // if connected start periodic measurement
+    if (gapProfileState == GAPROLE_CONNECTED)
+    {
+      osal_start_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT, DEFAULT_BATT_PERIOD );
+    } 
+  }
+  else if (event == BATTERY_LEVEL_NOTI_DISABLED)
+  {
+    // stop periodic measurement
+    osal_stop_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT );
+  }
 }
 
 /*********************************************************************

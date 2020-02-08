@@ -134,6 +134,8 @@ static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
 static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset );
 
+static void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType );
+
 // Heart Rate Service Callbacks
 CONST gattServiceCBs_t HRMCBs =
 {
@@ -148,6 +150,8 @@ bStatus_t HRM_AddService( uint32 services )
 
   // Initialize Client Characteristic Configuration attributes
   GATTServApp_InitCharCfg( INVALID_CONNHANDLE, HRMMeasClientCharCfg );
+  
+  VOID linkDB_Register(HRM_HandleConnStatusCB);
 
   if ( services & HRM_SERVICE )
   {
@@ -167,7 +171,7 @@ extern void HRM_Register( HRMServiceCBs_t* pfnServiceCBs )
   return;
 }
 
-bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
+extern bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
 {
   bStatus_t ret = SUCCESS;
   switch ( param )
@@ -189,7 +193,7 @@ bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
   return ( ret );
 }
 
-bStatus_t HRM_GetParameter( uint8 param, void *value )
+extern bStatus_t HRM_GetParameter( uint8 param, void *value )
 {
   bStatus_t ret = SUCCESS;
   switch ( param )
@@ -215,7 +219,7 @@ bStatus_t HRM_GetParameter( uint8 param, void *value )
   return ( ret );
 }
 
-bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
+extern bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
 {
   uint16 value = GATTServApp_ReadCharCfg( connHandle, HRMMeasClientCharCfg );
 
@@ -309,7 +313,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   return ( status );
 }
 
-void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
+static void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
 { 
   // Make sure this is not loopback connection
   if ( connHandle != LOOPBACK_CONNHANDLE )

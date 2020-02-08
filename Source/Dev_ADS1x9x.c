@@ -54,7 +54,7 @@ const static uint8 normalECGRegs[12] = {
   0x01,                     //contineus sample,250sps
 #endif
   //CONFIG2
-  0xA0,                     //
+  0xE0,                     //
   //LOFF
   0x10,                     //
   //CH1SET 
@@ -64,7 +64,7 @@ const static uint8 normalECGRegs[12] = {
   //RLD_SENS     
   0x23,                     //
   //LOFF_SENS (default)
-  0x00,                     //default
+  0x03,                     //enable channel 1 lead-off detect
   //LOFF_STAT
   0x00,                     //default
   //RESP1
@@ -78,8 +78,8 @@ const static uint8 normalECGRegs[12] = {
 static uint8 defaultRegs[12]; // 重启后读出来的缺省寄存器值
 static uint8 type; // 芯片类型
 static ADS_DataCB_t ADS_DataCB; // 采样后的回调函数
-static uint8 status[3] = {0}; // 接收到的3字节状态
-static uint8 data[4]; //读取的通道数据字节
+static uint8 status[3] = {0}; // received status data with 24 bits: 1100 + LOFF_STAT[4:0] + GPIO[1:0] + 13 '0's
+static uint8 data[3]; // received channel 1 data buffer
 static int16 ecg;
 
 
@@ -304,20 +304,29 @@ static void ADS1291_ReadOneSample(void)
 {  
   ADS_CS_LOW();
   
-  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
   
-  data[3] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
-  data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
-  
-  ecg = (int16)((data[2] & 0x00FF) | ((data[3] & 0x00FF) << 8));
+  data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
+  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
   
   ADS_CS_HIGH();
   
+  uint8 stat = 0x00;
+  if(status[2] & 0x01)
+  {
+    stat = 0x02;
+  }
+  if(status[1] & 0x80)
+  {
+    stat |= 0x01;
+  }
+  ecg = (int16)((data[1] & 0x00FF) | ((data[2] & 0x00FF) << 8));
+   
   if(ADS_DataCB != 0) {
-    ADS_DataCB(ecg);
+    ADS_DataCB(ecg, stat);
   }
 }
 
