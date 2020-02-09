@@ -253,10 +253,11 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & HRM_MEAS_PERIODIC_EVT )
   {
-    notifyHR();
-
-    if(status == STATUS_MEAS_START)
+    if(gapProfileState == GAPROLE_CONNECTED && status == STATUS_MEAS_START)
+    {
+      notifyHR();
       osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD );
+    }      
 
     return (events ^ HRM_MEAS_PERIODIC_EVT);
   }
@@ -265,7 +266,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      // perform battery level check
+      // perform battery level check and send notification
       Battery_MeasLevel(gapConnHandle);
       
       // Restart timer
@@ -351,7 +352,7 @@ static void hrServiceCB( uint8 event )
   }
 }
 
-// 启动采样
+// start measuring heart rate
 static void startHRMeas( void )
 {  
   if(status == STATUS_MEAS_STOP) {
@@ -361,7 +362,7 @@ static void startHRMeas( void )
   }
 }
 
-// 停止采样
+// stop measuring heart rate
 static void stopHRMeas( void )
 {  
   status = STATUS_MEAS_STOP;
@@ -369,11 +370,11 @@ static void stopHRMeas( void )
   osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
 }
 
-// 传输心率
+// send heart rate notification
 static void notifyHR()
 {
   uint8 *p = hrNoti.value;
-  uint8 len = HRFunc_SetData(p);
+  uint8 len = HRFunc_GetHRData(p);
   if(len == 0) return;  
   hrNoti.len = len;
   HRM_MeasNotify( gapConnHandle, &hrNoti );

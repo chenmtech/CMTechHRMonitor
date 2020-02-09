@@ -3,7 +3,8 @@
 #include "CMUtil.h"
 #include "Dev_ADS1x9x.h"
 
-// 毫秒对应的样本数
+// sample number for the time MS
+// Because the sample rate is 125Hz，so each sample stands for 8MS
 #define MS80	10
 #define MS95	12
 #define MS150	19
@@ -23,12 +24,12 @@ static int N0 = 0, N1 = 0, N2 = 0, N3 = 0, N4 = 0, N5 = 0, N6 = 0, N7 = 0 ;
 static int RR0=0, RR1=0, RR2=0, RR3=0, RR4=0, RR5=0, RR6=0, RR7=0 ;
 static int QSum = 0, NSum = 0, RRSum = 0 ;
 static int det_thresh, sbcount ;
-static int QN0=0, QN1=0 ;
+//static int QN0=0, QN1=0 ;
 
-static uint8 InitBeatFlag = 1 ;
-static uint16 RRCount = 0 ;
-static uint16 RRBuf[9] = {0};
-static uint8 RRNum = 0;
+static uint8 initBeatFlag = 1 ;
+static uint16 rrCount = 0 ;
+static uint16 rrBuf[9] = {0};
+static uint8 rrNum = 0;
 
 
 static void UpdateQ(int16 newQ);
@@ -48,9 +49,9 @@ static void processEcgData(int16 x, uint8 status);
 extern void HRFunc_Init()
 {
   PICQRSDet(0, 1);
-  InitBeatFlag = 1;
-  RRCount = 0;
-  RRNum = 0;  
+  initBeatFlag = 1;
+  rrCount = 0;
+  rrNum = 0;  
   // initilize the ADS1x9x and set the ecg data process callback function
   ADS1x9x_Init(processEcgData);  
   delayus(1000);
@@ -72,17 +73,17 @@ extern void HRFunc_Stop()
   delayus(2000);
 }
 
-extern uint8 HRFunc_SetData(uint8* p)
+extern uint8 HRFunc_GetHRData(uint8* p)
 {
   int i = 0;
-  if(RRNum == 0) return 0;
+  if(rrNum == 0) return 0;
   
   int32 sum = 0;
-  for(i = 0; i < RRNum; i++)
+  for(i = 0; i < rrNum; i++)
   {
-    sum += RRBuf[i];
+    sum += rrBuf[i];
   }
-  int16 BPM = 7500L*RRNum/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
+  int16 BPM = (7500L*rrNum + (sum>>1))/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval, the round op is done
   if(BPM > 255) BPM = 255;
   
   uint8* pTmp = p;
@@ -126,7 +127,7 @@ extern uint8 HRFunc_SetData(uint8* p)
   *p++ = HI_UINT16(N3);   
   */
   
-  RRNum = 0;
+  rrNum = 0;
   return (uint8)(p-pTmp);
 }
 
@@ -136,8 +137,8 @@ static void processEcgData(int16 x, uint8 status)
   {
     uint16 RR = calRRInterval(x);
     if(RR == 0) return;
-    RRBuf[RRNum++] = RR;
-    if(RRNum >= 9) RRNum = 8;
+    rrBuf[rrNum++] = RR;
+    if(rrNum >= 9) rrNum = 8;
   }
 }
 
@@ -146,20 +147,20 @@ static uint16 calRRInterval(int16 x)
   uint16 RR = 0;
   int16 detectDelay = 0;
   
-  RRCount++;
+  rrCount++;
   detectDelay = PICQRSDet(x, 0);
   
   if(detectDelay != 0)
   {
-    if(InitBeatFlag)
+    if(initBeatFlag)
     {
-      InitBeatFlag = 0;
+      initBeatFlag = 0;
     }
     else
     {
-      RR = (uint16)(RRCount - detectDelay);
+      RR = (uint16)(rrCount - detectDelay);
     }
-    RRCount = detectDelay;
+    rrCount = detectDelay;
     return RR;
   }
  
@@ -292,8 +293,8 @@ static int16 PICQRSDet(int16 x, int init)
     {
       UpdateN(x) ;
   
-      QN1=QN0 ;
-      QN0=count ;
+      //QN1=QN0 ;
+      //QN0=count ;
   
       if((x > sbpeak) && ((count-WINDOW_WIDTH) >= MS360))
       {

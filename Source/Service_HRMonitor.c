@@ -1,7 +1,4 @@
 
-/*********************************************************************
- * INCLUDES
- */
 #include "bcomdef.h"
 #include "OSAL.h"
 #include "linkdb.h"
@@ -39,24 +36,24 @@ CONST uint8 HRMCtrlPtUUID[ATT_BT_UUID_SIZE] =
   LO_UINT16(HRM_CTRL_PT_UUID), HI_UINT16(HRM_CTRL_PT_UUID)
 };
 
-static HRMServiceCBs_t* HRMServiceCBs;
+static HRMServiceCBs_t* hrmServiceCBs;
 
 // Heart Rate Service attribute
-static CONST gattAttrType_t HRMService = { ATT_BT_UUID_SIZE, HRMServUUID };
+static CONST gattAttrType_t hrmService = { ATT_BT_UUID_SIZE, HRMServUUID };
 
 // Heart Rate Measurement Characteristic
 // Note characteristic value is not stored here
-static uint8 HRMMeasProps = GATT_PROP_NOTIFY;
-static uint8 HRMMeas = 0;
-static gattCharCfg_t HRMMeasClientCharCfg[GATT_MAX_NUM_CONN];
+static uint8 hrmMeasProps = GATT_PROP_NOTIFY;
+static uint8 hrmMeas = 0;
+static gattCharCfg_t hrmMeasClientCharCfg[GATT_MAX_NUM_CONN];
 
 // Sensor Location Characteristic
-static uint8 HRMSensLocProps = GATT_PROP_READ;
-static uint8 HRMSensLoc = 0;
+static uint8 hrmSensLocProps = GATT_PROP_READ;
+static uint8 hrmSensLoc = 0;
 
 // Control point Characteristic
-static uint8 HRMCtrlPtProps = GATT_PROP_WRITE;
-static uint8 HRMCtrlPt = 0;
+static uint8 hrmCtrlPtProps = GATT_PROP_WRITE;
+static uint8 hrmCtrlPt = 0;
 
 /*********************************************************************
  * Profile Attributes - Table
@@ -69,7 +66,7 @@ static gattAttribute_t HRMAttrTbl[] =
     { ATT_BT_UUID_SIZE, primaryServiceUUID }, /* type */
     GATT_PERMIT_READ,                         /* permissions */
     0,                                        /* handle */
-    (uint8 *)&HRMService                /* pValue */
+    (uint8 *)&hrmService                /* pValue */
   },
 
     // Heart Rate Measurement Declaration
@@ -77,7 +74,7 @@ static gattAttribute_t HRMAttrTbl[] =
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &HRMMeasProps 
+      &hrmMeasProps 
     },
 
       // Heart Rate Measurement Value
@@ -85,7 +82,7 @@ static gattAttribute_t HRMAttrTbl[] =
         { ATT_BT_UUID_SIZE, HRMMeasUUID },
         0, 
         0, 
-        &HRMMeas 
+        &hrmMeas 
       },
 
       // Heart Rate Measurement Client Characteristic Configuration
@@ -93,7 +90,7 @@ static gattAttribute_t HRMAttrTbl[] =
         { ATT_BT_UUID_SIZE, clientCharCfgUUID },
         GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
         0, 
-        (uint8 *) &HRMMeasClientCharCfg 
+        (uint8 *) &hrmMeasClientCharCfg 
       },      
 
     // Sensor Location Declaration
@@ -101,7 +98,7 @@ static gattAttribute_t HRMAttrTbl[] =
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &HRMSensLocProps 
+      &hrmSensLocProps 
     },
 
       // Sensor Location Value
@@ -109,7 +106,7 @@ static gattAttribute_t HRMAttrTbl[] =
         { ATT_BT_UUID_SIZE, HRMSensLocUUID },
         GATT_PERMIT_READ, 
         0, 
-        &HRMSensLoc 
+        &hrmSensLoc 
       },
 
     // Control point Declaration
@@ -117,7 +114,7 @@ static gattAttribute_t HRMAttrTbl[] =
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &HRMCtrlPtProps 
+      &hrmCtrlPtProps 
     },
 
       // Control point Value
@@ -125,22 +122,22 @@ static gattAttribute_t HRMAttrTbl[] =
         { ATT_BT_UUID_SIZE, HRMCtrlPtUUID },
         GATT_PERMIT_WRITE, 
         0, 
-        &HRMCtrlPt 
+        &hrmCtrlPt 
       }
 };
 
-static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
+static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen );
-static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
+static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset );
 
-static void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType );
+static void handleConnStatusCB( uint16 connHandle, uint8 changeType );
 
 // Heart Rate Service Callbacks
-CONST gattServiceCBs_t HRMCBs =
+CONST gattServiceCBs_t hrmCBs =
 {
-  HRM_ReadAttrCB,  // Read callback function pointer
-  HRM_WriteAttrCB, // Write callback function pointer
+  readAttrCB,  // Read callback function pointer
+  writeAttrCB, // Write callback function pointer
   NULL                   // Authorization callback function pointer
 };
 
@@ -149,16 +146,16 @@ bStatus_t HRM_AddService( uint32 services )
   uint8 status = SUCCESS;
 
   // Initialize Client Characteristic Configuration attributes
-  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, HRMMeasClientCharCfg );
+  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, hrmMeasClientCharCfg );
   
-  VOID linkDB_Register(HRM_HandleConnStatusCB);
+  VOID linkDB_Register(handleConnStatusCB);
 
   if ( services & HRM_SERVICE )
   {
     // Register GATT attribute list and CBs with GATT Server App
     status = GATTServApp_RegisterService( HRMAttrTbl, 
                                           GATT_NUM_ATTRS( HRMAttrTbl ),
-                                          &HRMCBs );
+                                          &hrmCBs );
   }
 
   return ( status );
@@ -166,7 +163,7 @@ bStatus_t HRM_AddService( uint32 services )
 
 extern void HRM_Register( HRMServiceCBs_t* pfnServiceCBs )
 {
-  HRMServiceCBs = pfnServiceCBs;
+  hrmServiceCBs = pfnServiceCBs;
     
   return;
 }
@@ -182,7 +179,7 @@ extern bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value )
       break;      
 
     case HRM_SENS_LOC:
-      HRMSensLoc = *((uint8*)value);
+      hrmSensLoc = *((uint8*)value);
       break;
 
     default:
@@ -204,11 +201,11 @@ extern bStatus_t HRM_GetParameter( uint8 param, void *value )
       break;      
 
     case HRM_SENS_LOC:
-      *((uint8*)value) = HRMSensLoc;
+      *((uint8*)value) = hrmSensLoc;
       break;
       
     case HRM_CTRL_PT:
-      *((uint8*)value) = HRMCtrlPt;
+      *((uint8*)value) = hrmCtrlPt;
       break;  
 
     default:
@@ -221,7 +218,7 @@ extern bStatus_t HRM_GetParameter( uint8 param, void *value )
 
 extern bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
 {
-  uint16 value = GATTServApp_ReadCharCfg( connHandle, HRMMeasClientCharCfg );
+  uint16 value = GATTServApp_ReadCharCfg( connHandle, hrmMeasClientCharCfg );
 
   // If notifications enabled
   if ( value & GATT_CLIENT_CFG_NOTIFY )
@@ -236,7 +233,7 @@ extern bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti 
   return bleIncorrectMode;
 }
                                
-static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
+static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen )
 {
   bStatus_t status = SUCCESS;
@@ -262,7 +259,7 @@ static uint8 HRM_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   return ( status );
 }
 
-static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
+static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset )
 {
   bStatus_t status = SUCCESS;
@@ -287,7 +284,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         *(pAttr->pValue) = pValue[0];
         
-        (HRMServiceCBs->pfnHRMServiceCB)(HRM_CTRL_PT_SET);
+        (hrmServiceCBs->pfnHRMServiceCB)(HRM_CTRL_PT_SET);
         
       }
       break;
@@ -299,7 +296,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         uint16 charCfg = BUILD_UINT16( pValue[0], pValue[1] );
 
-        (HRMServiceCBs->pfnHRMServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
+        (hrmServiceCBs->pfnHRMServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
                                 HRM_MEAS_NOTI_DISABLED :
                                 HRM_MEAS_NOTI_ENABLED );
       }
@@ -313,7 +310,7 @@ static bStatus_t HRM_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   return ( status );
 }
 
-static void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
+static void handleConnStatusCB( uint16 connHandle, uint8 changeType )
 { 
   // Make sure this is not loopback connection
   if ( connHandle != LOOPBACK_CONNHANDLE )
@@ -323,11 +320,7 @@ static void HRM_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
          ( ( changeType == LINKDB_STATUS_UPDATE_STATEFLAGS ) && 
            ( !linkDB_Up( connHandle ) ) ) )
     { 
-      GATTServApp_InitCharCfg( connHandle, HRMMeasClientCharCfg );
+      GATTServApp_InitCharCfg( connHandle, hrmMeasClientCharCfg );
     }
   }
 }
-
-
-/*********************************************************************
-*********************************************************************/
