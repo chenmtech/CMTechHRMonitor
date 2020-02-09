@@ -51,7 +51,7 @@ extern void HRFunc_Init()
   InitBeatFlag = 1;
   RRCount = 0;
   RRNum = 0;  
-  // 初始化ADS1x9x，设置数据处理回调函数
+  // initilize the ADS1x9x and set the ecg data process callback function
   ADS1x9x_Init(processEcgData);  
   delayus(1000);
 }

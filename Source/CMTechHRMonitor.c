@@ -19,6 +19,8 @@
 #include "Service_DevInfo.h"
 #include "Service_HRMonitor.h"
 #include "service_battery.h"
+#include "App_HRFunc.h"
+
 #if defined ( PLUS_BROADCASTER )
   #include "peripheralBroadcaster.h"
 #else
@@ -31,37 +33,20 @@
   #include "oad_target.h"
 #endif
 
-#include "App_HRFunc.h"
 
-#define INVALID_CONNHANDLE                    0xFFFF
+#define INVALID_CONNHANDLE 0xFFFF
+#define STATUS_MEAS_STOP 0     // heart rate measurement stopped
+#define STATUS_MEAS_START 1    // heart rate measurement started
+#define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
+#define BATT_MEAS_PERIOD 10000L // battery measurement period, ms
 
-// 停止测量状态
-#define STATUS_STOP           0     
-
-// 开始测量状态
-#define STATUS_START          1   
-
-#define DEFAULT_BATT_PERIOD 10000
-
-
-/*********************************************************************
- * 局部变量
-*/
-// 任务ID
-static uint8 HRM_TaskID;   
-
-// 连接句柄
-uint16 gapConnHandle = INVALID_CONNHANDLE;
-
-// GAP状态
+static uint8 taskID;   
+static uint16 gapConnHandle = INVALID_CONNHANDLE;
 static gaprole_States_t gapProfileState = GAPROLE_INIT;
 
-// 广告数据
+// advertise data
 static uint8 advertData[] = 
 { 
-  // Flags; this sets the device to use limited discoverable
-  // mode (advertises for 30 seconds at a time) instead of general
-  // discoverable mode (advertises indefinitely)
   0x02,   // length of this data
   GAP_ADTYPE_FLAGS,
   GAP_ADTYPE_FLAGS_GENERAL | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
@@ -74,7 +59,7 @@ static uint8 advertData[] =
 
 };
 
-// 扫描响应数据
+// scan response data
 static uint8 scanResponseData[] =
 {
   0x07,   // length of this data
@@ -87,76 +72,73 @@ static uint8 scanResponseData[] =
   'M'
 };
 
-// GGS 设备名
+// GGS device name
 static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM Heart Rate Monitor";
 
-// 当前测量状态
-static uint8 status = STATUS_STOP;
-
-// 测量时间间隔，单位：毫秒，默认2秒
-static uint16 interval = 2000;
+// the current hr measurement status
+static uint8 status = STATUS_MEAS_STOP;
 
 // Heart rate measurement value stored in this structure
-static attHandleValueNoti_t heartRateMeas;
+static attHandleValueNoti_t hrNoti;
 
-static void HRMProcessOSALMsg( osal_event_hdr_t *pMsg ); // OSAL消息处理函数
-static void HRMGapStateCB( gaprole_States_t newState ); // GAP状态改变回调函数
-static void HRMServiceCB( uint8 event ); // 心率服务回调函数
-static void HRMStart( void ); // 启动测量
-static void HRMStop( void ); // 停止测量
-static void HRMNotify(); // notify心率
-static void HRMInitIOPin(); // 初始化IO管脚
-static void BatteryServiceCB( uint8 event );
+static void gapRoleStateCB( gaprole_States_t newState ); // GAP role state change callback
+static void hrServiceCB( uint8 event ); // heart rate service callback function
+static void batteryServiceCB( uint8 event );
 
-// GAP Role 回调结构体
-static gapRolesCBs_t HRM_GapStateCBs =
+// GAP Role callback struct
+static gapRolesCBs_t gapRoleStateCBs =
 {
-  HRMGapStateCB,         // Profile State Change Callbacks
+  gapRoleStateCB,         // Profile State Change Callbacks
   NULL                   // When a valid RSSI is read from controller (not used by application)
 };
 
-// 配对与绑定回调
-static gapBondCBs_t HRM_BondCBs =
+static gapBondCBs_t bondCBs =
 {
   NULL,                   // Passcode callback
   NULL                    // Pairing state callback
 };
 
-// 心率服务回调结构体
-static HRMServiceCBs_t HRM_ServCBs =
+static HRMServiceCBs_t hrServCBs =
 {
-  HRMServiceCB    // 心率服务回调函数
+  hrServiceCB   
 };
 
-static batteryServiceCBs_t Battery_ServCBs =
+static batteryServiceCBs_t batteryServCBs =
 {
-  BatteryServiceCB    
+  batteryServiceCB    
 };
+
+static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process function
+static void initIOPin(); // initialize IO pins
+static void startHRMeas( void ); // start the heart rate measurement
+static void stopHRMeas( void ); // stop the heart rate measurement
+static void notifyHR(); // notify heart rate
 
 extern void HRM_Init( uint8 task_id )
 {
-  HRM_TaskID = task_id;
+  taskID = task_id;
   
   // Setup the GAP Peripheral Role Profile
   {
-    // 设置广告数据和扫描响应数据
+    // set the advertising data and scan response data
     GAPRole_SetParameter( GAPROLE_ADVERT_DATA, sizeof( advertData ), advertData );
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanResponseData ), scanResponseData );
     
-    // 设置广告时间间隔
+    // set the advertising parameters
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 1600 ); // units of 0.625ms
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 1600 ); // units of 0.625ms
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // 不停地广播
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // advertising forever
     
-    // 设置是否使能广告
-    uint8 initial_advertising_enable = TRUE;
-    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
+    // enable advertising
+    uint8 advertising = TRUE;
+    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
     
-    // 设置从连接建立到开始更新连接参数之间需要延时的时间(units of second)
-    // 主要给主机留出时间完成service discovery任务
+    // set the pause time from the connection and the update connection parameters
+    // during the time, client can finish the task e.g. service discovery 
+    // the unit of time is second
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
-    // 设置连接参数以及是否请求更新连接参数
+    // set the connection parameter
     uint16 desired_min_interval = 200;  // units of 1.25ms 
     uint16 desired_max_interval = 1600; // units of 1.25ms
     uint16 desired_slave_latency = 1;
@@ -173,7 +155,6 @@ extern void HRM_Init( uint8 task_id )
   GGS_SetParameter( GGS_DEVICE_NAME_ATT, GAP_DEVICE_NAME_LEN, attDeviceName );
 
   // Setup the GAP Bond Manager
-  // 设置配对、加密和绑定有关项
   {
     uint32 passkey = 0; // passkey "000000"
     uint8 pairMode = GAPBOND_PAIRING_MODE_WAIT_FOR_REQ;
@@ -187,7 +168,7 @@ extern void HRM_Init( uint8 task_id )
     GAPBondMgr_SetParameter( GAPBOND_BONDING_ENABLED, sizeof ( uint8 ), &bonding );
   }  
 
-  // 设置心率服务Characteristic Values
+  // set characteristic in heart rate service
   {
     uint8 sensLoc = HRM_SENS_LOC_CHEST;
     HRM_SetParameter( HRM_SENS_LOC, sizeof ( uint8 ), &sensLoc );
@@ -200,29 +181,29 @@ extern void HRM_Init( uint8 task_id )
   DevInfo_AddService( ); // device information service
   Battery_AddService(GATT_ALL_SERVICES); // battery service
   
-  // 登记温湿度计的服务回调
-  HRM_Register( &HRM_ServCBs );
+  // register heart rate service callback
+  HRM_Register( &hrServCBs );
   
   // register battery service callback
-  Battery_RegisterAppCBs(&Battery_ServCBs);
+  Battery_RegisterAppCBs(&batteryServCBs);
   
   //在这里初始化GPIO
   //第一：所有管脚，reset后的状态都是输入加上拉
   //第二：对于不用的IO，建议不连接到外部电路，且设为输入上拉
   //第三：对于会用到的IO，就要根据具体外部电路连接情况进行有效设置，防止耗电
-  HRMInitIOPin();
+  initIOPin();
   
   HRFunc_Init();
   
   HCI_EXT_ClkDivOnHaltCmd( HCI_EXT_ENABLE_CLK_DIVIDE_ON_HALT );  
 
   // 启动设备
-  osal_set_event( HRM_TaskID, HRM_START_DEVICE_EVT );
+  osal_set_event( taskID, HRM_START_DEVICE_EVT );
 }
 
 
 // 初始化IO管脚
-static void HRMInitIOPin()
+static void initIOPin()
 {
   // 全部设为GPIO
   P0SEL = 0; 
@@ -247,9 +228,9 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   {
     uint8 *pMsg;
 
-    if ( (pMsg = osal_msg_receive( HRM_TaskID )) != NULL )
+    if ( (pMsg = osal_msg_receive( taskID )) != NULL )
     {
-      HRMProcessOSALMsg( (osal_event_hdr_t *)pMsg );
+      processOSALMsg( (osal_event_hdr_t *)pMsg );
 
       // Release the OSAL message
       VOID osal_msg_deallocate( pMsg );
@@ -262,22 +243,22 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   if ( events & HRM_START_DEVICE_EVT )
   {    
     // Start the Device
-    VOID GAPRole_StartDevice( &HRM_GapStateCBs );
+    VOID GAPRole_StartDevice( &gapRoleStateCBs );
 
     // Start Bond Manager
-    VOID GAPBondMgr_Register( &HRM_BondCBs );
+    VOID GAPBondMgr_Register( &bondCBs );
 
     return ( events ^ HRM_START_DEVICE_EVT );
   }
   
-  if ( events & HRM_START_PERIODIC_EVT )
+  if ( events & HRM_MEAS_PERIODIC_EVT )
   {
-    HRMNotify();
+    notifyHR();
 
-    if(status == STATUS_START)
-      osal_start_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT, ((uint32)interval) );
+    if(status == STATUS_MEAS_START)
+      osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD );
 
-    return (events ^ HRM_START_PERIODIC_EVT);
+    return (events ^ HRM_MEAS_PERIODIC_EVT);
   }
   
   if ( events & HRM_BATT_PERIODIC_EVT )
@@ -288,7 +269,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
       Battery_MeasLevel(gapConnHandle);
       
       // Restart timer
-      osal_start_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT, DEFAULT_BATT_PERIOD );
+      osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_MEAS_PERIOD );
     }
 
     return (events ^ HRM_BATT_PERIODIC_EVT);
@@ -298,7 +279,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   return 0;
 }
 
-static void HRMProcessOSALMsg( osal_event_hdr_t *pMsg )
+static void processOSALMsg( osal_event_hdr_t *pMsg )
 {
   switch ( pMsg->event )
   {
@@ -308,38 +289,56 @@ static void HRMProcessOSALMsg( osal_event_hdr_t *pMsg )
   }
 }
 
-static void HRMGapStateCB( gaprole_States_t newState )
+static void gapRoleStateCB( gaprole_States_t newState )
 {
-  // 已连接
+  // connected
   if( newState == GAPROLE_CONNECTED)
   {
     // Get connection handle
     GAPRole_GetParameter( GAPROLE_CONNHANDLE, &gapConnHandle );
   }
-  // 断开连接
+  // disconnected
   else if(gapProfileState == GAPROLE_CONNECTED && 
             newState != GAPROLE_CONNECTED)
   {
-    HRMStop();
-    HRMInitIOPin();
+    stopHRMeas();
+    //initIOPin();
     HRFunc_Init();
-    osal_stop_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT );
+    osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
+  }
+  // if started
+  else if (newState == GAPROLE_STARTED)
+  {
+    // Set the system ID from the bd addr
+    uint8 systemId[DEVINFO_SYSTEM_ID_LEN];
+    GAPRole_GetParameter(GAPROLE_BD_ADDR, systemId);
+    
+    // shift three bytes up
+    systemId[7] = systemId[5];
+    systemId[6] = systemId[4];
+    systemId[5] = systemId[3];
+    
+    // set middle bytes to zero
+    systemId[4] = 0;
+    systemId[3] = 0;
+    
+    DevInfo_SetParameter(DEVINFO_SYSTEM_ID, DEVINFO_SYSTEM_ID_LEN, systemId);
   }
   
   gapProfileState = newState;
 
 }
 
-static void HRMServiceCB( uint8 event )
+static void hrServiceCB( uint8 event )
 {
   switch (event)
   {
     case HRM_MEAS_NOTI_ENABLED:
-      HRMStart();
+      startHRMeas();
       break;
         
     case HRM_MEAS_NOTI_DISABLED:
-      HRMStop();
+      stopHRMeas();
       break;
 
     case HRM_CTRL_PT_SET:
@@ -353,49 +352,46 @@ static void HRMServiceCB( uint8 event )
 }
 
 // 启动采样
-static void HRMStart( void )
+static void startHRMeas( void )
 {  
-  if(status == STATUS_STOP) {
-    status = STATUS_START;
+  if(status == STATUS_MEAS_STOP) {
+    status = STATUS_MEAS_START;
     HRFunc_Start();
-    osal_start_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT, interval);
+    osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
   }
 }
 
 // 停止采样
-static void HRMStop( void )
+static void stopHRMeas( void )
 {  
-  status = STATUS_STOP;
+  status = STATUS_MEAS_STOP;
   HRFunc_Stop();
-  osal_stop_timerEx( HRM_TaskID, HRM_START_PERIODIC_EVT ); 
+  osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
 }
 
 // 传输心率
-static void HRMNotify()
+static void notifyHR()
 {
-  uint8 *p = heartRateMeas.value;
+  uint8 *p = hrNoti.value;
   uint8 len = HRFunc_SetData(p);
   if(len == 0) return;  
-  heartRateMeas.len = len;
-  HRM_MeasNotify( gapConnHandle, &heartRateMeas );
+  hrNoti.len = len;
+  HRM_MeasNotify( gapConnHandle, &hrNoti );
 }
 
-static void BatteryServiceCB( uint8 event )
+static void batteryServiceCB( uint8 event )
 {
   if (event == BATTERY_LEVEL_NOTI_ENABLED)
   {
     // if connected start periodic measurement
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      osal_start_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT, DEFAULT_BATT_PERIOD );
+      osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_MEAS_PERIOD );
     } 
   }
   else if (event == BATTERY_LEVEL_NOTI_DISABLED)
   {
     // stop periodic measurement
-    osal_stop_timerEx( HRM_TaskID, HRM_BATT_PERIODIC_EVT );
+    osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
   }
 }
-
-/*********************************************************************
-*********************************************************************/
