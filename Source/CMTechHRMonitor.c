@@ -38,7 +38,7 @@
 #define STATUS_MEAS_STOP 0     // heart rate measurement stopped
 #define STATUS_MEAS_START 1    // heart rate measurement started
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
-#define BATT_MEAS_PERIOD 10000L // battery measurement period, ms
+#define BATT_MEAS_PERIOD 15000L // battery measurement period, ms
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
