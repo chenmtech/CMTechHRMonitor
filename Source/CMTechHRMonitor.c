@@ -133,8 +133,8 @@ extern void HRM_Init( uint8 task_id )
     uint8 advertising = TRUE;
     GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
     
-    // set the pause time from the connection and the update connection parameters
-    // during the time, client can finish the task e.g. service discovery 
+    // set the pause time from the connection and the update of the connection parameters
+    // during the time, client can finish the tasks e.g. service discovery 
     // the unit of time is second
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
@@ -151,7 +151,7 @@ extern void HRM_Init( uint8 task_id )
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
   }
   
-  // 设置GGS设备名特征值
+  // set GGS device name
   GGS_SetParameter( GGS_DEVICE_NAME_ATT, GAP_DEVICE_NAME_LEN, attDeviceName );
 
   // Setup the GAP Bond Manager
