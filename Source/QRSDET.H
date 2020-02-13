@@ -31,5 +31,4 @@ MA 02143 USA).  For updates to this software, please visit our website
    	qrsfilt().
 *****************************************************************************/
 
-
 extern int QRSDet( int datum, int init );

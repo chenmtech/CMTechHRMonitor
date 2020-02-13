@@ -59,11 +59,31 @@ Returns:
 #include "qrsdet.h"
 #include "QRSFILT.H"
 
+#define MS95	12  //((int) (95/MS_PER_SAMPLE + 0.5))
+#define MS150	19 //((int) (150/MS_PER_SAMPLE + 0.5))
+#define MS220	28 //((int) (220/MS_PER_SAMPLE + 0.5))
+#define MS360	45 //((int) (360/MS_PER_SAMPLE + 0.5))
+#define MS1000	SAMPLE_RATE
+#define MS1500	187 //((int) (1500/MS_PER_SAMPLE))
+#define MS195	24 //((int) (195/MS_PER_SAMPLE + 0.5))
 #define PRE_BLANK	MS195
+#define MIN_PEAK_AMP	5 // Prevents detections of peaks smaller than 150 uV.
+#define MS100	13  //((int) (100/MS_PER_SAMPLE + 0.5))
 #define	FILTER_DELAY (int) (((double) DERIV_LENGTH/2) + ((double) LPBUFFER_LGTH/2 - 1) + (((double) HPBUFFER_LGTH-1)/2) + PRE_BLANK)  // filter delays plus 200 ms blanking delay
 #define DER_DELAY	WINDOW_WIDTH + FILTER_DELAY + MS100
-#define MIN_PEAK_AMP	7 // Prevents detections of peaks smaller than 150 uV.
 
+//#define MS30	4  //((int) (30/MS_PER_SAMPLE + 0.5))
+//#define MS160	20 //((int) (160/MS_PER_SAMPLE + 0.5))
+//#define MS175	22 //((int) (175/MS_PER_SAMPLE + 0.5))
+//#define MS200	25 //((int) (200/MS_PER_SAMPLE + 0.5))
+//#define MS250	31 //((int) (250/MS_PER_SAMPLE + 0.5))
+//#define MS300	38 //((int) (300/MS_PER_SAMPLE + 0.5))
+//#define MS450	56 //((int) (450/MS_PER_SAMPLE + 0.5))
+
+static const double TH = 0.3125 ;
+
+static int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
+static int Dly  = 0 ;
 
 // Local Prototypes.
 
@@ -73,240 +93,236 @@ static int thresh(int qmean, int nmean) ;
 static int BLSCheck(int *dBuf,int dbPtr,int *maxder) ;
 static void rightshift(int * buf, int L);
 
-static double TH = .3125 ;
-
-static int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
-static int Dly  = 0 ;
 
 //const int MEMMOVELEN = 7*sizeof(int);
 
 extern int QRSDet( int datum, int init )
-	{
-	static int det_thresh, qpkcnt = 0 ;
-	static int qrsbuf[8], noise[8], rrbuf[8] ;
-	static int rsetBuff[8], rsetCount = 0 ;
-	static int nmean, qmean, rrmean ;
-	static int count, sbpeak = 0, sbloc, sbcount = MS1500 ;
-	static int maxder, lastmax ;
-	static int initBlank, initMax ;
-	static int preBlankCnt, tempPeak ;
-	
-	int fdatum, QrsDelay = 0 ;
-	int i, newPeak, aPeak ;
+{
+  static int det_thresh, qpkcnt = 0 ;
+  static int qrsbuf[8], noise[8], rrbuf[8] ;
+  static int rsetBuff[8], rsetCount = 0 ;
+  static int nmean, qmean, rrmean ;
+  static int count, sbpeak = 0, sbloc, sbcount = MS1500 ;
+  static int maxder, lastmax ;
+  static int initBlank, initMax ;
+  static int preBlankCnt, tempPeak ;
+  
+  int fdatum, QrsDelay = 0 ;
+  int i, newPeak, aPeak ;
 
 /*	Initialize all buffers to 0 on the first call.	*/
 
-	if( init )
-		{
-		for(i = 0; i < 8; ++i)
-			{
-			noise[i] = 0 ;	/* Initialize noise buffer */
-			rrbuf[i] = MS1000 ;/* and R-to-R interval buffer. */
-			}
+  if( init )
+  {
+    for(i = 0; i < 8; ++i)
+    {
+      noise[i] = 0 ;	/* Initialize noise buffer */
+      rrbuf[i] = MS1000 ;/* and R-to-R interval buffer. */
+    }
+  
+    qpkcnt = maxder = lastmax = count = sbpeak = 0 ;
+    initBlank = initMax = preBlankCnt = DDPtr = 0 ;
+    sbcount = MS1500 ;
+    QRSFilter(0,1) ;	/* initialize filters. */
+    Peak(0,1) ;
+  }
 
-		qpkcnt = maxder = lastmax = count = sbpeak = 0 ;
-		initBlank = initMax = preBlankCnt = DDPtr = 0 ;
-		sbcount = MS1500 ;
-		QRSFilter(0,1) ;	/* initialize filters. */
-		Peak(0,1) ;
-		}
-
-	fdatum = QRSFilter(datum,0) ;	/* Filter data. */
-
-
-	/* Wait until normal detector is ready before calling early detections. */
-
-	aPeak = Peak(fdatum,0) ;
-	if(aPeak < MIN_PEAK_AMP)
-		aPeak = 0 ;
-
-	// Hold any peak that is detected for 200 ms
-	// in case a bigger one comes along.  There
-	// can only be one QRS complex in any 200 ms window.
-
-	newPeak = 0 ;
-	if(aPeak && !preBlankCnt)			// If there has been no peak for 200 ms
-		{										// save this one and start counting.
-		tempPeak = aPeak ;
-		preBlankCnt = PRE_BLANK ;			// MS200
-		}
-
-	else if(!aPeak && preBlankCnt)	// If we have held onto a peak for
-		{										// 200 ms pass it on for evaluation.
-		if(--preBlankCnt == 0)
-			newPeak = tempPeak ;
-		}
-
-	else if(aPeak)							// If we were holding a peak, but
-		{										// this ones bigger, save it and
-		if(aPeak > tempPeak)				// start counting to 200 ms again.
-			{
-			tempPeak = aPeak ;
-			preBlankCnt = PRE_BLANK ; // MS200
-			}
-		else if(--preBlankCnt == 0)
-			newPeak = tempPeak ;
-		}
-
-	/* Save derivative of raw signal for T-wave and baseline
-	   shift discrimination. */
-	
-	DDBuffer[DDPtr] = deriv1( datum, 0 ) ;
-	if(++DDPtr == DER_DELAY)
-		DDPtr = 0 ;
-
-	/* Initialize the qrs peak buffer with the first eight 	*/
-	/* local maximum peaks detected.						*/
-
-	if( qpkcnt < 8 )
-		{
-		++count ;
-		if(newPeak > 0) count = WINDOW_WIDTH ;
-		if(++initBlank == MS1000)
-			{
-			initBlank = 0 ;
-			qrsbuf[qpkcnt] = initMax ;
-			initMax = 0 ;
-			++qpkcnt ;
-			if(qpkcnt == 8)
-				{
-				qmean = mean( qrsbuf, 8 ) ;
-				nmean = 0 ;
-				rrmean = MS1000 ;
-				sbcount = MS1500+MS150 ;
-				det_thresh = thresh(qmean,nmean) ;
-				}
-			}
-		if( newPeak > initMax )
-			initMax = newPeak ;
-		}
-
-	else	/* Else test for a qrs. */
-		{
-		++count ;
-		if(newPeak > 0)
-			{
-			
-			
-			/* Check for maximum derivative and matching minima and maxima
-			   for T-wave and baseline shift rejection.  Only consider this
-			   peak if it doesn't seem to be a base line shift. */
-			   
-			if(!BLSCheck(DDBuffer, DDPtr, &maxder))
-				{
+  fdatum = QRSFilter(datum,0) ;	/* Filter data. */
 
 
-				// Classify the beat as a QRS complex
-				// if the peak is larger than the detection threshold.
+  /* Wait until normal detector is ready before calling early detections. */
 
-				if(newPeak > det_thresh)
-					{
-					//memmove(&qrsbuf[1], qrsbuf, MEMMOVELEN) ;
-                                        rightshift(qrsbuf, 8);
-					qrsbuf[0] = newPeak ;
-					qmean = mean(qrsbuf,8) ;
-					det_thresh = thresh(qmean,nmean) ;
-					//memmove(&rrbuf[1], rrbuf, MEMMOVELEN) ;
-                                        rightshift(rrbuf, 8);
-					rrbuf[0] = count - WINDOW_WIDTH ;
-					rrmean = mean(rrbuf,8) ;
-					sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
-					count = WINDOW_WIDTH ;
+  aPeak = Peak(fdatum,0) ;
+  if(aPeak < MIN_PEAK_AMP)
+    aPeak = 0 ;
 
-					sbpeak = 0 ;
+  // Hold any peak that is detected for 200 ms
+  // in case a bigger one comes along.  There
+  // can only be one QRS complex in any 200 ms window.
 
-					lastmax = maxder ;
-					maxder = 0 ;
-					QrsDelay =  WINDOW_WIDTH + FILTER_DELAY ;
-					initBlank = initMax = rsetCount = 0 ;
-					}
+  newPeak = 0 ;
+  if(aPeak && !preBlankCnt)			// If there has been no peak for 200 ms
+  {						// save this one and start counting.
+    tempPeak = aPeak ;
+    preBlankCnt = PRE_BLANK ;			// MS200
+  }
 
-				// If a peak isn't a QRS update noise buffer and estimate.
-				// Store the peak for possible search back.
+  else if(!aPeak && preBlankCnt)	// If we have held onto a peak for
+  {					// 200 ms pass it on for evaluation.
+    if(--preBlankCnt == 0)
+      newPeak = tempPeak ;
+  }
+
+  else if(aPeak)							// If we were holding a peak, but
+  {										// this ones bigger, save it and
+    if(aPeak > tempPeak)				// start counting to 200 ms again.
+    {
+      tempPeak = aPeak ;
+      preBlankCnt = PRE_BLANK ; // MS200
+    }
+    else if(--preBlankCnt == 0)
+      newPeak = tempPeak ;
+  }
+
+  /* Save derivative of raw signal for T-wave and baseline
+     shift discrimination. */
+  
+  DDBuffer[DDPtr] = deriv1( datum, 0 ) ;
+  if(++DDPtr == DER_DELAY)
+    DDPtr = 0 ;
+
+  /* Initialize the qrs peak buffer with the first eight 	*/
+  /* local maximum peaks detected.						*/
+
+  if( qpkcnt < 8 )
+  {
+    ++count ;
+    if(newPeak > 0) count = WINDOW_WIDTH ;
+    if(++initBlank == MS1000)
+    {
+      initBlank = 0 ;
+      qrsbuf[qpkcnt] = initMax ;
+      initMax = 0 ;
+      ++qpkcnt ;
+      if(qpkcnt == 8)
+      {
+        qmean = mean( qrsbuf, 8 ) ;
+        nmean = 0 ;
+        rrmean = MS1000 ;
+        sbcount = MS1500+MS150 ;
+        det_thresh = thresh(qmean,nmean) ;
+      }
+    }
+    if( newPeak > initMax )
+      initMax = newPeak ;
+  }
+
+  else	/* Else test for a qrs. */
+  {
+    ++count ;
+    if(newPeak > 0)
+    {
+      
+      
+      /* Check for maximum derivative and matching minima and maxima
+         for T-wave and baseline shift rejection.  Only consider this
+         peak if it doesn't seem to be a base line shift. */
+         
+      if(!BLSCheck(DDBuffer, DDPtr, &maxder))
+      {
 
 
-				else
-					{
-					//memmove(&noise[1],noise,MEMMOVELEN) ;
-                                        rightshift(noise, 8);
-					noise[0] = newPeak ;
-					nmean = mean(noise,8) ;
-					det_thresh = thresh(qmean,nmean) ;
+        // Classify the beat as a QRS complex
+        // if the peak is larger than the detection threshold.
+  
+        if(newPeak > det_thresh)
+        {
+          //memmove(&qrsbuf[1], qrsbuf, MEMMOVELEN) ;
+          rightshift(qrsbuf, 8);
+          qrsbuf[0] = newPeak ;
+          qmean = mean(qrsbuf,8) ;
+          det_thresh = thresh(qmean,nmean) ;
+          //memmove(&rrbuf[1], rrbuf, MEMMOVELEN) ;
+          rightshift(rrbuf, 8);
+          rrbuf[0] = count - WINDOW_WIDTH ;
+          rrmean = mean(rrbuf,8) ;
+          sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
+          count = WINDOW_WIDTH ;
+          sbpeak = 0 ;
+          lastmax = maxder ;
+          maxder = 0 ;
+          QrsDelay =  WINDOW_WIDTH + FILTER_DELAY ;
+          initBlank = initMax = rsetCount = 0 ;
+        }
+  
+        // If a peak isn't a QRS update noise buffer and estimate.
+        // Store the peak for possible search back.
 
-					// Don't include early peaks (which might be T-waves)
-					// in the search back process.  A T-wave can mask
-					// a small following QRS.
 
-					if((newPeak > sbpeak) && ((count-WINDOW_WIDTH) >= MS360))
-						{
-						sbpeak = newPeak ;
-						sbloc = count  - WINDOW_WIDTH ;
-						}
-					}
-				}
-			}
-		
-		/* Test for search back condition.  If a QRS is found in  */
-		/* search back update the QRS buffer and det_thresh.      */
+        else
+        {
+          //memmove(&noise[1],noise,MEMMOVELEN) ;
+          rightshift(noise, 8);
+          noise[0] = newPeak ;
+          nmean = mean(noise,8) ;
+          det_thresh = thresh(qmean,nmean) ;
+  
+          // Don't include early peaks (which might be T-waves)
+          // in the search back process.  A T-wave can mask
+          // a small following QRS.
+  
+          if((newPeak > sbpeak) && ((count-WINDOW_WIDTH) >= MS360))
+          {
+            sbpeak = newPeak ;
+            sbloc = count  - WINDOW_WIDTH ;
+          }
+        }
+      }
+    }
+    
+    /* Test for search back condition.  If a QRS is found in  */
+    /* search back update the QRS buffer and det_thresh.      */
 
-		if((count > sbcount) && (sbpeak > (det_thresh >> 1)))
-			{
-			//memmove(&qrsbuf[1],qrsbuf,MEMMOVELEN) ;
-                        rightshift(qrsbuf, 8);
-			qrsbuf[0] = sbpeak ;
-			qmean = mean(qrsbuf,8) ;
-			det_thresh = thresh(qmean,nmean) ;
-			//memmove(&rrbuf[1],rrbuf,MEMMOVELEN) ;
-                        rightshift(rrbuf, 8);
-			rrbuf[0] = sbloc ;
-			rrmean = mean(rrbuf,8) ;
-			sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
-			QrsDelay = count = count - sbloc ;
-			QrsDelay += FILTER_DELAY ;
-			sbpeak = 0 ;
-			lastmax = maxder ;
-			maxder = 0 ;
+    if((count > sbcount) && (sbpeak > (det_thresh >> 1)))
+    {
+      //memmove(&qrsbuf[1],qrsbuf,MEMMOVELEN) ;
+      rightshift(qrsbuf, 8);
+      qrsbuf[0] = sbpeak ;
+      qmean = mean(qrsbuf,8) ;
+      det_thresh = thresh(qmean,nmean) ;
+      //memmove(&rrbuf[1],rrbuf,MEMMOVELEN) ;
+      rightshift(rrbuf, 8);
+      rrbuf[0] = sbloc ;
+      rrmean = mean(rrbuf,8) ;
+      sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
+      count -= sbloc;
+      QrsDelay = count;
+      QrsDelay += FILTER_DELAY ;
+      sbpeak = 0 ;
+      lastmax = maxder ;
+      maxder = 0 ;
+  
+      initBlank = initMax = rsetCount = 0 ;
+    }
+  }
 
-			initBlank = initMax = rsetCount = 0 ;
-			}
-		}
+  // In the background estimate threshold to replace adaptive threshold
+  // if eight seconds elapses without a QRS detection.
 
-	// In the background estimate threshold to replace adaptive threshold
-	// if eight seconds elapses without a QRS detection.
+  if( qpkcnt == 8 )
+  {
+    if(++initBlank == MS1000)
+    {
+      initBlank = 0 ;
+      rsetBuff[rsetCount] = initMax ;
+      initMax = 0 ;
+      ++rsetCount ;
+  
+      // Reset threshold if it has been 8 seconds without
+      // a detection.
+  
+      if(rsetCount == 8)
+      {
+        for(i = 0; i < 8; ++i)
+        {
+          qrsbuf[i] = rsetBuff[i] ;
+          noise[i] = 0 ;
+        }
+        qmean = mean( rsetBuff, 8 ) ;
+        nmean = 0 ;
+        rrmean = MS1000 ;
+        sbcount = MS1500+MS150 ;
+        det_thresh = thresh(qmean,nmean) ;
+        initBlank = initMax = rsetCount = 0 ;
+      }
+    }
+    
+    if( newPeak > initMax )
+      initMax = newPeak ;
+  }
 
-	if( qpkcnt == 8 )
-		{
-		if(++initBlank == MS1000)
-			{
-			initBlank = 0 ;
-			rsetBuff[rsetCount] = initMax ;
-			initMax = 0 ;
-			++rsetCount ;
-
-			// Reset threshold if it has been 8 seconds without
-			// a detection.
-
-			if(rsetCount == 8)
-				{
-				for(i = 0; i < 8; ++i)
-					{
-					qrsbuf[i] = rsetBuff[i] ;
-					noise[i] = 0 ;
-					}
-				qmean = mean( rsetBuff, 8 ) ;
-				nmean = 0 ;
-				rrmean = MS1000 ;
-				sbcount = MS1500+MS150 ;
-				det_thresh = thresh(qmean,nmean) ;
-				initBlank = initMax = rsetCount = 0 ;
-				}
-			}
-		if( newPeak > initMax )
-			initMax = newPeak ;
-		}
-
-	return(QrsDelay) ;
-	}
+  return(QrsDelay) ;
+}
 
 /**************************************************************
 * peak() takes a datum as input and returns a peak height
@@ -314,41 +330,41 @@ extern int QRSDet( int datum, int init )
 **************************************************************/
 
 static int Peak( int datum, int init )
-	{
-	static int max = 0, timeSinceMax = 0, lastDatum ;
-	int pk = 0 ;
+{
+  static int max = 0, timeSinceMax = 0, lastDatum ;
+  int pk = 0 ;
 
-	if(init)
-		max = timeSinceMax = 0 ;
-		
-	if(timeSinceMax > 0)
-		++timeSinceMax ;
+  if(init)
+    max = timeSinceMax = 0 ;
+          
+  if(timeSinceMax > 0)
+    ++timeSinceMax ;
 
-	if((datum > lastDatum) && (datum > max))
-		{
-		max = datum ;
-		if(max > 2)
-			timeSinceMax = 1 ;
-		}
+  if((datum > lastDatum) && (datum > max))
+  {
+    max = datum ;
+    if(max > 2)
+      timeSinceMax = 1 ;
+  }
 
-	else if(datum < (max >> 1))
-		{
-		pk = max ;
-		max = 0 ;
-		timeSinceMax = 0 ;
-		Dly = 0 ;
-		}
+  else if(datum < (max >> 1))
+  {
+    pk = max ;
+    max = 0 ;
+    timeSinceMax = 0 ;
+    Dly = 0 ;
+  }
 
-	else if(timeSinceMax > MS95)
-		{
-		pk = max ;
-		max = 0 ;
-		timeSinceMax = 0 ;
-		Dly = 3 ;
-		}
-	lastDatum = datum ;
-	return(pk) ;
-	}
+  else if(timeSinceMax > MS95)
+  {
+    pk = max ;
+    max = 0 ;
+    timeSinceMax = 0 ;
+    Dly = 3 ;
+  }
+  lastDatum = datum ;
+  return(pk) ;
+}
 
 /********************************************************************
 mean returns the mean of an array of integers.  It uses a slow
@@ -356,15 +372,15 @@ sort algorithm, but these arrays are small, so it hardly matters.
 ********************************************************************/
 
 static int mean(int *array, int datnum)
-	{
-	long sum ;
-	int i ;
-
-	for(i = 0, sum = 0; i < datnum; ++i)
-		sum += array[i] ;
-	sum /= datnum ;
-	return(sum) ;
-	}
+{
+  long sum ;
+  int i ;
+  
+  for(i = 0, sum = 0; i < datnum; ++i)
+    sum += array[i] ;
+  sum /= datnum ;
+  return(sum) ;
+}
 
 /****************************************************************************
  thresh() calculates the detection threshold from the qrs mean and noise
@@ -372,17 +388,17 @@ static int mean(int *array, int datnum)
 ****************************************************************************/
 
 static int thresh(int qmean, int nmean)
-	{
-	int thrsh, dmed ;
-	double temp ;
-	dmed = qmean - nmean ;
-/*	thrsh = nmean + (dmed>>2) + (dmed>>3) + (dmed>>4); */
-	temp = dmed ;
-	temp *= TH ;
-	dmed = (int)temp ;
-	thrsh = nmean + dmed ; /* dmed * THRESHOLD */
-	return(thrsh) ;
-	}
+{
+  int thrsh, dmed ;
+  double temp ;
+  dmed = qmean - nmean ;
+  /*	thrsh = nmean + (dmed>>2) + (dmed>>3) + (dmed>>4); */
+  temp = dmed ;
+  temp *= TH ;
+  dmed = (int)temp ;
+  thrsh = nmean + dmed ; /* dmed * THRESHOLD */
+  return(thrsh) ;
+}
 
 /***********************************************************************
 	BLSCheck() reviews data to see if a baseline shift has occurred.
@@ -391,48 +407,46 @@ static int thresh(int qmean, int nmean)
 ***********************************************************************/
 
 static int BLSCheck(int *dBuf,int dbPtr,int *maxder)
-	{
-	int max, min, maxt, mint, t, x ;
-	max = min = 0 ;
-
-	for(t = 0; t < MS220; ++t)
-		{
-		x = dBuf[dbPtr] ;
-		if(x > max)
-			{
-			maxt = t ;
-			max = x ;
-			}
-		else if(x < min)
-			{
-			mint = t ;
-			min = x;
-			}
-		if(++dbPtr == DER_DELAY)
-			dbPtr = 0 ;
-		}
-
-	*maxder = max ;
-	min = -min ;
-	
-	/* Possible beat if a maximum and minimum pair are found
-		where the interval between them is less than 150 ms. */
-	int difft = (maxt > mint) ? maxt-mint : mint-maxt;   
-	if((max > (min>>3)) && (min > (max>>3)) &&
-		(difft < MS150))
-		return(0) ;
-		
-	else
-		return(1) ;
-	}
+{
+  int max, min, maxt, mint, t, x ;
+  max = min = 0 ;
+  
+  for(t = 0; t < MS220; ++t)
+  {
+    x = dBuf[dbPtr] ;
+    if(x > max)
+    {
+      maxt = t ;
+      max = x ;
+    }
+    else if(x < min)
+    {
+      mint = t ;
+      min = x;
+    }
+    if(++dbPtr == DER_DELAY)
+      dbPtr = 0 ;
+  }
+  
+  *maxder = max ;
+  min = -min ;
+  
+  /* Possible beat if a maximum and minimum pair are found
+          where the interval between them is less than 150 ms. */
+  int abst = (maxt > mint) ? maxt-mint : mint-maxt;   
+  if((max > (min>>3)) && (min > (max>>3)) && (abst < MS150))
+    return(0) ;
+  else
+    return(1) ;
+}
 
 // right shift the buffer with L data
 static void rightshift(int* buf, int L)
 {
-  int* bufL1 = buf + L -1;
-  while(bufL1 > buf)
+  int* buf1 = buf + L -1;
+  while(buf1 > buf)
   {
-    *bufL1 = *(bufL1-1);
-    bufL1--;
+    *buf1 = *(buf1-1);
+    buf1--;
   }
 }

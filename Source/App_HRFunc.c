@@ -54,22 +54,26 @@ extern uint8 HRFunc_GetHRData(uint8* p)
   
   uint8* pTmp = p;
   
+  /*
   //include bpm only
   *p++ = 0x00;
   *p++ = (uint8)BPM;
+  */
   
-  /*
+  
   //include bpm and RRInterval
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   uint16 MS1024 = 0;
-  for(i = 0; i < RRNum; i++)
+  for(i = 0; i < rrNum; i++)
   {
-    MS1024 = (uint16)(RRBuf[i]*8.192); // transform into the number with 1/1024 second unit, which is required in BLE.
-    *p++ = LO_UINT16(MS1024);
-    *p++ = HI_UINT16(MS1024);
+    //MS1024 = (uint16)(rrBuf[i]*8.192); // transform into the number with 1/1024 second unit, which is required in BLE.
+    //*p++ = LO_UINT16(MS1024);
+    //*p++ = HI_UINT16(MS1024);
+    *p++ = LO_UINT16(rrBuf[i]);
+    *p++ = HI_UINT16(rrBuf[i]);
   }
-  */
+  
   
   /*
   // include bpm and Q&N as RRInterval for debug
