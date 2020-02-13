@@ -540,7 +540,7 @@ static int16 mvwint(int16 datum, int init)
 // 由于采样频率改为125Hz，移动平均窗宽为80ms，只需要10个样本。所以修改了此函数
 static int16 mvwint10(int16 datum, int init)
 {
-  static uint16 sum = 0 ;
+  static uint32 sum = 0 ;
   static uint16 d0,d1,d2,d3,d4,d5,d6,d7,d8,d9;
   
   if(init)
@@ -558,11 +558,12 @@ static int16 mvwint10(int16 datum, int init)
   d3=d2 ;
   d2=d1 ;
   d1=d0 ;
-  if(datum > 20) d0 = 20 ;
-  else d0 = datum ;
+  //if(datum > 0x0400) d0 = 0x03ff ;
+  //else d0 = datum ;
+  d0 = datum;
   sum += d0 ;
   
-  return sum/10;
+  return (int16)(sum/10);
 }
 
 
