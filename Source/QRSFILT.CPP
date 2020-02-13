@@ -174,9 +174,9 @@ static int notch50(int datum, int init)
 static int lpfilt( int datum ,int init)
 {
   static long y1 = 0, y2 = 0 ;
-  static int data[LPBUFFER_LGTH], ptr = 0 ;
+  static long data[LPBUFFER_LGTH], ptr = 0 ;
   long y0 ;
-  int output, halfPtr ;
+  long output, halfPtr ;
   if(init)
   {
     for(ptr = 0; ptr < LPBUFFER_LGTH; ++ptr)
@@ -211,8 +211,8 @@ static int lpfilt( int datum ,int init)
 extern int hpfilt( int datum, int init )
 {
   static long y=0 ;
-  static int data[HPBUFFER_LGTH], ptr = 0 ;
-  int z, halfPtr ;
+  static long data[HPBUFFER_LGTH], ptr = 0 ;
+  long z, halfPtr ;
   
   if(init)
   {
@@ -245,8 +245,8 @@ extern int hpfilt( int datum, int init )
 *****************************************************************************/
 static int deriv2(int x, int init)
 {
-  static int derBuff[DERIV_LENGTH], derI = 0 ;
-  int y ;
+  static long derBuff[DERIV_LENGTH], derI = 0 ;
+  long y ;
   
   if(init != 0)
   {
@@ -274,8 +274,8 @@ static int deriv2(int x, int init)
 static int mvwint(int datum, int init)
 {
   static long sum = 0;
-  static int data[WINDOW_WIDTH], ptr = 0 ;
-  int output;
+  static long data[WINDOW_WIDTH], ptr = 0 ;
+  long output;
   if(init)
   {
     for(ptr = 0; ptr < WINDOW_WIDTH ; ++ptr)
