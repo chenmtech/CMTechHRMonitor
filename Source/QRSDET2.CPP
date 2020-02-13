@@ -57,27 +57,26 @@ Returns:
 ****************************************************************/
 
 #include "qrsdet.h"
+#include "QRSFILT.H"
 
 #define PRE_BLANK	MS195
+#define	FILTER_DELAY (int) (((double) DERIV_LENGTH/2) + ((double) LPBUFFER_LGTH/2 - 1) + (((double) HPBUFFER_LGTH-1)/2) + PRE_BLANK)  // filter delays plus 200 ms blanking delay
+#define DER_DELAY	WINDOW_WIDTH + FILTER_DELAY + MS100
 #define MIN_PEAK_AMP	7 // Prevents detections of peaks smaller than 150 uV.
 
-// External Prototypes.
-
-int QRSFilter(int datum, int init) ;
-int deriv1( int x0, int init ) ;
 
 // Local Prototypes.
 
-int Peak( int datum, int init ) ;
-int mean(int *array, int datnum) ;
-int thresh(int qmean, int nmean) ;
-int BLSCheck(int *dBuf,int dbPtr,int *maxder) ;
+static int Peak( int datum, int init ) ;
+static int mean(int *array, int datnum) ;
+static int thresh(int qmean, int nmean) ;
+static int BLSCheck(int *dBuf,int dbPtr,int *maxder) ;
 static void rightshift(int * buf, int L);
 
-double TH = .3125 ;
+static double TH = .3125 ;
 
-int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
-int Dly  = 0 ;
+static int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
+static int Dly  = 0 ;
 
 //const int MEMMOVELEN = 7*sizeof(int);
 
@@ -314,7 +313,7 @@ extern int QRSDet( int datum, int init )
 * when the signal returns to half its peak height, or 
 **************************************************************/
 
-int Peak( int datum, int init )
+static int Peak( int datum, int init )
 	{
 	static int max = 0, timeSinceMax = 0, lastDatum ;
 	int pk = 0 ;
@@ -356,7 +355,7 @@ mean returns the mean of an array of integers.  It uses a slow
 sort algorithm, but these arrays are small, so it hardly matters.
 ********************************************************************/
 
-int mean(int *array, int datnum)
+static int mean(int *array, int datnum)
 	{
 	long sum ;
 	int i ;
@@ -372,7 +371,7 @@ int mean(int *array, int datnum)
  mean estimates.
 ****************************************************************************/
 
-int thresh(int qmean, int nmean)
+static int thresh(int qmean, int nmean)
 	{
 	int thrsh, dmed ;
 	double temp ;
@@ -391,7 +390,7 @@ int thresh(int qmean, int nmean)
 	roughly the same magnitude in a 220 ms window.
 ***********************************************************************/
 
-int BLSCheck(int *dBuf,int dbPtr,int *maxder)
+static int BLSCheck(int *dBuf,int dbPtr,int *maxder)
 	{
 	int max, min, maxt, mint, t, x ;
 	max = min = 0 ;

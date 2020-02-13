@@ -37,6 +37,7 @@ MA 02143 USA).  For updates to this software, please visit our website
 
 *******************************************************************************/
 
+#include "QRSFILT.h"
 
 // Local Prototypes.
 
@@ -82,6 +83,35 @@ extern int QRSFilter(int datum,int init)
 	return(fdatum) ;
 	}
 
+
+/*****************************************************************************
+*  deriv1 implements derivative approximations represented by
+*  the difference equation:
+*
+*	y[n] = x[n] - x[n - 10ms]
+*
+*  Filter delay is DERIV_LENGTH/2
+*****************************************************************************/
+
+extern int deriv1(int x, int init)
+	{
+	static int derBuff[DERIV_LENGTH], derI = 0 ;
+	int y ;
+
+	if(init != 0)
+		{
+		for(derI = 0; derI < DERIV_LENGTH; ++derI)
+			derBuff[derI] = 0 ;
+		derI = 0 ;
+		return(0) ;
+		}
+
+	y = x - derBuff[derI] ;
+	derBuff[derI] = x ;
+	if(++derI == DERIV_LENGTH)
+		derI = 0 ;
+	return(y) ;
+	}
 
 /*************************************************************************
 *  lpfilt() implements the digital filter represented by the difference
@@ -158,34 +188,13 @@ extern int hpfilt( int datum, int init )
 	}
 
 /*****************************************************************************
-*  deriv1 and deriv2 implement derivative approximations represented by
+*  deriv2 implements derivative approximations represented by
 *  the difference equation:
 *
 *	y[n] = x[n] - x[n - 10ms]
 *
 *  Filter delay is DERIV_LENGTH/2
 *****************************************************************************/
-
-extern int deriv1(int x, int init)
-	{
-	static int derBuff[DERIV_LENGTH], derI = 0 ;
-	int y ;
-
-	if(init != 0)
-		{
-		for(derI = 0; derI < DERIV_LENGTH; ++derI)
-			derBuff[derI] = 0 ;
-		derI = 0 ;
-		return(0) ;
-		}
-
-	y = x - derBuff[derI] ;
-	derBuff[derI] = x ;
-	if(++derI == DERIV_LENGTH)
-		derI = 0 ;
-	return(y) ;
-	}
-
 static int deriv2(int x, int init)
 	{
 	static int derBuff[DERIV_LENGTH], derI = 0 ;
