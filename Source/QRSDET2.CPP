@@ -67,25 +67,16 @@ Returns:
 #define MS1500	187 //((int) (1500/MS_PER_SAMPLE))
 #define MS195	24 //((int) (195/MS_PER_SAMPLE + 0.5))
 #define PRE_BLANK	MS195
-#define MIN_PEAK_AMP	5 // Prevents detections of peaks smaller than 150 uV.
+#define MIN_PEAK_AMP	6 // Prevents detections of peaks smaller than 150 uV.
 #define MS100	13  //((int) (100/MS_PER_SAMPLE + 0.5))
 #define	FILTER_DELAY (int) (((double) DERIV_LENGTH/2) + ((double) LPBUFFER_LGTH/2 - 1) + (((double) HPBUFFER_LGTH-1)/2) + PRE_BLANK)  // filter delays plus 200 ms blanking delay
 #define DER_DELAY	WINDOW_WIDTH + FILTER_DELAY + MS100
 
-//#define MS30	4  //((int) (30/MS_PER_SAMPLE + 0.5))
-//#define MS160	20 //((int) (160/MS_PER_SAMPLE + 0.5))
-//#define MS175	22 //((int) (175/MS_PER_SAMPLE + 0.5))
-//#define MS200	25 //((int) (200/MS_PER_SAMPLE + 0.5))
-//#define MS250	31 //((int) (250/MS_PER_SAMPLE + 0.5))
-//#define MS300	38 //((int) (300/MS_PER_SAMPLE + 0.5))
-//#define MS450	56 //((int) (450/MS_PER_SAMPLE + 0.5))
-
 static const double TH = 0.3125 ;
 
 static int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
-static int Dly  = 0 ;
+//static int Dly  = 0 ;
 
-// Local Prototypes.
 
 static int Peak( int datum, int init ) ;
 static int mean(int *array, int datnum) ;
@@ -93,17 +84,26 @@ static int thresh(int qmean, int nmean) ;
 static int BLSCheck(int *dBuf,int dbPtr,int *maxder) ;
 static void rightshift(int * buf, int L);
 
+static int qrsbuf[8], noise[8], rrbuf[8] ;
 
-//const int MEMMOVELEN = 7*sizeof(int);
+extern int * getNoiseBuffer()
+{
+  return noise;
+}
+
+extern int * getQRSBuffer()
+{
+  return qrsbuf;
+}
 
 extern int QRSDet( int datum, int init )
 {
   static int det_thresh, qpkcnt = 0 ;
-  static int qrsbuf[8], noise[8], rrbuf[8] ;
+  //static int qrsbuf[8], noise[8], rrbuf[8] ;
   static int rsetBuff[8], rsetCount = 0 ;
   static int nmean, qmean, rrmean ;
   static int count, sbpeak = 0, sbloc, sbcount = MS1500 ;
-  static int maxder, lastmax ;
+  static int maxder; //, lastmax ;
   static int initBlank, initMax ;
   static int preBlankCnt, tempPeak ;
   
@@ -120,7 +120,7 @@ extern int QRSDet( int datum, int init )
       rrbuf[i] = MS1000 ;/* and R-to-R interval buffer. */
     }
   
-    qpkcnt = maxder = lastmax = count = sbpeak = 0 ;
+    qpkcnt = maxder = count = sbpeak = 0 ;
     initBlank = initMax = preBlankCnt = DDPtr = 0 ;
     sbcount = MS1500 ;
     QRSFilter(0,1) ;	/* initialize filters. */
@@ -171,8 +171,8 @@ extern int QRSDet( int datum, int init )
   if(++DDPtr == DER_DELAY)
     DDPtr = 0 ;
 
-  /* Initialize the qrs peak buffer with the first eight 	*/
-  /* local maximum peaks detected.						*/
+  /* Initialize the qrs peak buffer with the first eight */
+  /* local maximum peaks detected. */
 
   if( qpkcnt < 8 )
   {
@@ -229,7 +229,6 @@ extern int QRSDet( int datum, int init )
           sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
           count = WINDOW_WIDTH ;
           sbpeak = 0 ;
-          lastmax = maxder ;
           maxder = 0 ;
           QrsDelay =  WINDOW_WIDTH + FILTER_DELAY ;
           initBlank = initMax = rsetCount = 0 ;
@@ -279,7 +278,6 @@ extern int QRSDet( int datum, int init )
       QrsDelay = count;
       QrsDelay += FILTER_DELAY ;
       sbpeak = 0 ;
-      lastmax = maxder ;
       maxder = 0 ;
   
       initBlank = initMax = rsetCount = 0 ;
@@ -352,7 +350,7 @@ static int Peak( int datum, int init )
     pk = max ;
     max = 0 ;
     timeSinceMax = 0 ;
-    Dly = 0 ;
+    //Dly = 0 ;
   }
 
   else if(timeSinceMax > MS95)
@@ -360,7 +358,7 @@ static int Peak( int datum, int init )
     pk = max ;
     max = 0 ;
     timeSinceMax = 0 ;
-    Dly = 3 ;
+    //Dly = 3 ;
   }
   lastDatum = datum ;
   return(pk) ;

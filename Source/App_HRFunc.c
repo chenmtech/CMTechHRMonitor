@@ -60,42 +60,43 @@ extern uint8 HRFunc_GetHRData(uint8* p)
   *p++ = (uint8)BPM;
   */
   
-  
+  /*
   //include bpm and RRInterval
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   uint16 MS1024 = 0;
   for(i = 0; i < rrNum; i++)
   {
-    //MS1024 = (uint16)(rrBuf[i]*8.192); // transform into the number with 1/1024 second unit, which is required in BLE.
-    //*p++ = LO_UINT16(MS1024);
-    //*p++ = HI_UINT16(MS1024);
+    // MS1024 = (uint16)(rrBuf[i]*8.192); // transform into the number with 1/1024 second unit, which is required in BLE.
+    // *p++ = LO_UINT16(MS1024);
+    // *p++ = HI_UINT16(MS1024);
     *p++ = LO_UINT16(rrBuf[i]);
     *p++ = HI_UINT16(rrBuf[i]);
   }
+  */
   
   
-  /*
   // include bpm and Q&N as RRInterval for debug
   *p++ = 0x10;
   *p++ = (uint8)BPM;
-  *p++ = LO_UINT16(Q0);
-  *p++ = HI_UINT16(Q0);
-  *p++ = LO_UINT16(Q1);
-  *p++ = HI_UINT16(Q1);
-  *p++ = LO_UINT16(Q2);
-  *p++ = HI_UINT16(Q2);
-  *p++ = LO_UINT16(Q3);
-  *p++ = HI_UINT16(Q3);  
-  *p++ = LO_UINT16(N0);
-  *p++ = HI_UINT16(N0);
-  *p++ = LO_UINT16(N1);
-  *p++ = HI_UINT16(N1);
-  *p++ = LO_UINT16(N2);
-  *p++ = HI_UINT16(N2);
-  *p++ = LO_UINT16(N3);
-  *p++ = HI_UINT16(N3);   
-  */
+  int* pQRS = getQRSBuffer();
+  int* pNoise = getNoiseBuffer();
+  *p++ = LO_UINT16(*pQRS);
+  *p++ = HI_UINT16(*pQRS++);
+  *p++ = LO_UINT16(*pQRS);
+  *p++ = HI_UINT16(*pQRS++);
+  *p++ = LO_UINT16(*pQRS);
+  *p++ = HI_UINT16(*pQRS++);
+  *p++ = LO_UINT16(*pQRS);
+  *p++ = HI_UINT16(*pQRS++);
+  *p++ = LO_UINT16(*pNoise);
+  *p++ = HI_UINT16(*pNoise++);
+  *p++ = LO_UINT16(*pNoise);
+  *p++ = HI_UINT16(*pNoise++);
+  *p++ = LO_UINT16(*pNoise);
+  *p++ = HI_UINT16(*pNoise++);
+  *p++ = LO_UINT16(*pNoise);
+  *p++ = HI_UINT16(*pNoise++);  
   
   rrNum = 0;
   return (uint8)(p-pTmp);

@@ -140,7 +140,7 @@ extern void HRM_Init( uint8 task_id )
     
     // set the connection parameter
     uint16 desired_min_interval = 200;  // units of 1.25ms 
-    uint16 desired_max_interval = 1600; // units of 1.25ms
+    uint16 desired_max_interval = 800; // units of 1.25ms
     uint16 desired_slave_latency = 1;
     uint16 desired_conn_timeout = 1000; // units of 10ms
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );

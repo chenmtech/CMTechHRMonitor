@@ -11,7 +11,7 @@
 #define MS10	1  //((int) (10/ MS_PER_SAMPLE + 0.5))
 #define DERIV_LENGTH	MS10
 #define MS80	10  //((int) (80/MS_PER_SAMPLE + 0.5))
-#define WINDOW_WIDTH	MS80			// Moving window integration width.
+#define WINDOW_WIDTH	MS80 // Moving window integration width.
 
 
 extern int QRSFilter(int datum,int init);

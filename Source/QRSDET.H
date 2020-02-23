@@ -32,3 +32,7 @@ MA 02143 USA).  For updates to this software, please visit our website
 *****************************************************************************/
 
 extern int QRSDet( int datum, int init );
+
+extern int * getNoiseBuffer();
+
+extern int * getQRSBuffer();
