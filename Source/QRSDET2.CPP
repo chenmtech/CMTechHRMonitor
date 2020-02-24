@@ -67,12 +67,12 @@ Returns:
 #define MS1500	187 //((int) (1500/MS_PER_SAMPLE))
 #define MS195	24 //((int) (195/MS_PER_SAMPLE + 0.5))
 #define PRE_BLANK	MS195
-#define MIN_PEAK_AMP	6 // Prevents detections of peaks smaller than 150 uV.
+#define MIN_PEAK_AMP	3 // Prevents detections of peaks smaller than 150 uV.
 #define MS100	13  //((int) (100/MS_PER_SAMPLE + 0.5))
 #define	FILTER_DELAY (int) (((double) DERIV_LENGTH/2) + ((double) LPBUFFER_LGTH/2 - 1) + (((double) HPBUFFER_LGTH-1)/2) + PRE_BLANK)  // filter delays plus 200 ms blanking delay
 #define DER_DELAY	WINDOW_WIDTH + FILTER_DELAY + MS100
 
-static const double TH = 0.3125 ;
+static const double TH = 0.475 ;
 
 static int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
 //static int Dly  = 0 ;
