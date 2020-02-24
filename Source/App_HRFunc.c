@@ -8,9 +8,11 @@ static uint8 initBeatFlag = 1 ;
 static uint16 rrCount = 0 ;
 static uint16 rrBuf[9] = {0};
 static uint8 rrNum = 0;
+static uint16 rrMedian = 0;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgData(int16 x, uint8 status);
+static uint16 median(uint16 *array, uint8 datnum);
 
 extern void HRFunc_Init()
 {
@@ -39,17 +41,26 @@ extern void HRFunc_Stop()
   delayus(2000);
 }
 
-extern uint8 HRFunc_GetHRData(uint8* p)
+// copy HR data to point p and return the length of data
+extern uint8 HRFunc_CopyHRData(uint8* p)
 {
   int i = 0;
   if(rrNum == 0) return 0;
   
+  // calculate BPM with average method
+  /*
   int32 sum = 0;
   for(i = 0; i < rrNum; i++)
   {
     sum += rrBuf[i];
   }
   int16 BPM = (7500L*rrNum + (sum>>1))/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval, the round op is done
+  if(BPM > 255) BPM = 255;
+  */
+  
+  // calculate BPM with median method
+  rrMedian = median(rrBuf, rrNum);
+  int16 BPM = 7500L/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   if(BPM > 255) BPM = 255;
   
   uint8* pTmp = p;
@@ -138,3 +149,23 @@ static uint16 calRRInterval(int16 x)
   return 0;
 }
 
+static uint16 median(uint16 *array, uint8 datnum)
+{
+  uint8 i, j;
+  uint16 temp, sort[9] ;
+  for(i = 0; i < datnum; ++i)
+    sort[i] = array[i] ;
+  for(i = 0; i < datnum; ++i)
+  {
+    for(j = i+1; j < datnum; j++)
+    {
+      if(sort[j] < sort[i])
+      {
+        temp = sort[i];
+        sort[i] = sort[j];
+        sort[j] = temp;
+      }
+    }
+  }
+  return(sort[datnum>>1]);
+}

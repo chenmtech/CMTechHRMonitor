@@ -374,7 +374,7 @@ static void stopHRMeas( void )
 static void notifyHR()
 {
   uint8 *p = hrNoti.value;
-  uint8 len = HRFunc_GetHRData(p);
+  uint8 len = HRFunc_CopyHRData(p);
   if(len == 0) return;  
   hrNoti.len = len;
   HRM_MeasNotify( gapConnHandle, &hrNoti );
