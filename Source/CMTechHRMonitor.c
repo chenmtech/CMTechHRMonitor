@@ -306,6 +306,10 @@ static void gapRoleStateCB( gaprole_States_t newState )
     //initIOPin();
     HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
+    
+    // enable advertising
+    uint8 advertising = TRUE;
+    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
   }
   // if started
   else if (newState == GAPROLE_STARTED)
@@ -374,7 +378,7 @@ static void stopHRMeas( void )
 static void notifyHR()
 {
   uint8 *p = hrNoti.value;
-  uint8 len = HRFunc_CopyHRData(p);
+  uint8 len = HRFunc_CopyHRDataInto(p);
   if(len == 0) return;  
   hrNoti.len = len;
   HRM_MeasNotify( gapConnHandle, &hrNoti );

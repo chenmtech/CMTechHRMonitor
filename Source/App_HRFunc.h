@@ -1,5 +1,5 @@
 /*
- * App_HRFunc.h : 心率计算模块
+ * App_HRFunc.h : Heart Rate Calculation Function Model header file
  * Written by Chenm
  */
 
@@ -8,10 +8,11 @@
 
 #include "hal_types.h"
 
+// initialize the model, including 
 extern void HRFunc_Init();
 extern void HRFunc_Start();
 extern void HRFunc_Stop();
-// copy HR data to point p and return the length of data
-extern uint8 HRFunc_CopyHRData(uint8* p);
+// copy HR data into p and return the length of data
+extern uint8 HRFunc_CopyHRDataInto(uint8* p);
 
 #endif

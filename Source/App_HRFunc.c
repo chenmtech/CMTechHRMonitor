@@ -4,11 +4,14 @@
 #include "Dev_ADS1x9x.h"
 #include "QRSDET.h"
 
+// the flag of the initial beat
 static uint8 initBeatFlag = 1 ;
-static uint16 rrCount = 0 ;
+// the sample count between RR interval
+static uint16 rrSampleCount = 0 ;
+// RR interval buffer, the max size of the buffer is 9
 static uint16 rrBuf[9] = {0};
+// the current RR interval number in rrBuf
 static uint8 rrNum = 0;
-static uint16 rrMedian = 0;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgData(int16 x, uint8 status);
@@ -18,7 +21,7 @@ extern void HRFunc_Init()
 {
   QRSDet(0, 1);
   initBeatFlag = 1;
-  rrCount = 0;
+  rrSampleCount = 0;
   rrNum = 0;  
   // initilize the ADS1x9x and set the ecg data process callback function
   ADS1x9x_Init(processEcgData);  
@@ -42,9 +45,8 @@ extern void HRFunc_Stop()
 }
 
 // copy HR data to point p and return the length of data
-extern uint8 HRFunc_CopyHRData(uint8* p)
+extern uint8 HRFunc_CopyHRDataInto(uint8* p)
 {
-  int i = 0;
   if(rrNum == 0) return 0;
   
   // calculate BPM with average method
@@ -59,7 +61,7 @@ extern uint8 HRFunc_CopyHRData(uint8* p)
   */
   
   // calculate BPM with median method
-  rrMedian = median(rrBuf, rrNum);
+  uint16 rrMedian = median(rrBuf, rrNum);
   int16 BPM = 7500L/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   if(BPM > 255) BPM = 255;
   
@@ -70,13 +72,12 @@ extern uint8 HRFunc_CopyHRData(uint8* p)
   *p++ = 0x00;
   *p++ = (uint8)BPM;
   */
-  
-  /*
+
   //include bpm and RRInterval
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   uint16 MS1024 = 0;
-  for(i = 0; i < rrNum; i++)
+  for(int i = 0; i < rrNum; i++)
   {
     // MS1024 = (uint16)(rrBuf[i]*8.192); // transform into the number with 1/1024 second unit, which is required in BLE.
     // *p++ = LO_UINT16(MS1024);
@@ -84,9 +85,8 @@ extern uint8 HRFunc_CopyHRData(uint8* p)
     *p++ = LO_UINT16(rrBuf[i]);
     *p++ = HI_UINT16(rrBuf[i]);
   }
-  */
   
-  
+  /*
   // include bpm and Q&N as RRInterval for debug
   *p++ = 0x10;
   *p++ = (uint8)BPM;
@@ -108,6 +108,7 @@ extern uint8 HRFunc_CopyHRData(uint8* p)
   *p++ = HI_UINT16(*pNoise++);
   *p++ = LO_UINT16(*pNoise);
   *p++ = HI_UINT16(*pNoise++);  
+  */
   
   rrNum = 0;
   return (uint8)(p-pTmp);
@@ -129,7 +130,7 @@ static uint16 calRRInterval(int16 x)
   uint16 RR = 0;
   int16 detectDelay = 0;
   
-  rrCount++;
+  rrSampleCount++;
   detectDelay = QRSDet(x, 0);
   
   if(detectDelay != 0)
@@ -140,9 +141,9 @@ static uint16 calRRInterval(int16 x)
     }
     else
     {
-      RR = (uint16)(rrCount - detectDelay);
+      RR = (uint16)(rrSampleCount - detectDelay);
     }
-    rrCount = detectDelay;
+    rrSampleCount = detectDelay;
     return RR;
   }
  
@@ -152,20 +153,21 @@ static uint16 calRRInterval(int16 x)
 static uint16 median(uint16 *array, uint8 datnum)
 {
   uint8 i, j;
-  uint16 temp, sort[9] ;
-  for(i = 0; i < datnum; ++i)
-    sort[i] = array[i] ;
-  for(i = 0; i < datnum; ++i)
+  uint8 half = (datnum>>1);
+  uint16 tmp, sort[9] ;
+  osal_memcpy(sort, array, 2*datnum);
+  // only half of data need to be sorted for finding out the median
+  for(i = 0; i <= half; ++i)
   {
     for(j = i+1; j < datnum; j++)
     {
       if(sort[j] < sort[i])
       {
-        temp = sort[i];
+        tmp = sort[i];
         sort[i] = sort[j];
-        sort[j] = temp;
+        sort[j] = tmp;
       }
     }
   }
-  return(sort[datnum>>1]);
+  return(sort[half]);
 }
