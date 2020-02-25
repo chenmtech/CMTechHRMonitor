@@ -73,7 +73,7 @@ static uint8 scanResponseData[] =
 };
 
 // GGS device name
-static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM Heart Rate Monitor";
+static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor";
 
 // the current hr measurement status
 static uint8 status = STATUS_MEAS_STOP;
@@ -140,9 +140,9 @@ extern void HRM_Init( uint8 task_id )
     
     // set the connection parameter
     uint16 desired_min_interval = 200;  // units of 1.25ms 
-    uint16 desired_max_interval = 800; // units of 1.25ms
+    uint16 desired_max_interval = 720; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
     uint16 desired_slave_latency = 1;
-    uint16 desired_conn_timeout = 1000; // units of 10ms
+    uint16 desired_conn_timeout = 600; // units of 10ms, Note: the ios device require the timeout <= 6s
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
     GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
@@ -177,8 +177,8 @@ extern void HRM_Init( uint8 task_id )
   // Initialize GATT attributes
   GGS_AddService( GATT_ALL_SERVICES );         // GAP
   GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
-  HRM_AddService( GATT_ALL_SERVICES ); // ÎÂÊª¶È·þÎñ
   DevInfo_AddService( ); // device information service
+  HRM_AddService( GATT_ALL_SERVICES ); // heart rate monitor service
   Battery_AddService(GATT_ALL_SERVICES); // battery service
   
   // register heart rate service callback
