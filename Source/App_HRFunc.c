@@ -74,7 +74,7 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   */
   
   // calculate BPM with median method
-  uint16 rrMedian = median(rrBuf, rrNum);
+  uint16 rrMedian = ((rrNum == 1) ? rrBuf[0] : median(rrBuf, rrNum));
   int16 BPM = 7500L/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   if(BPM > 255) BPM = 255;
   
@@ -166,7 +166,7 @@ static uint16 calRRInterval(int16 x)
 static uint16 median(uint16 *array, uint8 datnum)
 {
   uint8 i, j;
-  uint8 half = (datnum>>1);
+  uint8 half = ((datnum+1)>>1);
   uint16 tmp, sort[9] ;
   osal_memcpy(sort, array, 2*datnum);
   // only half of data need to be sorted for finding out the median
