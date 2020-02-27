@@ -15,7 +15,9 @@ static uint8 rrNum = 0;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgData(int16 x, uint8 status);
+static void process1mVData(int16 x, uint8 status);
 static uint16 median(uint16 *array, uint8 datnum);
+
 
 extern void HRFunc_Init()
 {
@@ -170,4 +172,19 @@ static uint16 median(uint16 *array, uint8 datnum)
     }
   }
   return(sort[half]);
+}
+
+static void process1mVData(int16 x, uint8 status)
+{
+  static int16 data1mV[125] = {0};
+  static uint8 index = 0;
+  
+  if(index < 125)
+  {
+    data1mV[index++] = x;
+  }
+  else
+  {
+    
+  }
 }
