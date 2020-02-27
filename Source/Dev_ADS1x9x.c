@@ -119,11 +119,14 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
   ADS1x9x_ReadAllRegister(defaultRegs); 
   
   type = (defaultRegs[0] & 0x03);
-  
+
+#if defined(CALIBRATE_1MV)  
+  // 设置采集内部测试信号时的寄存器值
+  ADS1x9x_SetRegsAsTestSignal();
+#else
   // 设置正常采集寄存器值
   ADS1x9x_SetRegsAsNormalECGSignal();
-  // 设置采集内部测试信号时的寄存器值
-  //ADS1x9x_SetRegsAsTestSignal();
+#endif  
   
   //设置采样数据后的回调函数
   ADS_DataCB = pfnADS_DataCB_t;

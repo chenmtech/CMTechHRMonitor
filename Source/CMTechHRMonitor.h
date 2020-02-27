@@ -5,6 +5,8 @@
 #ifndef CMTECHHRM_H
 #define CMTECHHRM_H
 
+#define CALIBRATE_1MV
+
 
 #define HRM_START_DEVICE_EVT 0x0001      // device start event
 #define HRM_MEAS_PERIODIC_EVT 0x0002     // periodic heart rate measurement event

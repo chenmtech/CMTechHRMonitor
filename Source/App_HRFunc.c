@@ -13,6 +13,9 @@ static uint16 rrBuf[9] = {0};
 // the current RR interval number in rrBuf
 static uint8 rrNum = 0;
 
+static int16 data1mV[125] = {0};
+static uint16 cali = 0;
+
 static uint16 calRRInterval(int16 x);
 static void processEcgData(int16 x, uint8 status);
 static void process1mVData(int16 x, uint8 status);
@@ -27,6 +30,14 @@ extern void HRFunc_Init()
   rrNum = 0;  
   // initilize the ADS1x9x and set the ecg data process callback function
   ADS1x9x_Init(processEcgData);  
+  delayus(1000);
+}
+
+extern void HRFunc_Start1mVCali()
+{
+  ADS1x9x_Init(process1mVData);  
+  delayus(1000);
+  ADS1x9x_StartConvert();
   delayus(1000);
 }
 
@@ -176,15 +187,37 @@ static uint16 median(uint16 *array, uint8 datnum)
 
 static void process1mVData(int16 x, uint8 status)
 {
-  static int16 data1mV[125] = {0};
+  //static int16 data1mV[125] = {0};
   static uint8 index = 0;
+  uint8 i,j;
   
-  if(index < 125)
+  data1mV[index++] = x;
+  
+  if(index >= 125)
   {
-    data1mV[index++] = x;
-  }
-  else
-  {
-    
+    uint16 tmp;
+    for(i = 0; i < 125; ++i)
+    {
+      for(j = i+1; j < 125; j++)
+      {
+        if(data1mV[j] < data1mV[i])
+        {
+          tmp = data1mV[i];
+          data1mV[i] = data1mV[j];
+          data1mV[j] = tmp;
+        }
+      }
+    }
+    long smin = 0;
+    long smax = 0;
+    for(i = 25; i < 35; i++)
+    {
+      smin += data1mV[i];
+    }
+    for(i = 90; i < 100; i++)
+    {
+      smax += data1mV[i];
+    }
+    cali = (smax-smin)/20;
   }
 }

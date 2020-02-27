@@ -116,6 +116,17 @@ static void notifyHR(); // notify heart rate
 
 extern void HRM_Init( uint8 task_id )
 {
+#if defined(CALIBRATE_1MV)  
+  initIOPin();
+  
+  HRFunc_Init();
+  
+  HRFunc_Start1mVCali();
+  
+  return;
+  
+#endif  
+  
   taskID = task_id;
   
   // Setup the GAP Peripheral Role Profile
