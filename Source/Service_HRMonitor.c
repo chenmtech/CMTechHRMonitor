@@ -69,7 +69,7 @@ static gattAttribute_t HRMAttrTbl[] =
     (uint8 *)&hrmService                /* pValue */
   },
 
-    // Heart Rate Measurement Declaration
+    // 1. Heart Rate Measurement Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
@@ -93,7 +93,7 @@ static gattAttribute_t HRMAttrTbl[] =
         (uint8 *) &hrmMeasClientCharCfg 
       },      
 
-    // Sensor Location Declaration
+    // 2. Sensor Location Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
@@ -109,7 +109,7 @@ static gattAttribute_t HRMAttrTbl[] =
         &hrmSensLoc 
       },
 
-    // Control point Declaration
+    // 3. Control point Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
@@ -130,7 +130,6 @@ static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen );
 static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                  uint8 *pValue, uint8 len, uint16 offset );
-
 static void handleConnStatusCB( uint16 connHandle, uint8 changeType );
 
 // Heart Rate Service Callbacks
@@ -285,7 +284,6 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
         *(pAttr->pValue) = pValue[0];
         
         (hrmServiceCBs->pfnHRMServiceCB)(HRM_CTRL_PT_SET);
-        
       }
       break;
 

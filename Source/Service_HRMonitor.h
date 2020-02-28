@@ -3,10 +3,10 @@
 #define SERVICE_HRMONITOR_H
 
 // Heart Rate Service Parameters
-#define HRM_MEAS                      0
-#define HRM_MEAS_CHAR_CFG             1
-#define HRM_SENS_LOC                  2
-#define HRM_CTRL_PT                   3
+#define HRM_MEAS                      0  // heart rate measurement
+#define HRM_MEAS_CHAR_CFG             1  // 
+#define HRM_SENS_LOC                  2  // sensor location
+#define HRM_CTRL_PT                   3  // control point for energy
 
 // Heart Rate Service UUIDs
 #define HRM_SERV_UUID                 0x180D
@@ -45,9 +45,9 @@
 #define HRM_SERVICE                   0x00000001
 
 // Callback events
-#define HRM_MEAS_NOTI_ENABLED         1
-#define HRM_MEAS_NOTI_DISABLED        2
-#define HRM_CTRL_PT_SET               3
+#define HRM_MEAS_NOTI_ENABLED         1 // measurement enabled
+#define HRM_MEAS_NOTI_DISABLED        2 // measurement disabled
+#define HRM_CTRL_PT_SET               3 // control point setting
 
 // Heart Rate Service callback function
 typedef void (*HRMServiceCB_t)(uint8 event);

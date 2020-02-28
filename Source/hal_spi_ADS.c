@@ -1,12 +1,11 @@
 
 #include "hal_spi_ADS.h"
 
+static void setADSCtrlPin(); //set ctrl pins for the ADS chip, e.g. DRDY, START, CS, PWDN
+static void setADSSpiPin();  //set SPI pin for the ADS chip. here use SPI 1, alt.2，that is：MI:P17, MO:P16, SCLK:P15
 
-static void setupADSCtrl(); //ADS心电芯片控制IO的设置, 如DRDY, START, CS, PWDN等
-static void setupADSSpi(); //ADS SPI通信管脚设置，采用SPI 1, alt.2，即：MI:P17, MO:P16, SCLK:P15
-
-//ADS心电芯片控制IO的设置
-static void setupADSCtrl()
+//
+static void setADSCtrlPin()
 {
   //P0.1 DRDY管脚配置  
   //先关P0.1即DRDY中断
@@ -40,8 +39,8 @@ static void setupADSCtrl()
   P0IE = 1;           // P0 interrupt enable
 }
 
-//ADS SPI通信管脚设置
-static void setupADSSpi()
+//
+static void setADSSpiPin()
 {    
   //SPI 1 管脚配置
   P1SEL |= ((1<<5)|(1<<6)|(1<<7)); //P1.5 SCLK、P1.6 MOSI和P1.7 MISO为外设
@@ -69,11 +68,11 @@ static void setupADSSpi()
 
 
 
-//ADS芯片初始化
+//ADS chip initialization
 extern void SPI_ADS_Init()
 {
-  setupADSCtrl();
-  setupADSSpi();
+  setADSCtrlPin();
+  setADSSpiPin();
 }
 
 //发送单字节

@@ -4,23 +4,23 @@
 #include "CMUtil.h"
     
 
-/*使用内部测试信号配置*/
+// all registers for outputing the test signal
 const static uint8 test1mVRegs[12] = {  
   0x52,
   //CONFIG1
-#if (SR_SPS == 125)
+#if (SAMPLE_RATE == 125)
   0x00,                     //contineus sample,125sps
-#elif (SR_SPS == 250)
+#elif (SAMPLE_RATE == 250)
   0x01,                     //contineus sample,250sps
 #endif
   //CONFIG2
-  0xA3,                     //0xA3: 1mV 方波测试信号, 0xA2: 1mV DC测试信号
+  0xA3,                     //0xA3: 1mV square test signal, 0xA2: 1mV DC test signal
   //LOFF
   0x10,                     //
   //CH1SET 
-  0x65,                     //PGA=12, 测试信号
+  0x65,                     //PGA=12, and test signal
   //CH2SET
-  0x80,                     //关闭CH2
+  0x80,                     //close CH2
   //RLD_SENS (default)      
   0x23,                     //default
   //LOFF_SENS (default)
@@ -35,13 +35,13 @@ const static uint8 test1mVRegs[12] = {
   0x0C                      //
 };	
 
-/*采集正常心电信号配置*/
+// all registers for outputing the normal ECG signal
 const static uint8 normalECGRegs[12] = {  
   //DEVID
   0x52,
-#if (SR_SPS == 125)
+#if (SAMPLE_RATE == 125)
   0x00,                     //contineus sample,125sps
-#elif (SR_SPS == 250)
+#elif (SAMPLE_RATE == 250)
   0x01,                     //contineus sample,250sps
 #endif
   //CONFIG2
@@ -49,9 +49,9 @@ const static uint8 normalECGRegs[12] = {
   //LOFF
   0x10,                     //
   //CH1SET 
-  0x60,                     //PGA=12，电极输入
+  0x60,                     //PGA=12，and ECG input
   //CH2SET
-  0x80,                     //关闭CH2
+  0x80,                     //close CH2
   //RLD_SENS     
   0x23,                     //
   //LOFF_SENS (default)
@@ -66,59 +66,32 @@ const static uint8 normalECGRegs[12] = {
   0x0C                      //
 };
 
-static ADS_DataCB_t ADS_DataCB; // 采样后的回调函数
-static int16 ecg;
+static ADS_DataCB_t pfnADSDataCB; // processing data callback function 
+static int16 ecg; // ECG data readed
 
 
-static void execute(uint8 cmd); // 执行命令
+static void execute(uint8 cmd); // execute command
 static void ADS1291_ReadOneSample(void); // read one data with ADS1291
 static void ADS1191_ReadOneSample(void); // read one data with ADS1191
 
-/******************************************************************************
-//执行一个命令
-******************************************************************************/
-static void execute(uint8 cmd)
-{
-  ADS_CS_LOW();
-  
-  delayus(100);
-  
-  // 发送停止采样命令
-  SPI_ADS_SendByte(SDATAC);
-  
-  // 发送当前命令
-  SPI_ADS_SendByte(cmd);
-  
-  delayus(100);
-  
-  ADS_CS_HIGH();
-}
-
-
-// ADS 初始化
+// ADS init
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
 {
-  // 初始化ADS模块
+  // init ADS
   SPI_ADS_Init();  
-  
   ADS1x9x_Reset();
   
-#if defined(CALIBRATE_1MV)  
-  // 设置采集内部测试信号时的寄存器值
+#if defined(CALIBRATE_1MV) 
   ADS1x9x_SetRegsAsTestSignal();
 #else
-  // 设置正常采集寄存器值
   ADS1x9x_SetRegsAsNormalECGSignal();
 #endif  
   
-  //设置采样数据后的回调函数
-  ADS_DataCB = pfnADS_DataCB_t;
-  
-  // 进入待机状态
+  pfnADSDataCB = pfnADS_DataCB_t;
   ADS1x9x_StandBy();
 }
 
-// 唤醒
+// wakeup
 extern void ADS1x9x_WakeUp(void)
 {
   execute(WAKEUP);
@@ -285,10 +258,20 @@ __interrupt void PORT0_ISR(void)
   HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
 }
 
+//execute command
+static void execute(uint8 cmd)
+{
+  ADS_CS_LOW();
+  delayus(100);
+  // 发送停止采样命令
+  SPI_ADS_SendByte(SDATAC);
+  // 发送当前命令
+  SPI_ADS_SendByte(cmd);
+  delayus(100);
+  ADS_CS_HIGH();
+}
 
-/******************************************************************************
- *  ADS1291: high precise(24bits) chip with only one channel
-******************************************************************************/
+// ADS1291: high precise(24bits) chip with only one channel
 static void ADS1291_ReadOneSample(void)
 {  
   ADS_CS_LOW();
@@ -317,14 +300,12 @@ static void ADS1291_ReadOneSample(void)
   }
   ecg = (int16)((data[1] & 0x00FF) | ((data[2] & 0x00FF) << 8));
    
-  if(ADS_DataCB != 0) {
-    ADS_DataCB(ecg, stat);
+  if(pfnADSDataCB != 0) {
+    pfnADSDataCB(ecg, stat);
   }
 }
 
-/******************************************************************************
- *  ADS1191: low precise(16bits) chip with only one channel
-******************************************************************************/
+// ADS1191: low precise(16bits) chip with only one channel
 static void ADS1191_ReadOneSample(void)
 {  
   ADS_CS_LOW();
@@ -337,6 +318,8 @@ static void ADS1191_ReadOneSample(void)
   
   data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
   data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   
   ADS_CS_HIGH();
   
@@ -351,7 +334,7 @@ static void ADS1191_ReadOneSample(void)
   }
   ecg = (int16)((data[0] & 0x00FF) | ((data[1] & 0x00FF) << 8));
    
-  if(ADS_DataCB != 0) {
-    ADS_DataCB(ecg, stat);
+  if(pfnADSDataCB != 0) {
+    pfnADSDataCB(ecg, stat);
   }
 }

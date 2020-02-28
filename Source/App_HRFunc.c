@@ -18,8 +18,8 @@ static uint8 rrNum = 0;
 static uint16 caliValue = 0;
 
 static uint16 calRRInterval(int16 x);
-static void processEcgData(int16 x, uint8 status);
-static void process1mVData(int16 x, uint8 status);
+static void processEcgSignal(int16 x, uint8 status);
+static void processTestSignal(int16 x, uint8 status);
 static uint16 median(uint16 *array, uint8 datnum);
 
 
@@ -29,11 +29,11 @@ extern void HRFunc_Init()
   initBeatFlag = 1;
   rrSampleCount = 0;
   rrNum = 0;  
+  // initilize the ADS1x9x and set the data process callback function
 #if defined(CALIBRATE_1MV)
-  ADS1x9x_Init(process1mVData);  
+  ADS1x9x_Init(processTestSignal);  
 #else
-  // initilize the ADS1x9x and set the ecg data process callback function
-  ADS1x9x_Init(processEcgData);  
+  ADS1x9x_Init(processEcgSignal);  
 #endif
   delayus(1000);
 }
@@ -57,9 +57,10 @@ extern void HRFunc_Stop()
 // copy HR data to point p and return the length of data
 extern uint8 HRFunc_CopyHRDataInto(uint8* p)
 {
-  if(rrNum == 0) return 0;
+  if(rrNum == 0) return 0;  // No RR interval, return 0
   
-  // calculate BPM with average method
+  //////// Two methods to calculate BPM
+  // 1. calculate BPM with average method
   /*
   int32 sum = 0;
   for(i = 0; i < rrNum; i++)
@@ -67,23 +68,25 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
     sum += rrBuf[i];
   }
   int16 BPM = (7500L*rrNum + (sum>>1))/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval, the round op is done
-  if(BPM > 255) BPM = 255;
   */
   
-  // calculate BPM with median method
+  // 2. calculate BPM with median method
   uint16 rrMedian = ((rrNum == 1) ? rrBuf[0] : median(rrBuf, rrNum));
   int16 BPM = 7500L/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
+  ////////////////////////////////////////
+  
   if(BPM > 255) BPM = 255;
   
   uint8* pTmp = p;
   
+  ////////Three different output HR data
   /*
-  //include bpm only
+  //1. include bpm only
   *p++ = 0x00;
   *p++ = (uint8)BPM;
   */
 
-  //include bpm and RRInterval
+  //2. include bpm and RRInterval
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   uint16 MS1024 = 0;
@@ -97,7 +100,7 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   }
   
   /*
-  // include bpm and Q&N as RRInterval for debug
+  // 3. include bpm and Q&N as RRInterval for debug
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   int* pQRS = getQRSBuffer();
@@ -124,7 +127,7 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   return (uint8)(p-pTmp);
 }
 
-static void processEcgData(int16 x, uint8 status)
+static void processEcgSignal(int16 x, uint8 status)
 {
   if(!status)
   {
@@ -182,7 +185,7 @@ static uint16 median(uint16 *array, uint8 datnum)
   return(sort[half]);
 }
 
-static void process1mVData(int16 x, uint8 status)
+static void processTestSignal(int16 x, uint8 status)
 {
   static int16 data1mV[125] = {0};
   static uint8 index = 0;

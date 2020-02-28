@@ -2,7 +2,6 @@
 #ifndef QRSFILT_H
 #define QRSFILT_H
 
-#define SAMPLE_RATE	125	/* Sample rate in Hz. */
 #define MS_PER_SAMPLE	8  //( (double) 1000/ (double) SAMPLE_RATE)
 #define MS25	3  //((int) (25/MS_PER_SAMPLE + 0.5))
 #define LPBUFFER_LGTH 6 //((int) (2*MS25))

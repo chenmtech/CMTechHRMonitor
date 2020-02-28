@@ -8,11 +8,10 @@
 
 #include "hal_types.h"
 
-// initialize the model, including 
 extern void HRFunc_Init();
 extern void HRFunc_Start();
 extern void HRFunc_Stop();
-// copy HR data into p and return the length of data
-extern uint8 HRFunc_CopyHRDataInto(uint8* p);
+extern uint8 HRFunc_CopyHRDataInto(uint8* p); // copy HR data into p and return the length of data
+
 
 #endif

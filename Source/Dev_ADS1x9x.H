@@ -1,9 +1,7 @@
 /*
- * Dev_ADS1x9x.h : ADS1x9x芯片的设备驱动程序头文件
-
- * 实现ADS1x9x芯片的主要功能
- * 包括：1、读写寄存器；2、控制ADS1x9x; 3、读采样数据
-
+ * Dev_ADS1x9x.h : ADS1x9x chip driver header file
+ * the main functions including:
+ * 1、read and write registers；2、control the ADS1x9x; 3、read data
 */
 
 #ifndef DEV_ADS1X9X_H
@@ -11,9 +9,6 @@
 
 #include "hal_spi_ADS.h"
 #include <bcomdef.h>
-
-
-#define SR_SPS          125  // 采样频率
 
 //SPI Command
 #define WAKEUP		0x02		//Wake-up from standby mode
@@ -58,19 +53,19 @@
 typedef void (*ADS_DataCB_t)(int16 data, uint8 status); // callback function to handle one sample data
 
 
-extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // 初始化
-extern void ADS1x9x_WakeUp(void); // 唤醒
-extern void ADS1x9x_StandBy(void); // 待机
-extern void ADS1x9x_Reset(void); // 重启
-extern void ADS1x9x_StartConvert(void); // 启动转换
-extern void ADS1x9x_StopConvert(void); // 停止转换
-extern uint8 ADS1x9x_ReadRegister(uint8 address); // 读一个寄存器
-extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len); // 读多个寄存器
-extern void ADS1x9x_ReadAllRegister(uint8 * pRegs); // 读所有寄存器
-extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte); // 写一个寄存器
-extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len); // 写多个寄存器
-extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs); // 写所有寄存器
-extern void ADS1x9x_SetRegsAsTestSignal(); //设置为采集内部测试信号
-extern void ADS1x9x_SetRegsAsNormalECGSignal(); // 设置为采集正常ECG信号
+extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // init
+extern void ADS1x9x_WakeUp(void); // wakeup
+extern void ADS1x9x_StandBy(void); // standby
+extern void ADS1x9x_Reset(void); // reset
+extern void ADS1x9x_StartConvert(void); // start convert
+extern void ADS1x9x_StopConvert(void); // stop convert
+extern uint8 ADS1x9x_ReadRegister(uint8 address); // read one register
+extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len); // read multi registers
+extern void ADS1x9x_ReadAllRegister(uint8 * pRegs); // read all registers
+extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte); // write one register
+extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len); // write multi registers
+extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs); // write all registers
+extern void ADS1x9x_SetRegsAsTestSignal(); //set registers as outputing test signal
+extern void ADS1x9x_SetRegsAsNormalECGSignal(); // set registers as outputing normal ECG signal
 
 #endif
