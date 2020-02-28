@@ -4,6 +4,8 @@
 #include "Dev_ADS1x9x.h"
 #include "QRSDET.h"
 
+
+
 // the flag of the initial beat
 static uint8 initBeatFlag = 1 ;
 // the sample count between RR interval
@@ -13,8 +15,7 @@ static uint16 rrBuf[9] = {0};
 // the current RR interval number in rrBuf
 static uint8 rrNum = 0;
 
-static int16 data1mV[125] = {0};
-static uint16 cali = 0;
+static uint16 caliValue = 0;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgData(int16 x, uint8 status);
@@ -28,16 +29,12 @@ extern void HRFunc_Init()
   initBeatFlag = 1;
   rrSampleCount = 0;
   rrNum = 0;  
+#if defined(CALIBRATE_1MV)
+  ADS1x9x_Init(process1mVData);  
+#else
   // initilize the ADS1x9x and set the ecg data process callback function
   ADS1x9x_Init(processEcgData);  
-  delayus(1000);
-}
-
-extern void HRFunc_Start1mVCali()
-{
-  ADS1x9x_Init(process1mVData);  
-  delayus(1000);
-  ADS1x9x_StartConvert();
+#endif
   delayus(1000);
 }
 
@@ -187,7 +184,7 @@ static uint16 median(uint16 *array, uint8 datnum)
 
 static void process1mVData(int16 x, uint8 status)
 {
-  //static int16 data1mV[125] = {0};
+  static int16 data1mV[125] = {0};
   static uint8 index = 0;
   uint8 i,j;
   
@@ -195,7 +192,7 @@ static void process1mVData(int16 x, uint8 status)
   
   if(index >= 125)
   {
-    uint16 tmp;
+    uint16 tmp; 
     for(i = 0; i < 125; ++i)
     {
       for(j = i+1; j < 125; j++)
@@ -218,6 +215,7 @@ static void process1mVData(int16 x, uint8 status)
     {
       smax += data1mV[i];
     }
-    cali = (smax-smin)/20;
+    caliValue = (smax-smin)/20;
+    index = 0;
   }
 }

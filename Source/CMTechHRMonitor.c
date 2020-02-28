@@ -115,18 +115,7 @@ static void stopHRMeas( void ); // stop the heart rate measurement
 static void notifyHR(); // notify heart rate
 
 extern void HRM_Init( uint8 task_id )
-{
-#if defined(CALIBRATE_1MV)  
-  initIOPin();
-  
-  HRFunc_Init();
-  
-  HRFunc_Start1mVCali();
-  
-  return;
-  
-#endif  
-  
+{ 
   taskID = task_id;
   
   // Setup the GAP Peripheral Role Profile
@@ -350,7 +339,7 @@ static void hrServiceCB( uint8 event )
   switch (event)
   {
     case HRM_MEAS_NOTI_ENABLED:
-      startHRMeas();
+      startHRMeas();  
       break;
         
     case HRM_MEAS_NOTI_DISABLED:

@@ -2,16 +2,7 @@
 #include "Dev_ADS1x9x.H"
 #include "hal_mcu.h"
 #include "CMUtil.h"
-
-// ADS芯片类型
-#define TYPE_ADS1191    0
-#define TYPE_ADS1192    1
-#define TYPE_ADS1291    2
-#define TYPE_ADS1292    3
-
-// ADS1291每次接收数据长度为6个字节：状态3字节，通道1为3字节，通道2没有输出
-#define DATA_LEN  6               
-
+    
 
 /*使用内部测试信号配置*/
 const static uint8 test1mVRegs[12] = {  
@@ -75,16 +66,13 @@ const static uint8 normalECGRegs[12] = {
   0x0C                      //
 };
 
-static uint8 defaultRegs[12]; // 重启后读出来的缺省寄存器值
-static uint8 type; // 芯片类型
 static ADS_DataCB_t ADS_DataCB; // 采样后的回调函数
-static uint8 status[3] = {0}; // received status data with 24 bits: 1100 + LOFF_STAT[4:0] + GPIO[1:0] + 13 '0's
-static uint8 data[3]; // received channel 1 data buffer
 static int16 ecg;
 
 
 static void execute(uint8 cmd); // 执行命令
-static void ADS1291_ReadOneSample(void); // 读一个采样值
+static void ADS1291_ReadOneSample(void); // read one data with ADS1291
+static void ADS1191_ReadOneSample(void); // read one data with ADS1191
 
 /******************************************************************************
 //执行一个命令
@@ -115,11 +103,6 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
   
   ADS1x9x_Reset();
   
-  // 读缺省寄存器
-  ADS1x9x_ReadAllRegister(defaultRegs); 
-  
-  type = (defaultRegs[0] & 0x03);
-
 #if defined(CALIBRATE_1MV)  
   // 设置采集内部测试信号时的寄存器值
   ADS1x9x_SetRegsAsTestSignal();
@@ -291,8 +274,12 @@ __interrupt void PORT0_ISR(void)
   {
     P0IFG &= ~(1<<1);   //clear P0_1 IFG 
     P0IF = 0;   //clear P0 interrupt flag
-    
+
+#if defined(ADS1291)    
     ADS1291_ReadOneSample();
+#elif defined(ADS1191)
+    ADS1191_ReadOneSample();
+#endif
   }
   
   HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
@@ -300,12 +287,14 @@ __interrupt void PORT0_ISR(void)
 
 
 /******************************************************************************
- * 读一个样本
- * ADS1291是高精度（24bit）单通道芯片
+ *  ADS1291: high precise(24bits) chip with only one channel
 ******************************************************************************/
 static void ADS1291_ReadOneSample(void)
 {  
   ADS_CS_LOW();
+  
+  uint8 status[3] = {0}; // received status data with 24 bits: 1100 + LOFF_STAT[4:0] + GPIO[1:0] + 13 '0's
+  uint8 data[3]; // received channel 1 data buffer
   
   status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
@@ -333,44 +322,36 @@ static void ADS1291_ReadOneSample(void)
   }
 }
 
-/*
-// 设置为采集1mV测试信号
-extern void ADS1x9x_ChangeToTestSignal() 
-{
-  //ADS1x9x_WriteRegister(0x02, 0xA3);
-  //ADS1x9x_WriteRegister(0x04, 0x65);
+/******************************************************************************
+ *  ADS1191: low precise(16bits) chip with only one channel
+******************************************************************************/
+static void ADS1191_ReadOneSample(void)
+{  
   ADS_CS_LOW();
-  delayus(100);
-  SPI_ADS_SendByte(SDATAC);  
-  delayus(100);
-  SPI_ADS_SendByte(0x02 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0xA3);
-  SPI_ADS_SendByte(0x04 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0x65);
   
-  delayus(100);
-  ADS_CS_HIGH();
-}
-
-// 设置为采集ECG信号
-extern void ADS1x9x_ChangeToEcgSignal() 
-{
-  //ADS1x9x_WriteRegister(0x02, 0xA0);
-  //ADS1x9x_WriteRegister(0x04, 0x60);
-  ADS_CS_LOW();
-  delayus(100);
-  SPI_ADS_SendByte(SDATAC);  
-  delayus(100);
-  SPI_ADS_SendByte(0x02 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0xA0);
-  SPI_ADS_SendByte(0x04 | 0x40);
-  SPI_ADS_SendByte(0);  
-  SPI_ADS_SendByte(0x60);
+  uint8 status[2] = {0}; // received status data with 16 bits: 1100 + LOFF_STAT[4:0] + GPIO[1:0] + 5 '0's
+  uint8 data[2]; // received channel 1 data buffer
   
-  delayus(100);
+  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  
+  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
+  data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
+  
   ADS_CS_HIGH();
+  
+  uint8 stat = 0x00;
+  if(status[1] & 0x01)
+  {
+    stat = 0x02;
+  }
+  if(status[0] & 0x80)
+  {
+    stat |= 0x01;
+  }
+  ecg = (int16)((data[0] & 0x00FF) | ((data[1] & 0x00FF) << 8));
+   
+  if(ADS_DataCB != 0) {
+    ADS_DataCB(ecg, stat);
+  }
 }
-*/

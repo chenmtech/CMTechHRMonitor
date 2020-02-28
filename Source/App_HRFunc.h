@@ -10,8 +10,6 @@
 
 // initialize the model, including 
 extern void HRFunc_Init();
-// start 1mV calibration
-extern void HRFunc_Start1mVCali();
 extern void HRFunc_Start();
 extern void HRFunc_Stop();
 // copy HR data into p and return the length of data
