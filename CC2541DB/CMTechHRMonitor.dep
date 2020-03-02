@@ -119,7 +119,7 @@
       <file>$PROJ_DIR$\..\Source\CMUtil.c</file>
       <file>$PROJ_DIR$\..\Source\CMUtil.h</file>
       <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.c</file>
-      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.H</file>
+      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.h</file>
       <file>$PROJ_DIR$\..\Source\hal_spi_ADS.c</file>
       <file>$PROJ_DIR$\..\Source\hal_spi_ADS.h</file>
       <file>$PROJ_DIR$\..\Source\OSAL_CMTechHRMonitor.c</file>
@@ -128,7 +128,7 @@
       <file>$PROJ_DIR$\..\Source\QRSFILT.CPP</file>
       <file>$PROJ_DIR$\..\Source\QRSFILT.H</file>
       <file>$PROJ_DIR$\..\Source\Service_Battery.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_Battery.h</file>
+      <file>$PROJ_DIR$\..\Source\service_battery.h</file>
       <file>$PROJ_DIR$\..\Source\Service_DevInfo.c</file>
       <file>$PROJ_DIR$\..\Source\Service_DevInfo.h</file>
       <file>$PROJ_DIR$\..\Source\Service_HRMonitor.c</file>
@@ -1282,7 +1282,7 @@
       <file>$PROJ_DIR$\..\Source\CMUtil.c</file>
       <file>$PROJ_DIR$\..\Source\CMUtil.h</file>
       <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.c</file>
-      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.H</file>
+      <file>$PROJ_DIR$\..\Source\Dev_ADS1x9x.h</file>
       <file>$PROJ_DIR$\..\Source\hal_spi_ADS.c</file>
       <file>$PROJ_DIR$\..\Source\hal_spi_ADS.h</file>
       <file>$PROJ_DIR$\..\Source\OSAL_CMTechHRMonitor.c</file>
@@ -1291,7 +1291,7 @@
       <file>$PROJ_DIR$\..\Source\QRSFILT.CPP</file>
       <file>$PROJ_DIR$\..\Source\QRSFILT.H</file>
       <file>$PROJ_DIR$\..\Source\Service_Battery.c</file>
-      <file>$PROJ_DIR$\..\Source\Service_Battery.h</file>
+      <file>$PROJ_DIR$\..\Source\service_battery.h</file>
       <file>$PROJ_DIR$\..\Source\Service_DevInfo.c</file>
       <file>$PROJ_DIR$\..\Source\Service_DevInfo.h</file>
       <file>$PROJ_DIR$\..\Source\Service_HRMonitor.c</file>
@@ -2025,10 +2025,6 @@
       <name>$PROJ_DIR$\..\Source\App_HRFunc.c</name>
       <outputs>
         <tool>
-          <name>ICC8051</name>
-          <file> 204</file>
-        </tool>
-        <tool>
           <name>BICOMP</name>
           <file> 54</file>
         </tool>
@@ -2059,11 +2055,11 @@
       <inputs>
         <tool>
           <name>ICC8051</name>
-          <file> 354 355 334 139 319 288 141 5 9 14 8 7 10 326 357 318 2 295 322 320 325 324 327 286 346 348 281 283 279 262 353 345 321 330 265</file>
+          <file> 354 355 334 139 319 288 141 5 9 14 8 7 10 326 357 318 2 295 322 320 325 324 327 286 346 348 281 283 279 138 262 353 345 321 330 265</file>
         </tool>
         <tool>
           <name>BICOMP</name>
-          <file> 334 139 319 288 141 5 9 14 8 7 10 326 357 318 2 295 322 320 325 324 327 286 346 348 281 283 279 262 353 345 321 330 265</file>
+          <file> 334 139 319 288 141 5 9 14 8 7 10 326 357 318 2 295 322 320 325 324 327 286 346 348 281 283 279 138 262 353 345 321 330 265</file>
         </tool>
       </inputs>
     </file>

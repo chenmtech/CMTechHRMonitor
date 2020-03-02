@@ -19,6 +19,7 @@
 #include "Service_DevInfo.h"
 #include "Service_HRMonitor.h"
 #include "service_battery.h"
+#include "service_ecg.h"
 #include "App_HRFunc.h"
 
 #if defined ( PLUS_BROADCASTER )
@@ -39,6 +40,7 @@
 #define STATUS_MEAS_START 1    // heart rate measurement started
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
 #define BATT_MEAS_PERIOD 15000L // battery measurement period, ms
+#define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
@@ -83,7 +85,8 @@ static attHandleValueNoti_t hrNoti;
 
 static void gapRoleStateCB( gaprole_States_t newState ); // GAP role state change callback
 static void hrServiceCB( uint8 event ); // heart rate service callback function
-static void batteryServiceCB( uint8 event );
+static void batteryServiceCB( uint8 event ); // battery service callback function
+static void ecgServiceCB( uint8 event ); // ecg service callback function
 
 // GAP Role callback struct
 static gapRolesCBs_t gapRoleStateCBs =
@@ -106,6 +109,11 @@ static HRMServiceCBs_t hrServCBs =
 static batteryServiceCBs_t batteryServCBs =
 {
   batteryServiceCB    
+};
+
+static ECGServiceCBs_t ecgServCBs =
+{
+  ecgServiceCB    
 };
 
 static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process function
@@ -174,18 +182,28 @@ extern void HRM_Init( uint8 task_id )
     HRM_SetParameter( HRM_SENS_LOC, sizeof ( uint8 ), &sensLoc );
   }
   
+  // set characteristic in ecg service
+  {
+    uint8 ecg1mVCali = ECG_1MV_CALI_VALUE;
+    ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
+  }  
+  
   // Initialize GATT attributes
   GGS_AddService( GATT_ALL_SERVICES );         // GAP
   GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
   DevInfo_AddService( ); // device information service
   HRM_AddService( GATT_ALL_SERVICES ); // heart rate monitor service
   Battery_AddService(GATT_ALL_SERVICES); // battery service
+  ECG_AddService(GATT_ALL_SERVICES); // ecg service
   
   // register heart rate service callback
   HRM_Register( &hrServCBs );
   
   // register battery service callback
   Battery_RegisterAppCBs(&batteryServCBs);
+  
+  // register ecg service callback
+  ECG_Register( &ecgServCBs );  
   
   //在这里初始化GPIO
   //第一：所有管脚，reset后的状态都是输入加上拉
@@ -398,5 +416,23 @@ static void batteryServiceCB( uint8 event )
   {
     // stop periodic measurement
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
+  }
+}
+
+static void ecgServiceCB( uint8 event )
+{
+  switch (event)
+  {
+    case ECG_MEAS_NOTI_ENABLED:
+      startHRMeas();  
+      break;
+        
+    case ECG_MEAS_NOTI_DISABLED:
+      stopHRMeas();
+      break;
+      
+    default:
+      // Should not get here
+      break;
   }
 }

@@ -204,7 +204,7 @@ extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value )
       break;      
 
     case ECG_1MV_CALI:
-      osal_memcpy((uint8*)&ecg1mVCali, value, 2);
+      osal_memcpy((uint8*)&ecg1mVCali, value, len);
       break;
       
     case ECG_LEAD_TYPE:  

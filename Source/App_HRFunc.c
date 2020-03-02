@@ -14,14 +14,18 @@ static uint16 rrSampleCount = 0 ;
 static uint16 rrBuf[9] = {0};
 // the current RR interval number in rrBuf
 static uint8 rrNum = 0;
-
+// 1mV calibration value, only used when CALIBRATE_1MV is set in preprocessing
 static uint16 caliValue = 0;
+static bool sendEcg = false;
+static uint16 pckNum = 0;
+static uint8 pBuf[20] = {0};
+static uint8 ecgDataLen = 0;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgSignal(int16 x, uint8 status);
 static void processTestSignal(int16 x, uint8 status);
 static uint16 median(uint16 *array, uint8 datnum);
-
+static void sendEcgSignal(int16 ecg);
 
 extern void HRFunc_Init()
 {
@@ -52,6 +56,16 @@ extern void HRFunc_Stop()
   ADS1x9x_StopConvert();
   ADS1x9x_StandBy();
   delayus(2000);
+}
+
+extern void HRFunc_SendEcgData(bool send)
+{
+  if(send)
+  {
+    pckNum = 0;
+    ecgDataLen = 0;
+  }
+  sendEcg = send;
 }
 
 // copy HR data to point p and return the length of data
@@ -135,6 +149,11 @@ static void processEcgSignal(int16 x, uint8 status)
     if(RR == 0) return;
     rrBuf[rrNum++] = RR;
     if(rrNum >= 9) rrNum = 8;
+    
+    if(sendEcg)
+    {
+      sendEcgSignal(x);
+    }
   }
 }
 
@@ -161,6 +180,27 @@ static uint16 calRRInterval(int16 x)
   }
  
   return 0;
+}
+
+static void sendEcgSignal(int16 ecg)
+{
+  if(ecgDataLen == 0) {
+    *pBuf++ = LO_UINT16(pckNum);
+    *pBuf++ = HI_UINT16(pckNum);
+    pckNum = (pckNum == 65535) ? 0 : pckNum+1;
+  }
+  
+  *pBuf++ = low;  
+  *pBuf++ = high;
+  byteCnt += 2;
+
+  // 达到数据包长度
+  if(byteCnt == ECG_PACKET_LEN)
+  {
+    byteCnt = 0;
+    pBuf = ECGMonitor_GetECGDataPointer();
+    ECGMonitor_SetParameter( ECGMONITOR_DATA, ECG_PACKET_LEN, pBuf );  
+  }  
 }
 
 static uint16 median(uint16 *array, uint8 datnum)
