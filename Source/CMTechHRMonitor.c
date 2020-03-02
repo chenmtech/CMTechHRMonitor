@@ -36,8 +36,8 @@
 
 
 #define INVALID_CONNHANDLE 0xFFFF
-#define STATUS_MEAS_STOP 0     // heart rate measurement stopped
-#define STATUS_MEAS_START 1    // heart rate measurement started
+#define STATUS_ECG_STOP 0     // ecg sampling stopped
+#define STATUS_ECG_START 1    // ecg sampling started
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
 #define BATT_MEAS_PERIOD 15000L // battery measurement period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
@@ -77,8 +77,8 @@ static uint8 scanResponseData[] =
 // GGS device name
 static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor";
 
-// the current hr measurement status
-static uint8 status = STATUS_MEAS_STOP;
+// ecg sampling status
+static uint8 status = STATUS_ECG_STOP;
 
 // Heart rate measurement value stored in this structure
 static attHandleValueNoti_t hrNoti;
@@ -271,7 +271,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & HRM_MEAS_PERIODIC_EVT )
   {
-    if(gapProfileState == GAPROLE_CONNECTED && status == STATUS_MEAS_START)
+    if(gapProfileState == GAPROLE_CONNECTED && status == STATUS_ECG_START)
     {
       notifyHR();
       osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD );
@@ -377,19 +377,21 @@ static void hrServiceCB( uint8 event )
 // start measuring heart rate
 static void startHRMeas( void )
 {  
-  if(status == STATUS_MEAS_STOP) {
-    status = STATUS_MEAS_START;
+  if(status == STATUS_ECG_STOP) {
+    status = STATUS_ECG_START;
     HRFunc_Start();
-    osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
   }
+  osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
+  HRFunc_SetHRCalculated(true);
 }
 
 // stop measuring heart rate
 static void stopHRMeas( void )
 {  
-  status = STATUS_MEAS_STOP;
+  status = STATUS_ECG_STOP;
   HRFunc_Stop();
   osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
+  HRFunc_SetHRCalculated(false);
 }
 
 // send heart rate notification
@@ -424,11 +426,11 @@ static void ecgServiceCB( uint8 event )
   switch (event)
   {
     case ECG_MEAS_NOTI_ENABLED:
-      startHRMeas();  
+      HRFunc_SetEcgSent(true); 
       break;
         
     case ECG_MEAS_NOTI_DISABLED:
-      stopHRMeas();
+      HRFunc_SetEcgSent(false); 
       break;
       
     default:

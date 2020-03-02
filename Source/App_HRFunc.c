@@ -3,23 +3,33 @@
 #include "CMUtil.h"
 #include "Dev_ADS1x9x.h"
 #include "QRSDET.h"
+#include "service_ecg.h"
+#if defined ( PLUS_BROADCASTER )
+  #include "peripheralBroadcaster.h"
+#else
+  #include "peripheral.h"
+#endif
 
-
-
+// is the heart rate calculated?
+static bool hrCalc = false;
 // the flag of the initial beat
 static uint8 initBeatFlag = 1 ;
 // the sample count between RR interval
 static uint16 rrSampleCount = 0 ;
-// RR interval buffer, the max size of the buffer is 9
+// RR interval buffer, the max number in the buffer is 9
 static uint16 rrBuf[9] = {0};
-// the current RR interval number in rrBuf
+// the current number in rrBuf
 static uint8 rrNum = 0;
 // 1mV calibration value, only used when CALIBRATE_1MV is set in preprocessing
 static uint16 caliValue = 0;
-static bool sendEcg = false;
+
+// is the ecg data sent?
+static bool ecgSent = false;
+// the number of the current packet of ecg data, from 0 to 65535
 static uint16 pckNum = 0;
-static uint8 pBuf[20] = {0};
-static uint8 ecgDataLen = 0;
+static uint8* pEcgByte;
+static uint8 ecgByteCnt = 0;
+static attHandleValueNoti_t ecgNoti;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgSignal(int16 x, uint8 status);
@@ -28,11 +38,7 @@ static uint16 median(uint16 *array, uint8 datnum);
 static void sendEcgSignal(int16 ecg);
 
 extern void HRFunc_Init()
-{
-  QRSDet(0, 1);
-  initBeatFlag = 1;
-  rrSampleCount = 0;
-  rrNum = 0;  
+{ 
   // initilize the ADS1x9x and set the data process callback function
 #if defined(CALIBRATE_1MV)
   ADS1x9x_Init(processTestSignal);  
@@ -58,14 +64,28 @@ extern void HRFunc_Stop()
   delayus(2000);
 }
 
-extern void HRFunc_SendEcgData(bool send)
+extern void HRFunc_SetHRCalculated(bool calc)
+{
+  if(calc)
+  {
+    QRSDet(0, 1);
+    initBeatFlag = 1;
+    rrSampleCount = 0;
+    rrNum = 0; 
+  }
+  hrCalc = calc;
+}
+
+extern void HRFunc_SetEcgSent(bool send)
 {
   if(send)
   {
     pckNum = 0;
-    ecgDataLen = 0;
+    pEcgByte = ecgNoti.value;
+    ecgByteCnt = 0;
+    ecgNoti.len = 20;
   }
-  sendEcg = send;
+  ecgSent = send;
 }
 
 // copy HR data to point p and return the length of data
@@ -145,12 +165,17 @@ static void processEcgSignal(int16 x, uint8 status)
 {
   if(!status)
   {
-    uint16 RR = calRRInterval(x);
-    if(RR == 0) return;
-    rrBuf[rrNum++] = RR;
-    if(rrNum >= 9) rrNum = 8;
+    if(hrCalc)
+    {
+      uint16 RR = calRRInterval(x);
+      if(RR != 0)
+      {
+        rrBuf[rrNum++] = RR;
+        if(rrNum >= 9) rrNum = 8;
+      }
+    }
     
-    if(sendEcg)
+    if(ecgSent)
     {
       sendEcgSignal(x);
     }
@@ -184,22 +209,26 @@ static uint16 calRRInterval(int16 x)
 
 static void sendEcgSignal(int16 ecg)
 {
-  if(ecgDataLen == 0) {
-    *pBuf++ = LO_UINT16(pckNum);
-    *pBuf++ = HI_UINT16(pckNum);
+  if(ecgByteCnt == 0) {
+    *pEcgByte++ = LO_UINT16(pckNum);
+    *pEcgByte++ = HI_UINT16(pckNum);
     pckNum = (pckNum == 65535) ? 0 : pckNum+1;
+    ecgByteCnt = 2;
   }
   
-  *pBuf++ = low;  
-  *pBuf++ = high;
-  byteCnt += 2;
+  *pEcgByte++ = LO_UINT16(ecg);  
+  *pEcgByte++ = HI_UINT16(ecg);
+  ecgByteCnt += 2;
 
   // 达到数据包长度
-  if(byteCnt == ECG_PACKET_LEN)
+  if(ecgByteCnt == 20)
   {
-    byteCnt = 0;
-    pBuf = ECGMonitor_GetECGDataPointer();
-    ECGMonitor_SetParameter( ECGMONITOR_DATA, ECG_PACKET_LEN, pBuf );  
+    uint16 connHandle;
+    // Get connection handle
+    GAPRole_GetParameter( GAPROLE_CONNHANDLE, &connHandle );
+    ECG_MeasNotify( connHandle, &ecgNoti );
+    ecgByteCnt = 0;
+    pEcgByte = ecgNoti.value;
   }  
 }
 
