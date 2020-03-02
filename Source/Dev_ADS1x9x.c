@@ -8,9 +8,9 @@
 const static uint8 test1mVRegs[12] = {  
   0x52,
   //CONFIG1
-#if (SAMPLE_RATE == 125)
+#if (SAMPLERATE == 125)
   0x00,                     //contineus sample,125sps
-#elif (SAMPLE_RATE == 250)
+#elif (SAMPLERATE == 250)
   0x01,                     //contineus sample,250sps
 #endif
   //CONFIG2
@@ -39,9 +39,9 @@ const static uint8 test1mVRegs[12] = {
 const static uint8 normalECGRegs[12] = {  
   //DEVID
   0x52,
-#if (SAMPLE_RATE == 125)
+#if (SAMPLERATE == 125)
   0x00,                     //contineus sample,125sps
-#elif (SAMPLE_RATE == 250)
+#elif (SAMPLERATE == 250)
   0x01,                     //contineus sample,250sps
 #endif
   //CONFIG2

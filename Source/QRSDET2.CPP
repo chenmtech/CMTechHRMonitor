@@ -63,7 +63,7 @@ Returns:
 #define MS150	19 //((int) (150/MS_PER_SAMPLE + 0.5))
 #define MS220	28 //((int) (220/MS_PER_SAMPLE + 0.5))
 #define MS360	45 //((int) (360/MS_PER_SAMPLE + 0.5))
-#define MS1000	SAMPLE_RATE
+#define MS1000	SAMPLERATE
 #define MS1500	187 //((int) (1500/MS_PER_SAMPLE))
 #define MS195	24 //((int) (195/MS_PER_SAMPLE + 0.5))
 #define PRE_BLANK	MS195

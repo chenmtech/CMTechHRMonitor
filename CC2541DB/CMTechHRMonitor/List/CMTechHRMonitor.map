@@ -2,7 +2,7 @@
 #                                                                              #
 #      IAR Universal Linker V5.0.2.5/W32                                       #
 #                                                                              #
-#           Link time     =  28/Feb/2020  18:26:10                             #
+#           Link time     =  02/Mar/2020  10:05:01                             #
 #           Target CPU    =  x51                                               #
 #           List file     =  "C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\b #
 #                            le\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\List\ #
@@ -70,6 +70,9 @@
 #                            "C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\b #
 #                            le\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\Obj\S #
 #                            ervice_DevInfo.r51"                               #
+#                            "C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\b #
+#                            le\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\Obj\S #
+#                            ervice_Ecg.r51"                                   #
 #                            "C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\b #
 #                            le\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\Obj\S #
 #                            ervice_HRMonitor.r51"                             #
@@ -423,7 +426,7 @@ Absolute parts
 XDATA_I
   Relative segment, address: XDATA 00000A9F - 00000A9F (0x1 bytes), align: 0
   Segment part 6.             Intra module refs:   HRFunc_Init
-                                                   processEcgData
+                                                   processEcgSignal
            LOCAL                   ADDRESS         
            =====                   =======         
            initBeatFlag            00000A9F 
@@ -431,7 +434,7 @@ XDATA_I
 XDATA_Z
   Relative segment, address: XDATA 00000281 - 00000282 (0x2 bytes), align: 0
   Segment part 8.             Intra module refs:   HRFunc_Init
-                                                   processEcgData
+                                                   processEcgSignal
            LOCAL                   ADDRESS         
            =====                   =======         
            rrSampleCount           00000281 
@@ -439,7 +442,7 @@ XDATA_Z
 XDATA_Z
   Relative segment, address: XDATA 00000283 - 00000294 (0x12 bytes), align: 0
   Segment part 9.             Intra module refs:   HRFunc_CopyHRDataInto
-                                                   processEcgData
+                                                   processEcgSignal
            LOCAL                   ADDRESS         
            =====                   =======         
            rrBuf                   00000283 
@@ -448,7 +451,7 @@ XDATA_Z
   Relative segment, address: XDATA 00000295 - 00000295 (0x1 bytes), align: 0
   Segment part 10.            Intra module refs:   HRFunc_CopyHRDataInto
                                                    HRFunc_Init
-                                                   processEcgData
+                                                   processEcgSignal
            LOCAL                   ADDRESS         
            =====                   =======         
            rrNum                   00000295 
@@ -505,10 +508,10 @@ XDATA_Z
     -------------------------------------------------------------------------
 <BANKED_CODE> 2 (was BANKED_CODE)
   Relative segment, address: CODE 00018F5B - 00018FD6 (0x7c bytes), align: 0
-  Segment part 21.            Intra module refs:   processEcgData::?relay
+  Segment part 21.            Intra module refs:   processEcgSignal::?relay
            LOCAL                   ADDRESS         
            =====                   =======         
-           processEcgData          00018F5B 
+           processEcgSignal        00018F5B 
                calls direct, is indirectly called
                XSTACK = 00000000 ( 0000000C )
     -------------------------------------------------------------------------
@@ -560,7 +563,7 @@ BANK_RELAYS
   Segment part 22.            Intra module refs:   HRFunc_Init
            LOCAL                   ADDRESS         
            =====                   =======         
-           processEcgData::?relay
+           processEcgSignal::?relay
                                    0000036B 
     -------------------------------------------------------------------------
 BANK_RELAYS
@@ -3526,7 +3529,7 @@ BANK_RELAYS
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
            QRSDet::?relay          000004F1        HRFunc_Init (App_HRFunc)
-                                                   processEcgData (App_HRFunc)
+                                                   processEcgSignal (App_HRFunc)
     -------------------------------------------------------------------------
 BANK_RELAYS
   Relative segment, address: CODE 000004F7 - 000004FC (0x6 bytes), align: 0
@@ -4480,6 +4483,9 @@ BANK_RELAYS
   Relative segment, address: CODE 000080FE - 00008103 (0x6 bytes), align: 0
   Segment part 43.            Intra module refs:   devInfoCBs
 
+    *************************************************************************
+
+  FILE NAME : C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\ble\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\Obj\Service_Ecg.r51
     *************************************************************************
 
   FILE NAME : C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\ble\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\Obj\Service_HRMonitor.r51
@@ -24310,7 +24316,7 @@ VREG
                                                    osal_start_timerEx (OSAL_Timers)
                                                    osal_stop_timerEx (OSAL_Timers)
                                                    phyFindWlEntry (phy)
-                                                   processEcgData (App_HRFunc)
+                                                   processEcgSignal (App_HRFunc)
                                                    readAttrCB (Service_Battery)
                                                    readAttrCB (Service_HRMonitor)
                                                    reportStatusChange (linkdb)
@@ -25173,7 +25179,7 @@ CSTART
                                                    osal_stop_timerEx::?relay (OSAL_Timers)
                                                    osal_strlen::?relay (OSAL)
                                                    phyFindWlEntry::?relay (phy)
-                                                   processEcgData::?relay (App_HRFunc)
+                                                   processEcgSignal::?relay (App_HRFunc)
                                                    readAttrCB::?relay (Service_Battery)
                                                    readAttrCB::?relay (Service_HRMonitor)
                                                    reportStatusChange::?relay (linkdb)
@@ -27183,7 +27189,7 @@ RCODE
                                                    osal_start_timerEx (OSAL_Timers)
                                                    osal_stop_timerEx (OSAL_Timers)
                                                    phyFindWlEntry (phy)
-                                                   processEcgData (App_HRFunc)
+                                                   processEcgSignal (App_HRFunc)
                                                    readAttrCB (Service_Battery)
                                                    readAttrCB (Service_HRMonitor)
                                                    reportStatusChange (linkdb)
@@ -27494,7 +27500,7 @@ RCODE
                                                    osal_next_timeout (OSAL_Timers)
                                                    osal_pwrmgr_powerconserve (OSAL_PwrMgr)
                                                    osal_pwrmgr_task_state (OSAL_PwrMgr)
-                                                   processEcgData (App_HRFunc)
+                                                   processEcgSignal (App_HRFunc)
                                                    readAttrCB (Service_Battery)
                                                    readAttrCB (Service_HRMonitor)
                                                    rightshift (QRSDET2)

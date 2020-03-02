@@ -279,7 +279,7 @@
           <state>HAL_ADC=TRUE</state>
           <state>xCALIBRATE_1MV</state>
           <state>ADS1291</state>
-          <state>SAMPLE_RATE=125</state>
+          <state>SAMPLERATE=125</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -6418,13 +6418,19 @@
       <name>$PROJ_DIR$\..\Source\Service_Battery.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\service_battery.h</name>
+      <name>$PROJ_DIR$\..\Source\Service_Battery.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\Service_DevInfo.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\Service_DevInfo.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Service_Ecg.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Service_Ecg.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\Service_HRMonitor.c</name>
