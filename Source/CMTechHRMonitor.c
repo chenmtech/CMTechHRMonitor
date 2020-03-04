@@ -326,7 +326,7 @@ static void gapRoleStateCB( gaprole_States_t newState )
     stopHRMeas();
     HRFunc_SetEcgSent(false); 
     //initIOPin();
-    HRFunc_Init();
+    //HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     
     // enable advertising
@@ -392,8 +392,11 @@ static void startHRMeas( void )
 // stop measuring heart rate
 static void stopHRMeas( void )
 {  
-  status = STATUS_ECG_STOP;
-  HRFunc_Stop();
+  if(status == STATUS_ECG_START)
+  {
+    status = STATUS_ECG_STOP;
+    HRFunc_Stop();
+  }
   osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
   HRFunc_SetHRCalculated(false);
 }

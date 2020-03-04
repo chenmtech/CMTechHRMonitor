@@ -212,7 +212,7 @@ static void sendEcgSignal(int16 ecg)
   if(ecgByteCnt == 0) {
     *pEcgByte++ = LO_UINT16(pckNum);
     *pEcgByte++ = HI_UINT16(pckNum);
-    pckNum = (pckNum == 65535) ? 0 : pckNum+1;
+    pckNum = (pckNum == 255) ? 0 : pckNum+1;
     ecgByteCnt = 2;
   }
   
