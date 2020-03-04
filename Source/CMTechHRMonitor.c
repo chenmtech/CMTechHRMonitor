@@ -150,9 +150,9 @@ extern void HRM_Init( uint8 task_id )
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
     // set the connection parameter
-    uint16 desired_min_interval = 48;  // units of 1.25ms 
-    uint16 desired_max_interval = 720; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
-    uint16 desired_slave_latency = 1;
+    uint16 desired_min_interval = 16;//48;  // units of 1.25ms 
+    uint16 desired_max_interval = 32;//720; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
+    uint16 desired_slave_latency = 0;//1;
     uint16 desired_conn_timeout = 600; // units of 10ms, Note: the ios device require the timeout <= 6s
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
@@ -187,7 +187,7 @@ extern void HRM_Init( uint8 task_id )
   
   // set characteristic in ecg service
   {
-    uint8 ecg1mVCali = ECG_1MV_CALI_VALUE;
+    uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
   }  
   
