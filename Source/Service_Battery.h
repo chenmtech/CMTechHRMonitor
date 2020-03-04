@@ -24,20 +24,20 @@
 #define BATTERY_SERVICE               0x00000001
 
 // the typedef of battery service callback function in the application
-typedef NULL_OK void (*batteryServiceCB_t)( uint8 event );
+typedef NULL_OK void (*BatteryServiceCB_t)( uint8 event );
 
 // the struct of battery service callback
 typedef struct
 {
-  batteryServiceCB_t        pfnBatteryServiceCB;
-} batteryServiceCBs_t;
+  BatteryServiceCB_t        pfnBatteryServiceCB;
+} BatteryServiceCBs_t;
 
 
 // add battery service
 extern bStatus_t Battery_AddService( uint32 services );
 
 // register battery service callback struct in the application
-extern bStatus_t Battery_RegisterAppCBs( batteryServiceCBs_t *appCallbacks );
+extern bStatus_t Battery_RegisterAppCBs( BatteryServiceCBs_t *appCallbacks );
 
 // get the characteristic parameter in battery service
 extern bStatus_t Battery_GetParameter( uint8 param, void *value );

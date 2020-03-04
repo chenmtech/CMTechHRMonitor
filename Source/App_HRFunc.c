@@ -226,7 +226,7 @@ static void sendEcgSignal(int16 ecg)
     uint16 connHandle;
     // Get connection handle
     GAPRole_GetParameter( GAPROLE_CONNHANDLE, &connHandle );
-    ECG_MeasNotify( connHandle, &ecgNoti );
+    ECG_PacketNotify( connHandle, &ecgNoti );
     ecgByteCnt = 0;
     pEcgByte = ecgNoti.value;
   }  

@@ -1,5 +1,5 @@
 /**************************************************************************************************
-* CMTechHRMonitor.c: 应用主源文件
+* CMTechHRMonitor.c: main application source file
 **************************************************************************************************/
 
 /*********************************************************************
@@ -36,10 +36,10 @@
 
 
 #define INVALID_CONNHANDLE 0xFFFF
-#define STATUS_ECG_STOP 0     // ecg sampling stopped
-#define STATUS_ECG_START 1    // ecg sampling started
+#define STATUS_ECG_STOP 0     // ecg sampling stopped status
+#define STATUS_ECG_START 1    // ecg sampling started status
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
-#define BATT_MEAS_PERIOD 15000L // battery measurement period, ms
+#define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
 static uint8 taskID;   
@@ -101,16 +101,19 @@ static gapBondCBs_t bondCBs =
   NULL                    // Pairing state callback
 };
 
+// Heart rate monitor service callback struct
 static HRMServiceCBs_t hrServCBs =
 {
   hrServiceCB   
 };
 
-static batteryServiceCBs_t batteryServCBs =
+// battery service callback struct
+static BatteryServiceCBs_t batteryServCBs =
 {
   batteryServiceCB    
 };
 
+// Ecg service callback struct
 static ECGServiceCBs_t ecgServCBs =
 {
   ecgServiceCB    
@@ -133,8 +136,8 @@ extern void HRM_Init( uint8 task_id )
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanResponseData ), scanResponseData );
     
     // set the advertising parameters
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 1600 ); // units of 0.625ms
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 1600 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 3200 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 3200 ); // units of 0.625ms
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // advertising forever
     
     // enable advertising
@@ -147,7 +150,7 @@ extern void HRM_Init( uint8 task_id )
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
     // set the connection parameter
-    uint16 desired_min_interval = 200;  // units of 1.25ms 
+    uint16 desired_min_interval = 48;  // units of 1.25ms 
     uint16 desired_max_interval = 720; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
     uint16 desired_slave_latency = 1;
     uint16 desired_conn_timeout = 600; // units of 10ms, Note: the ios device require the timeout <= 6s
@@ -288,7 +291,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
       Battery_MeasLevel(gapConnHandle);
       
       // Restart timer
-      osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_MEAS_PERIOD );
+      osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_NOTI_PERIOD );
     }
 
     return (events ^ HRM_BATT_PERIODIC_EVT);
@@ -321,6 +324,7 @@ static void gapRoleStateCB( gaprole_States_t newState )
             newState != GAPROLE_CONNECTED)
   {
     stopHRMeas();
+    HRFunc_SetEcgSent(false); 
     //initIOPin();
     HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
@@ -411,7 +415,7 @@ static void batteryServiceCB( uint8 event )
     // if connected start periodic measurement
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_MEAS_PERIOD );
+      osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_NOTI_PERIOD );
     } 
   }
   else if (event == BATTERY_LEVEL_NOTI_DISABLED)
@@ -425,11 +429,11 @@ static void ecgServiceCB( uint8 event )
 {
   switch (event)
   {
-    case ECG_MEAS_NOTI_ENABLED:
+    case ECG_PACK_NOTI_ENABLED:
       HRFunc_SetEcgSent(true); 
       break;
         
-    case ECG_MEAS_NOTI_DISABLED:
+    case ECG_PACK_NOTI_DISABLED:
       HRFunc_SetEcgSent(false); 
       break;
       

@@ -1,3 +1,6 @@
+/**
+* ecg service source file: providing the ecg-related info and sending the ecg data packet
+*/
 
 #include "bcomdef.h"
 #include "OSAL.h"
@@ -9,8 +12,8 @@
 #include "CMUtil.h"
 #include "Service_Ecg.h"
 
-// Position of ECG measurement value in attribute array
-#define ECG_MEAS_VALUE_POS            2
+// Position of ECG data packet in attribute array
+#define ECG_PACK_VALUE_POS            2
 
 // Ecg service
 CONST uint8 ECGServUUID[ATT_UUID_SIZE] =
@@ -18,10 +21,10 @@ CONST uint8 ECGServUUID[ATT_UUID_SIZE] =
   CM_UUID(ECG_SERV_UUID)
 };
 
-// Ecg measurement characteristic
-CONST uint8 ECGMeasUUID[ATT_UUID_SIZE] =
+// Ecg Data Packet characteristic
+CONST uint8 ECGPackUUID[ATT_UUID_SIZE] =
 { 
-  CM_UUID(ECG_MEAS_UUID)
+  CM_UUID(ECG_PACK_UUID)
 };
 
 // 1mV calibration characteristic
@@ -47,11 +50,11 @@ static ECGServiceCBs_t* ecgServiceCBs;
 // Ecg Service attribute
 static CONST gattAttrType_t ecgService = { ATT_UUID_SIZE, ECGServUUID };
 
-// Ecg Measurement Characteristic
+// Ecg Data Packet Characteristic
 // Note: the characteristic value is not stored here
-static uint8 ecgMeasProps = GATT_PROP_NOTIFY;
-static uint8 ecgMeas = 0;
-static gattCharCfg_t ecgMeasClientCharCfg[GATT_MAX_NUM_CONN];
+static uint8 ecgPackProps = GATT_PROP_NOTIFY;
+static uint8 ecgPack = 0;
+static gattCharCfg_t ecgPackClientCharCfg[GATT_MAX_NUM_CONN];
 
 // 1mV Calibration Characteristic
 static uint8 ecg1mVCaliProps = GATT_PROP_READ;
@@ -79,28 +82,28 @@ static gattAttribute_t ECGAttrTbl[] =
     (uint8 *)&ecgService                      /* pValue */
   },
 
-    // 1. Ecg Measurement Declaration
+    // 1. Ecg Data Packet Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &ecgMeasProps 
+      &ecgPackProps 
     },
 
-      // Ecg Measurement Value
+      // Ecg Data Packet Value
       { 
-        { ATT_UUID_SIZE, ECGMeasUUID },
+        { ATT_UUID_SIZE, ECGPackUUID },
         0, 
         0, 
-        &ecgMeas 
+        &ecgPack 
       },
 
-      // Ecg Measurement Client Characteristic Configuration
+      // Ecg Data Packet Client Characteristic Configuration
       { 
         { ATT_BT_UUID_SIZE, clientCharCfgUUID },
         GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
         0, 
-        (uint8 *) &ecgMeasClientCharCfg 
+        (uint8 *) &ecgPackClientCharCfg 
       },      
 
     // 2. 1mV Calibration Declaration
@@ -171,7 +174,7 @@ bStatus_t ECG_AddService( uint32 services )
   uint8 status = SUCCESS;
 
   // Initialize Client Characteristic Configuration attributes
-  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, ecgMeasClientCharCfg );
+  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, ecgPackClientCharCfg );
   
   VOID linkDB_Register(handleConnStatusCB);
 
@@ -198,7 +201,7 @@ extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value )
   bStatus_t ret = SUCCESS;
   switch ( param )
   {
-     case ECG_MEAS_CHAR_CFG:
+     case ECG_PACK_CHAR_CFG:
       // Need connection handle
       //ECGMeasClientCharCfg.value = *((uint16*)value);
       break;      
@@ -224,7 +227,7 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value )
   bStatus_t ret = SUCCESS;
   switch ( param )
   {
-    case ECG_MEAS_CHAR_CFG:
+    case ECG_PACK_CHAR_CFG:
       // Need connection handle
       //*((uint16*)value) = ECGMeasClientCharCfg.value;
       break;      
@@ -245,15 +248,15 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value )
   return ( ret );
 }
 
-extern bStatus_t ECG_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
+extern bStatus_t ECG_PacketNotify( uint16 connHandle, attHandleValueNoti_t *pNoti )
 {
-  uint16 value = GATTServApp_ReadCharCfg( connHandle, ecgMeasClientCharCfg );
+  uint16 value = GATTServApp_ReadCharCfg( connHandle, ecgPackClientCharCfg );
 
   // If notifications enabled
   if ( value & GATT_CLIENT_CFG_NOTIFY )
   {
     // Set the handle
-    pNoti->handle = ECGAttrTbl[ECG_MEAS_VALUE_POS].handle;
+    pNoti->handle = ECGAttrTbl[ECG_PACK_VALUE_POS].handle;
   
     // Send the notification
     return GATT_Notification( connHandle, pNoti, FALSE );
@@ -322,9 +325,9 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         uint16 charCfg = BUILD_UINT16( pValue[0], pValue[1] );
 
-        (ecgServiceCBs->pfnECGServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
-                                ECG_MEAS_NOTI_DISABLED :
-                                ECG_MEAS_NOTI_ENABLED );
+        (ecgServiceCBs->pfnEcgServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
+                                ECG_PACK_NOTI_DISABLED :
+                                ECG_PACK_NOTI_ENABLED );
       }
       break;       
  
@@ -346,7 +349,7 @@ static void handleConnStatusCB( uint16 connHandle, uint8 changeType )
          ( ( changeType == LINKDB_STATUS_UPDATE_STATEFLAGS ) && 
            ( !linkDB_Up( connHandle ) ) ) )
     { 
-      GATTServApp_InitCharCfg( connHandle, ecgMeasClientCharCfg );
+      GATTServApp_InitCharCfg( connHandle, ecgPackClientCharCfg );
     }
   }
 }

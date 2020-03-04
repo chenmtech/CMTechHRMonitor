@@ -68,7 +68,7 @@ static gattAttribute_t batteryServAttrTbl[] =
 };
 
 // save the instance of the callback struct in the application
-static batteryServiceCBs_t *batteryService_AppCBs = NULL;
+static BatteryServiceCBs_t *batteryService_AppCBs = NULL;
 
 static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen );
@@ -109,7 +109,7 @@ extern bStatus_t Battery_AddService( uint32 services )
 }
 
 // register battery service callback struct in the application
-extern bStatus_t Battery_RegisterAppCBs( batteryServiceCBs_t *appCallbacks )
+extern bStatus_t Battery_RegisterAppCBs( BatteryServiceCBs_t *appCallbacks )
 {
   batteryService_AppCBs = appCallbacks;
     
