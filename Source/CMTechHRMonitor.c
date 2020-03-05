@@ -323,9 +323,13 @@ static void gapRoleStateCB( gaprole_States_t newState )
   else if(gapProfileState == GAPROLE_CONNECTED && 
             newState != GAPROLE_CONNECTED)
   {
-    stopHRMeas();
+    while(1) {
+      HAL_SYSTEM_RESET();  
+    }
+    
     HRFunc_SetEcgSent(false); 
-    //initIOPin();
+    stopHRMeas();
+    initIOPin();
     //HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     
@@ -392,13 +396,13 @@ static void startHRMeas( void )
 // stop measuring heart rate
 static void stopHRMeas( void )
 {  
+  HRFunc_SetHRCalculated(false);
   if(status == STATUS_ECG_START)
   {
     status = STATUS_ECG_STOP;
     HRFunc_Stop();
   }
   osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
-  HRFunc_SetHRCalculated(false);
 }
 
 // send heart rate notification

@@ -66,6 +66,7 @@ extern void HRFunc_Stop()
 
 extern void HRFunc_SetHRCalculated(bool calc)
 {
+  hrCalc = calc;
   if(calc)
   {
     QRSDet(0, 1);
@@ -73,11 +74,11 @@ extern void HRFunc_SetHRCalculated(bool calc)
     rrSampleCount = 0;
     rrNum = 0; 
   }
-  hrCalc = calc;
 }
 
 extern void HRFunc_SetEcgSent(bool send)
 {
+  ecgSent = send;
   if(send)
   {
     pckNum = 0;
@@ -85,7 +86,6 @@ extern void HRFunc_SetEcgSent(bool send)
     ecgByteCnt = 0;
     ecgNoti.len = 20;
   }
-  ecgSent = send;
 }
 
 // copy HR data to point p and return the length of data

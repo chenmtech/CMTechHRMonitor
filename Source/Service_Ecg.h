@@ -48,4 +48,5 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value );
 extern bStatus_t ECG_PacketNotify( uint16 connHandle, attHandleValueNoti_t *pNoti );
 
 
+
 #endif /* ECGSERVICE_H */
