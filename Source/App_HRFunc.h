@@ -14,5 +14,6 @@ extern void HRFunc_Stop();
 extern uint8 HRFunc_CopyHRDataInto(uint8* p); // copy HR data into p and return the length of data
 extern void HRFunc_SetEcgSent(bool send); // is the ecg data sent?
 extern void HRFunc_SetHRCalculated(bool calculate); // is the Heart rate calculated?
+extern void HRFunc_SendEcgSignal(uint16 connHandle);
 
 #endif

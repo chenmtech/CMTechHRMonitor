@@ -153,7 +153,7 @@ extern void HRM_Init( uint8 task_id )
     uint16 desired_min_interval = 16;//48;  // units of 1.25ms 
     uint16 desired_max_interval = 32;//720; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
     uint16 desired_slave_latency = 0;//1;
-    uint16 desired_conn_timeout = 600; // units of 10ms, Note: the ios device require the timeout <= 6s
+    uint16 desired_conn_timeout = 100; // units of 10ms, Note: the ios device require the timeout <= 6s
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
     GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
@@ -297,6 +297,20 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     return (events ^ HRM_BATT_PERIODIC_EVT);
   }
   
+  if ( events & HRM_ECG_PERIODIC_EVT )
+  {
+    if (gapProfileState == GAPROLE_CONNECTED)
+    {
+      // perform battery level check and send notification
+      HRFunc_SendEcgSignal(gapConnHandle);
+      
+      // Restart timer
+      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, 40 );
+    }
+
+    return (events ^ HRM_ECG_PERIODIC_EVT);
+  }
+  
   // Discard unknown events
   return 0;
 }
@@ -323,19 +337,20 @@ static void gapRoleStateCB( gaprole_States_t newState )
   else if(gapProfileState == GAPROLE_CONNECTED && 
             newState != GAPROLE_CONNECTED)
   {
-    while(1) {
-      HAL_SYSTEM_RESET();  
-    }
+//    while(1) {
+//      HAL_SYSTEM_RESET();  
+//    }
     
     HRFunc_SetEcgSent(false); 
+    osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
     stopHRMeas();
-    initIOPin();
-    //HRFunc_Init();
+    //initIOPin();
+    HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     
     // enable advertising
-    uint8 advertising = TRUE;
-    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
+    //uint8 advertising = TRUE;
+    //GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
   }
   // if started
   else if (newState == GAPROLE_STARTED)
@@ -389,7 +404,7 @@ static void startHRMeas( void )
     status = STATUS_ECG_START;
     HRFunc_Start();
   }
-  osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
+  osal_start_reload_timer( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
   HRFunc_SetHRCalculated(true);
 }
 
@@ -438,10 +453,12 @@ static void ecgServiceCB( uint8 event )
   {
     case ECG_PACK_NOTI_ENABLED:
       HRFunc_SetEcgSent(true); 
+      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, 40 );
       break;
         
     case ECG_PACK_NOTI_DISABLED:
       HRFunc_SetEcgSent(false); 
+      osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
       break;
       
     default:

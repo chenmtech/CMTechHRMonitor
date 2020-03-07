@@ -9,7 +9,7 @@
 #define HRM_START_DEVICE_EVT 0x0001      // device start event
 #define HRM_MEAS_PERIODIC_EVT 0x0002     // periodic heart rate measurement event
 #define HRM_BATT_PERIODIC_EVT 0x0004     // periodic battery measurement event
-
+#define HRM_ECG_PERIODIC_EVT 0x0008
 /*
  * Task Initialization for the BLE Application
  */

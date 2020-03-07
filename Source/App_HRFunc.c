@@ -10,6 +10,8 @@
   #include "peripheral.h"
 #endif
 
+#define ECG_DATA_NUM_PER_PACK 9 // ecg data number per packet
+
 // is the heart rate calculated?
 static bool hrCalc = false;
 // the flag of the initial beat
@@ -26,16 +28,16 @@ static uint16 caliValue = 0;
 // is the ecg data sent?
 static bool ecgSent = false;
 // the number of the current packet of ecg data, from 0 to 65535
-static uint16 pckNum = 0;
+static uint8 pckNum = 0;
 static uint8* pEcgByte;
-static uint8 ecgByteCnt = 0;
+//static uint8 ecgByteCnt = 0;
 static attHandleValueNoti_t ecgNoti;
 
 static uint16 calRRInterval(int16 x);
 static void processEcgSignal(int16 x, uint8 status);
 static void processTestSignal(int16 x, uint8 status);
 static uint16 median(uint16 *array, uint8 datnum);
-static void sendEcgSignal(int16 ecg);
+static void saveEcgSignal(int16 ecg);
 
 extern void HRFunc_Init()
 { 
@@ -83,8 +85,8 @@ extern void HRFunc_SetEcgSent(bool send)
   {
     pckNum = 0;
     pEcgByte = ecgNoti.value;
-    ecgByteCnt = 0;
-    ecgNoti.len = 20;
+    //ecgByteCnt = 0;
+    ecgNoti.len = 0;
   }
 }
 
@@ -177,7 +179,7 @@ static void processEcgSignal(int16 x, uint8 status)
     
     if(ecgSent)
     {
-      sendEcgSignal(x);
+      saveEcgSignal(x);
     }
   }
 }
@@ -207,29 +209,29 @@ static uint16 calRRInterval(int16 x)
   return 0;
 }
 
-static void sendEcgSignal(int16 ecg)
+static void saveEcgSignal(int16 ecg)
 {
-  if(ecgByteCnt == 0) {
-    *pEcgByte++ = LO_UINT16(pckNum);
-    *pEcgByte++ = HI_UINT16(pckNum);
-    pckNum = (pckNum == 255) ? 0 : pckNum+1;
-    ecgByteCnt = 2;
-  }
-  
-  *pEcgByte++ = LO_UINT16(ecg);  
-  *pEcgByte++ = HI_UINT16(ecg);
-  ecgByteCnt += 2;
-
-  // 达到数据包长度
-  if(ecgByteCnt == 20)
+  if(ecgNoti.len == 0)
   {
-    uint16 connHandle;
-    // Get connection handle
-    GAPRole_GetParameter( GAPROLE_CONNHANDLE, &connHandle );
-    ECG_PacketNotify( connHandle, &ecgNoti );
-    ecgByteCnt = 0;
-    pEcgByte = ecgNoti.value;
-  }  
+    *pEcgByte++ = pckNum;
+    pckNum = (pckNum == 255) ? 0 : pckNum+1;
+    ecgNoti.len++;
+  }
+  if(ecgNoti.len < 1+ECG_DATA_NUM_PER_PACK*2)
+  {
+    *pEcgByte++ = LO_UINT16(ecg);  
+    *pEcgByte++ = HI_UINT16(ecg);
+    ecgNoti.len += 2;
+  }
+}
+
+extern void HRFunc_SendEcgSignal(uint16 connHandle)
+{
+  if(ecgNoti.len <= 1) return;
+  
+  ECG_PacketNotify( connHandle, &ecgNoti );
+  ecgNoti.len = 0;
+  pEcgByte = ecgNoti.value; 
 }
 
 static uint16 median(uint16 *array, uint8 datnum)
