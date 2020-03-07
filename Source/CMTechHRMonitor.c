@@ -40,6 +40,7 @@
 #define STATUS_ECG_START 1    // ecg sampling started status
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
+#define ECG_NOTI_PERIOD 60 // ecg data packet notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
 static uint8 taskID;   
@@ -305,7 +306,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
       HRFunc_SendEcgSignal(gapConnHandle);
       
       // Restart timer
-      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, 40 );
+      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
     }
 
     return (events ^ HRM_ECG_PERIODIC_EVT);
@@ -337,20 +338,13 @@ static void gapRoleStateCB( gaprole_States_t newState )
   else if(gapProfileState == GAPROLE_CONNECTED && 
             newState != GAPROLE_CONNECTED)
   {
-//    while(1) {
-//      HAL_SYSTEM_RESET();  
-//    }
-    
     HRFunc_SetEcgSent(false); 
     osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
     stopHRMeas();
     //initIOPin();
     HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
-    
-    // enable advertising
-    //uint8 advertising = TRUE;
-    //GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
+ 
   }
   // if started
   else if (newState == GAPROLE_STARTED)
@@ -453,7 +447,7 @@ static void ecgServiceCB( uint8 event )
   {
     case ECG_PACK_NOTI_ENABLED:
       HRFunc_SetEcgSent(true); 
-      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, 40 );
+      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
       break;
         
     case ECG_PACK_NOTI_DISABLED:

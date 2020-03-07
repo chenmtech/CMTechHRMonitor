@@ -2,7 +2,7 @@
 #                                                                              #
 #      IAR Universal Linker V5.0.2.5/W32                                       #
 #                                                                              #
-#           Link time     =  07/Mar/2020  11:52:49                             #
+#           Link time     =  07/Mar/2020  17:04:23                             #
 #           Target CPU    =  x51                                               #
 #           List file     =  "C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\b #
 #                            le\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\List\ #
@@ -1135,7 +1135,7 @@ XDATA_ID
                                                    ecgServiceCB
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           __Constant_28           000081AC 
+           __Constant_3c           000081AC 
     -------------------------------------------------------------------------
 BANK_RELAYS
   Relative segment, address: CODE 000003E1 - 000003E6 (0x6 bytes), align: 0
@@ -1208,7 +1208,7 @@ BANK_RELAYS
     -------------------------------------------------------------------------
 <BANKED_CODE,XDATA_ROM_C_FLASH> 1 (was XDATA_ROM_C_FLASH)
   Relative segment, address: CODE 000081AC - 000081AF (0x4 bytes), align: 0
-  Segment part 66.            Intra module refs:   __Constant_28
+  Segment part 66.            Intra module refs:   __Constant_3c
 
     *************************************************************************
 
@@ -28693,8 +28693,8 @@ Module                      CODE      DATA      XDATA  IDATA    BIT  CONST
 ?memset                       51
 ?strlen                       36
 App_HRFunc                   872                   50
-CMTechHRMonitor            1 277                   78                    8
-  + shared                                   9                          12
+CMTechHRMonitor            1 277                   78                    4
+  + shared                                   9                          16
 CMTechHRMonitor_Main          88             1
   + shared                                   4
 CMUtil                       161
