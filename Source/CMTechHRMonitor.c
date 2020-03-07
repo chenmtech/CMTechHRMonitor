@@ -35,13 +35,23 @@
 #endif
 
 
-#define INVALID_CONNHANDLE 0xFFFF
+#define INVALID_CONNHANDLE 0xFFFF // invalid connection handle
 #define STATUS_ECG_STOP 0     // ecg sampling stopped status
 #define STATUS_ECG_START 1    // ecg sampling started status
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
-#define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_NOTI_PERIOD 60 // ecg data packet notification period, ms
+#define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
+
+// connection parameter when without ecg data sent
+#define MIN_INTERVAL_WITHOUT_ECG 160 
+#define MAX_INTERVAL_WITHOUT_ECG 320
+#define SLAVE_LATENCY_WITHOUT_ECG 4
+// connection parameter when with ecg data sent
+#define MIN_INTERVAL_WITH_ECG 16
+#define MAX_INTERVAL_WITH_ECG 32
+#define SLAVE_LATENCY_WITH_ECG 0
+#define CONNECT_TIMEOUT 600
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
@@ -80,9 +90,6 @@ static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor";
 
 // ecg sampling status
 static uint8 status = STATUS_ECG_STOP;
-
-// Heart rate measurement value stored in this structure
-static attHandleValueNoti_t hrNoti;
 
 static void gapRoleStateCB( gaprole_States_t newState ); // GAP role state change callback
 static void hrServiceCB( uint8 event ); // heart rate service callback function
@@ -124,7 +131,6 @@ static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process fu
 static void initIOPin(); // initialize IO pins
 static void startHRMeas( void ); // start the heart rate measurement
 static void stopHRMeas( void ); // stop the heart rate measurement
-static void notifyHR(); // notify heart rate
 
 extern void HRM_Init( uint8 task_id )
 { 
@@ -151,10 +157,10 @@ extern void HRM_Init( uint8 task_id )
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
     // set the connection parameter
-    uint16 desired_min_interval = 16;//48;  // units of 1.25ms 
-    uint16 desired_max_interval = 32;//720; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
-    uint16 desired_slave_latency = 0;//1;
-    uint16 desired_conn_timeout = 100; // units of 10ms, Note: the ios device require the timeout <= 6s
+    uint16 desired_min_interval = MIN_INTERVAL_WITH_ECG; // units of 1.25ms, Note: the ios device require the min interval more than 20ms
+    uint16 desired_max_interval = MAX_INTERVAL_WITH_ECG; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
+    uint16 desired_slave_latency = SLAVE_LATENCY_WITH_ECG;//0; // Note: the ios device require the slave latency <=4
+    uint16 desired_conn_timeout = CONNECT_TIMEOUT; // units of 10ms, Note: the ios device require the timeout <= 6s
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
     GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
@@ -277,7 +283,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   {
     if(gapProfileState == GAPROLE_CONNECTED && status == STATUS_ECG_START)
     {
-      notifyHR();
+      HRFunc_SendHRData(gapConnHandle);
       osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD );
     }      
 
@@ -290,8 +296,6 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     {
       // perform battery level check and send notification
       Battery_MeasLevel(gapConnHandle);
-      
-      // Restart timer
       osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_NOTI_PERIOD );
     }
 
@@ -302,10 +306,8 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      // perform battery level check and send notification
-      HRFunc_SendEcgSignal(gapConnHandle);
-      
-      // Restart timer
+      // send ecg packet notification
+      HRFunc_SendEcgPacket(gapConnHandle);
       osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
     }
 
@@ -344,7 +346,6 @@ static void gapRoleStateCB( gaprole_States_t newState )
     //initIOPin();
     HRFunc_Init();
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
- 
   }
   // if started
   else if (newState == GAPROLE_STARTED)
@@ -412,16 +413,6 @@ static void stopHRMeas( void )
     HRFunc_Stop();
   }
   osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
-}
-
-// send heart rate notification
-static void notifyHR()
-{
-  uint8 *p = hrNoti.value;
-  uint8 len = HRFunc_CopyHRDataInto(p);
-  if(len == 0) return;  
-  hrNoti.len = len;
-  HRM_MeasNotify( gapConnHandle, &hrNoti );
 }
 
 static void batteryServiceCB( uint8 event )

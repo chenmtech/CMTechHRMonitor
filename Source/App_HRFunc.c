@@ -3,6 +3,7 @@
 #include "CMUtil.h"
 #include "Dev_ADS1x9x.h"
 #include "QRSDET.h"
+#include "Service_HRMonitor.h"
 #include "service_ecg.h"
 #if defined ( PLUS_BROADCASTER )
   #include "peripheralBroadcaster.h"
@@ -24,6 +25,8 @@ static uint16 rrBuf[9] = {0};
 static uint8 rrNum = 0;
 // 1mV calibration value, only used when CALIBRATE_1MV is set in preprocessing
 static uint16 caliValue = 0;
+// Heart rate measurement value stored in this structure
+static attHandleValueNoti_t hrNoti;
 
 // is the ecg data sent?
 static bool ecgSent = false;
@@ -90,13 +93,24 @@ extern void HRFunc_SetEcgSent(bool send)
   }
 }
 
-// copy HR data to point p and return the length of data
-extern uint8 HRFunc_CopyHRDataInto(uint8* p)
+extern void HRFunc_SendEcgPacket(uint16 connHandle)
 {
-  if(rrNum == 0) return 0;  // No RR interval, return 0
+  if(ecgNoti.len <= 1) return;
+  
+  ECG_PacketNotify( connHandle, &ecgNoti );
+  ecgNoti.len = 0;
+  pEcgByte = ecgNoti.value; 
+}
+
+// copy HR data to point p and return the length of data
+extern void HRFunc_SendHRData(uint16 connHandle)
+{
+  if(rrNum == 0) return;  // No RR interval, return
+  
+  uint8* p = hrNoti.value;
   
   //////// Two methods to calculate BPM
-  // 1. calculate BPM with average method
+  // 1. using average method
   /*
   int32 sum = 0;
   for(i = 0; i < rrNum; i++)
@@ -106,7 +120,7 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   int16 BPM = (7500L*rrNum + (sum>>1))/sum; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval, the round op is done
   */
   
-  // 2. calculate BPM with median method
+  // 2. using median method
   uint16 rrMedian = ((rrNum == 1) ? rrBuf[0] : median(rrBuf, rrNum));
   int16 BPM = 7500L/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   ////////////////////////////////////////
@@ -115,14 +129,14 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   
   uint8* pTmp = p;
   
-  ////////Three different output HR data
+  ////////Three different way to output HR data
   /*
-  //1. include bpm only
+  //1. bpm only
   *p++ = 0x00;
   *p++ = (uint8)BPM;
   */
 
-  //2. include bpm and RRInterval
+  //2. bpm and RRInterval
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   uint16 MS1024 = 0;
@@ -136,7 +150,7 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   }
   
   /*
-  // 3. include bpm and Q&N as RRInterval for debug
+  // 3. bpm and Q&N as RRInterval for debug
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   int* pQRS = getQRSBuffer();
@@ -160,7 +174,10 @@ extern uint8 HRFunc_CopyHRDataInto(uint8* p)
   */
   
   rrNum = 0;
-  return (uint8)(p-pTmp);
+  hrNoti.len = (uint8)(p-pTmp);
+  HRM_MeasNotify( connHandle, &hrNoti );
+  
+  return;
 }
 
 static void processEcgSignal(int16 x, uint8 status)
@@ -223,15 +240,6 @@ static void saveEcgSignal(int16 ecg)
     *pEcgByte++ = HI_UINT16(ecg);
     ecgNoti.len += 2;
   }
-}
-
-extern void HRFunc_SendEcgSignal(uint16 connHandle)
-{
-  if(ecgNoti.len <= 1) return;
-  
-  ECG_PacketNotify( connHandle, &ecgNoti );
-  ecgNoti.len = 0;
-  pEcgByte = ecgNoti.value; 
 }
 
 static uint16 median(uint16 *array, uint8 datnum)
