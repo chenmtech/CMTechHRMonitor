@@ -39,18 +39,22 @@
 #define STATUS_ECG_STOP 0     // ecg sampling stopped status
 #define STATUS_ECG_START 1    // ecg sampling started status
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
-#define ECG_NOTI_PERIOD 60 // ecg data packet notification period, ms
+#define ECG_NOTI_PERIOD 65 // ecg data packet notification period, ms
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
-// connection parameter when without ecg data sent
-#define MIN_INTERVAL_WITHOUT_ECG 160 
-#define MAX_INTERVAL_WITHOUT_ECG 320
-#define SLAVE_LATENCY_WITHOUT_ECG 4
+#if defined(HASECG)
 // connection parameter when with ecg data sent
-#define MIN_INTERVAL_WITH_ECG 16
-#define MAX_INTERVAL_WITH_ECG 32
-#define SLAVE_LATENCY_WITH_ECG 4
+#define MIN_INTERVAL 16
+#define MAX_INTERVAL 28
+#define SLAVE_LATENCY 1
+#else
+// connection parameter when without ecg data sent
+#define MIN_INTERVAL 160 
+#define MAX_INTERVAL 320
+#define SLAVE_LATENCY 4
+#endif
+
 #define CONNECT_TIMEOUT 600
 
 static uint8 taskID;   
@@ -157,9 +161,9 @@ extern void HRM_Init( uint8 task_id )
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
     
     // set the connection parameter
-    uint16 desired_min_interval = MIN_INTERVAL_WITH_ECG; // units of 1.25ms, Note: the ios device require the min interval more than 20ms
-    uint16 desired_max_interval = MAX_INTERVAL_WITH_ECG; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
-    uint16 desired_slave_latency = SLAVE_LATENCY_WITH_ECG;//0; // Note: the ios device require the slave latency <=4
+    uint16 desired_min_interval = MIN_INTERVAL; // units of 1.25ms, Note: the ios device require the min interval more than 20ms
+    uint16 desired_max_interval = MAX_INTERVAL; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
+    uint16 desired_slave_latency = SLAVE_LATENCY;//0; // Note: the ios device require the slave latency <=4
     uint16 desired_conn_timeout = CONNECT_TIMEOUT; // units of 10ms, Note: the ios device require the timeout <= 6s
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
@@ -202,18 +206,17 @@ extern void HRM_Init( uint8 task_id )
   GGS_AddService( GATT_ALL_SERVICES );         // GAP
   GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
   DevInfo_AddService( ); // device information service
-  HRM_AddService( GATT_ALL_SERVICES ); // heart rate monitor service
-  Battery_AddService(GATT_ALL_SERVICES); // battery service
-  ECG_AddService(GATT_ALL_SERVICES); // ecg service
   
-  // register heart rate service callback
+  HRM_AddService( GATT_ALL_SERVICES ); // heart rate monitor service
   HRM_Register( &hrServCBs );
   
-  // register battery service callback
+  Battery_AddService(GATT_ALL_SERVICES); // battery service
   Battery_RegisterAppCBs(&batteryServCBs);
   
-  // register ecg service callback
+#if defined(HASECG)  
+  ECG_AddService(GATT_ALL_SERVICES); // ecg service
   ECG_Register( &ecgServCBs );  
+#endif  
   
   //在这里初始化GPIO
   //第一：所有管脚，reset后的状态都是输入加上拉
@@ -341,8 +344,8 @@ static void gapRoleStateCB( gaprole_States_t newState )
             newState != GAPROLE_CONNECTED)
   {
     stopEcgMeas();
-    HRFunc_SetHRCalculated(false);
-    HRFunc_SetEcgSent(false); 
+    HRFunc_StartCalcHR(false);
+    HRFunc_StartSendingEcg(false); 
     osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
     osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
@@ -379,12 +382,12 @@ static void hrServiceCB( uint8 event )
     case HRM_MEAS_NOTI_ENABLED:
       startEcgMeas();  
       osal_start_reload_timer( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
-      HRFunc_SetHRCalculated(true);
+      HRFunc_StartCalcHR(true);
       break;
         
     case HRM_MEAS_NOTI_DISABLED:
       stopEcgMeas();
-      HRFunc_SetHRCalculated(false);
+      HRFunc_StartCalcHR(false);
       osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
       break;
 
@@ -403,7 +406,7 @@ static void startEcgMeas( void )
 {  
   if(status == STATUS_ECG_STOP) {
     status = STATUS_ECG_START;
-    HRFunc_Start();
+    HRFunc_StartSamplingEcg(true);
   }
 }
 
@@ -413,7 +416,7 @@ static void stopEcgMeas( void )
   if(status == STATUS_ECG_START)
   {
     status = STATUS_ECG_STOP;
-    HRFunc_Stop();
+    HRFunc_StartSamplingEcg(false);
   }
 }
 
@@ -439,12 +442,12 @@ static void ecgServiceCB( uint8 event )
   switch (event)
   {
     case ECG_PACK_NOTI_ENABLED:
-      HRFunc_SetEcgSent(true); 
+      HRFunc_StartSendingEcg(true); 
       osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
       break;
         
     case ECG_PACK_NOTI_DISABLED:
-      HRFunc_SetEcgSent(false); 
+      HRFunc_StartSendingEcg(false); 
       osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
       break;
       
