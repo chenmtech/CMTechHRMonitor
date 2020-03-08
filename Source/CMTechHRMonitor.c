@@ -50,7 +50,7 @@
 // connection parameter when with ecg data sent
 #define MIN_INTERVAL_WITH_ECG 16
 #define MAX_INTERVAL_WITH_ECG 32
-#define SLAVE_LATENCY_WITH_ECG 0
+#define SLAVE_LATENCY_WITH_ECG 4
 #define CONNECT_TIMEOUT 600
 
 static uint8 taskID;   
@@ -129,8 +129,8 @@ static ECGServiceCBs_t ecgServCBs =
 
 static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process function
 static void initIOPin(); // initialize IO pins
-static void startHRMeas( void ); // start the heart rate measurement
-static void stopHRMeas( void ); // stop the heart rate measurement
+static void startEcgMeas( void ); // start ecg measurement
+static void stopEcgMeas( void ); // stop ecg measurement
 
 extern void HRM_Init( uint8 task_id )
 { 
@@ -340,12 +340,14 @@ static void gapRoleStateCB( gaprole_States_t newState )
   else if(gapProfileState == GAPROLE_CONNECTED && 
             newState != GAPROLE_CONNECTED)
   {
+    stopEcgMeas();
+    HRFunc_SetHRCalculated(false);
     HRFunc_SetEcgSent(false); 
     osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
-    stopHRMeas();
-    //initIOPin();
-    HRFunc_Init();
+    osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
+    //initIOPin();
+    //HRFunc_Init();
   }
   // if started
   else if (newState == GAPROLE_STARTED)
@@ -375,11 +377,15 @@ static void hrServiceCB( uint8 event )
   switch (event)
   {
     case HRM_MEAS_NOTI_ENABLED:
-      startHRMeas();  
+      startEcgMeas();  
+      osal_start_reload_timer( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
+      HRFunc_SetHRCalculated(true);
       break;
         
     case HRM_MEAS_NOTI_DISABLED:
-      stopHRMeas();
+      stopEcgMeas();
+      HRFunc_SetHRCalculated(false);
+      osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
       break;
 
     case HRM_CTRL_PT_SET:
@@ -392,27 +398,23 @@ static void hrServiceCB( uint8 event )
   }
 }
 
-// start measuring heart rate
-static void startHRMeas( void )
+// start ecg measurement
+static void startEcgMeas( void )
 {  
   if(status == STATUS_ECG_STOP) {
     status = STATUS_ECG_START;
     HRFunc_Start();
   }
-  osal_start_reload_timer( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
-  HRFunc_SetHRCalculated(true);
 }
 
-// stop measuring heart rate
-static void stopHRMeas( void )
+// stop ecg measurement
+static void stopEcgMeas( void )
 {  
-  HRFunc_SetHRCalculated(false);
   if(status == STATUS_ECG_START)
   {
     status = STATUS_ECG_STOP;
     HRFunc_Stop();
   }
-  osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
 }
 
 static void batteryServiceCB( uint8 event )
