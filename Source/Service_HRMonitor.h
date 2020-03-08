@@ -59,7 +59,7 @@ typedef struct
 
 
 extern bStatus_t HRM_AddService( uint32 services );
-extern void HRM_Register( HRMServiceCBs_t* pfnServiceCBs );
+extern void HRM_RegisterAppCBs( HRMServiceCBs_t* pfnServiceCBs );
 extern bStatus_t HRM_SetParameter( uint8 param, uint8 len, void *value );
 extern bStatus_t HRM_GetParameter( uint8 param, void *value );
 extern bStatus_t HRM_MeasNotify( uint16 connHandle, attHandleValueNoti_t *pNoti );

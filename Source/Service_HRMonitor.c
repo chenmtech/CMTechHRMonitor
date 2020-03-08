@@ -160,7 +160,7 @@ bStatus_t HRM_AddService( uint32 services )
   return ( status );
 }
 
-extern void HRM_Register( HRMServiceCBs_t* pfnServiceCBs )
+extern void HRM_RegisterAppCBs( HRMServiceCBs_t* pfnServiceCBs )
 {
   hrmServiceCBs = pfnServiceCBs;
     

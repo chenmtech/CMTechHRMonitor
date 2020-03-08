@@ -189,7 +189,7 @@ bStatus_t ECG_AddService( uint32 services )
   return ( status );
 }
 
-extern void ECG_Register( ECGServiceCBs_t* pfnServiceCBs )
+extern void ECG_RegisterAppCBs( ECGServiceCBs_t* pfnServiceCBs )
 {
   ecgServiceCBs = pfnServiceCBs;
     

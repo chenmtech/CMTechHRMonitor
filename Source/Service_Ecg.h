@@ -41,7 +41,7 @@ typedef struct
 
 
 extern bStatus_t ECG_AddService( uint32 services );
-extern void ECG_Register( ECGServiceCBs_t* pfnServiceCBs );
+extern void ECG_RegisterAppCBs( ECGServiceCBs_t* pfnServiceCBs );
 extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value );
 extern bStatus_t ECG_GetParameter( uint8 param, void *value );
 // notify the ecg data packet

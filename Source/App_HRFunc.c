@@ -18,20 +18,23 @@
 static bool hrCalc = false;
 // the flag of the initial beat
 static uint8 initBeatFlag = 1 ;
-// the sample count between RR interval
+// the sample count
 static uint16 rrSampleCount = 0 ;
 // RR interval buffer, the max number in the buffer is 9
 static uint16 rrBuf[9] = {0};
 // the current number in rrBuf
 static uint8 rrNum = 0;
-// 1mV calibration value, only used when CALIBRATE_1MV is set in preprocessing
-static uint16 caliValue = 0;
+// HR notification struct
 static attHandleValueNoti_t hrNoti;
+
+// 1mV calibration value, only used for getting the calibration value when CALIBRATE_1MV is set in preprocessing
+static uint16 caliValue = 0;
 
 // is the ecg data sent?
 static bool ecgSend = false;
 // the number of the current ecg data packet, from 0 to ECG_MAX_PACK_NUM
 static uint8 pckNum = 0;
+// pointer to the value address in the ecg notification struct
 static uint8* pEcgByte;
 // ecg packet value stored in this structure
 static attHandleValueNoti_t ecgNoti;
@@ -53,9 +56,9 @@ extern void HRFunc_Init()
   delayus(1000);
 }
 
-extern void HRFunc_StartSamplingEcg(bool isStart)
+extern void HRFunc_StartSamplingEcg(bool start)
 {
-  if(isStart)
+  if(start)
   {
     ADS1x9x_WakeUp();
     // 这里一定要延时，否则容易死机
@@ -71,7 +74,7 @@ extern void HRFunc_StartSamplingEcg(bool isStart)
   }
 }
 
-extern void HRFunc_StartCalcHR(bool calc)
+extern void HRFunc_StartCalcingHR(bool calc)
 {
   hrCalc = calc;
   if(calc)
@@ -103,8 +106,8 @@ extern void HRFunc_SendEcgPacket(uint16 connHandle)
   pEcgByte = ecgNoti.value; 
 }
 
-// copy HR data to point p and return the length of data
-extern void HRFunc_SendHRData(uint16 connHandle)
+// send HR packet
+extern void HRFunc_SendHRPacket(uint16 connHandle)
 {
   if(rrNum == 0) return;  // No RR interval, return
   

@@ -16,11 +16,6 @@
 #include "hci.h"
 #include "gapgattserver.h"
 #include "gattservapp.h"
-#include "Service_DevInfo.h"
-#include "Service_HRMonitor.h"
-#include "service_battery.h"
-#include "service_ecg.h"
-#include "App_HRFunc.h"
 
 #if defined ( PLUS_BROADCASTER )
   #include "peripheralBroadcaster.h"
@@ -35,6 +30,12 @@
 #endif
 
 
+#include "Service_DevInfo.h"
+#include "Service_HRMonitor.h"
+#include "service_battery.h"
+#include "service_ecg.h"
+#include "App_HRFunc.h"
+
 #define INVALID_CONNHANDLE 0xFFFF // invalid connection handle
 #define STATUS_ECG_STOP 0     // ecg sampling stopped status
 #define STATUS_ECG_START 1    // ecg sampling started status
@@ -43,7 +44,7 @@
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
-#if defined(HASECG)
+#if defined(WITHECG)
 // connection parameter when with ecg data sent
 #define MIN_INTERVAL 16
 #define MAX_INTERVAL 28
@@ -55,7 +56,8 @@
 #define SLAVE_LATENCY 4
 #endif
 
-#define CONNECT_TIMEOUT 600
+#define CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
+#define CONN_PAUSE_PERIPHERAL 4  // the pause time from the connection establishment to the update of the connection parameters
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
@@ -95,15 +97,15 @@ static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor";
 // ecg sampling status
 static uint8 status = STATUS_ECG_STOP;
 
-static void gapRoleStateCB( gaprole_States_t newState ); // GAP role state change callback
+static void gapStateCB( gaprole_States_t newState ); // GAP state change callback
 static void hrServiceCB( uint8 event ); // heart rate service callback function
-static void batteryServiceCB( uint8 event ); // battery service callback function
+static void battServiceCB( uint8 event ); // battery service callback function
 static void ecgServiceCB( uint8 event ); // ecg service callback function
 
 // GAP Role callback struct
-static gapRolesCBs_t gapRoleStateCBs =
+static gapRolesCBs_t gapStateCBs =
 {
-  gapRoleStateCB,         // Profile State Change Callbacks
+  gapStateCB,         // Profile State Change Callbacks
   NULL                   // When a valid RSSI is read from controller (not used by application)
 };
 
@@ -120,9 +122,9 @@ static HRMServiceCBs_t hrServCBs =
 };
 
 // battery service callback struct
-static BatteryServiceCBs_t batteryServCBs =
+static BattServiceCBs_t battServCBs =
 {
-  batteryServiceCB    
+  battServiceCB    
 };
 
 // Ecg service callback struct
@@ -133,8 +135,8 @@ static ECGServiceCBs_t ecgServCBs =
 
 static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process function
 static void initIOPin(); // initialize IO pins
-static void startEcgMeas( void ); // start ecg measurement
-static void stopEcgMeas( void ); // stop ecg measurement
+static void startEcgSampling( void ); // start ecg sampling
+static void stopEcgSampling( void ); // stop ecg sampling
 
 extern void HRM_Init( uint8 task_id )
 { 
@@ -155,10 +157,10 @@ extern void HRM_Init( uint8 task_id )
     uint8 advertising = TRUE;
     GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
     
-    // set the pause time from the connection and the update of the connection parameters
-    // during the time, client can finish the tasks e.g. service discovery 
+    // set the pause time from the connection establishment to the update of the connection parameters
+    // during this time, client can finish the tasks e.g. service discovery 
     // the unit of time is second
-    GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, 2 ); 
+    GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, CONN_PAUSE_PERIPHERAL ); 
     
     // set the connection parameter
     uint16 desired_min_interval = MIN_INTERVAL; // units of 1.25ms, Note: the ios device require the min interval more than 20ms
@@ -190,6 +192,22 @@ extern void HRM_Init( uint8 task_id )
     GAPBondMgr_SetParameter( GAPBOND_BONDING_ENABLED, sizeof ( uint8 ), &bonding );
   }  
 
+  // Initialize GATT attributes
+  GGS_AddService( GATT_ALL_SERVICES );         // GAP
+  GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
+  DevInfo_AddService( ); // device information service
+  
+  HRM_AddService( GATT_ALL_SERVICES ); // heart rate monitor service
+  HRM_RegisterAppCBs( &hrServCBs );
+  
+  Battery_AddService(GATT_ALL_SERVICES); // battery service
+  Battery_RegisterAppCBs(&battServCBs);
+  
+#if defined(WITHECG)  
+  ECG_AddService(GATT_ALL_SERVICES); // ecg service
+  ECG_RegisterAppCBs( &ecgServCBs );  
+#endif  
+  
   // set characteristic in heart rate service
   {
     uint8 sensLoc = HRM_SENS_LOC_CHEST;
@@ -200,23 +218,7 @@ extern void HRM_Init( uint8 task_id )
   {
     uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
-  }  
-  
-  // Initialize GATT attributes
-  GGS_AddService( GATT_ALL_SERVICES );         // GAP
-  GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
-  DevInfo_AddService( ); // device information service
-  
-  HRM_AddService( GATT_ALL_SERVICES ); // heart rate monitor service
-  HRM_Register( &hrServCBs );
-  
-  Battery_AddService(GATT_ALL_SERVICES); // battery service
-  Battery_RegisterAppCBs(&batteryServCBs);
-  
-#if defined(HASECG)  
-  ECG_AddService(GATT_ALL_SERVICES); // ecg service
-  ECG_Register( &ecgServCBs );  
-#endif  
+  }    
   
   //在这里初始化GPIO
   //第一：所有管脚，reset后的状态都是输入加上拉
@@ -274,7 +276,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   if ( events & HRM_START_DEVICE_EVT )
   {    
     // Start the Device
-    VOID GAPRole_StartDevice( &gapRoleStateCBs );
+    VOID GAPRole_StartDevice( &gapStateCBs );
 
     // Start Bond Manager
     VOID GAPBondMgr_Register( &bondCBs );
@@ -282,22 +284,21 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     return ( events ^ HRM_START_DEVICE_EVT );
   }
   
-  if ( events & HRM_MEAS_PERIODIC_EVT )
+  if ( events & HRM_HR_PERIODIC_EVT )
   {
-    if(gapProfileState == GAPROLE_CONNECTED && status == STATUS_ECG_START)
+    if(gapProfileState == GAPROLE_CONNECTED)
     {
-      HRFunc_SendHRData(gapConnHandle);
-      osal_start_timerEx( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD );
+      HRFunc_SendHRPacket(gapConnHandle);
+      osal_start_timerEx( taskID, HRM_HR_PERIODIC_EVT, HR_NOTI_PERIOD );
     }      
 
-    return (events ^ HRM_MEAS_PERIODIC_EVT);
+    return (events ^ HRM_HR_PERIODIC_EVT);
   }
   
   if ( events & HRM_BATT_PERIODIC_EVT )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      // perform battery level check and send notification
       Battery_MeasLevel(gapConnHandle);
       osal_start_timerEx( taskID, HRM_BATT_PERIODIC_EVT, BATT_NOTI_PERIOD );
     }
@@ -309,7 +310,6 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      // send ecg packet notification
       HRFunc_SendEcgPacket(gapConnHandle);
       osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
     }
@@ -331,7 +331,7 @@ static void processOSALMsg( osal_event_hdr_t *pMsg )
   }
 }
 
-static void gapRoleStateCB( gaprole_States_t newState )
+static void gapStateCB( gaprole_States_t newState )
 {
   // connected
   if( newState == GAPROLE_CONNECTED)
@@ -343,11 +343,11 @@ static void gapRoleStateCB( gaprole_States_t newState )
   else if(gapProfileState == GAPROLE_CONNECTED && 
             newState != GAPROLE_CONNECTED)
   {
-    stopEcgMeas();
-    HRFunc_StartCalcHR(false);
+    stopEcgSampling();
+    HRFunc_StartCalcingHR(false);
     HRFunc_StartSendingEcg(false); 
     osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
-    osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
+    osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     //initIOPin();
     //HRFunc_Init();
@@ -380,15 +380,15 @@ static void hrServiceCB( uint8 event )
   switch (event)
   {
     case HRM_MEAS_NOTI_ENABLED:
-      startEcgMeas();  
-      osal_start_reload_timer( taskID, HRM_MEAS_PERIODIC_EVT, HR_NOTI_PERIOD);
-      HRFunc_StartCalcHR(true);
+      startEcgSampling();  
+      HRFunc_StartCalcingHR(true);
+      osal_start_timerEx( taskID, HRM_HR_PERIODIC_EVT, HR_NOTI_PERIOD);
       break;
         
     case HRM_MEAS_NOTI_DISABLED:
-      stopEcgMeas();
-      HRFunc_StartCalcHR(false);
-      osal_stop_timerEx( taskID, HRM_MEAS_PERIODIC_EVT ); 
+      stopEcgSampling();
+      HRFunc_StartCalcingHR(false);
+      osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
       break;
 
     case HRM_CTRL_PT_SET:
@@ -401,17 +401,18 @@ static void hrServiceCB( uint8 event )
   }
 }
 
-// start ecg measurement
-static void startEcgMeas( void )
+// start ecg Sampling
+static void startEcgSampling( void )
 {  
-  if(status == STATUS_ECG_STOP) {
+  if(status == STATUS_ECG_STOP) 
+  {
     status = STATUS_ECG_START;
     HRFunc_StartSamplingEcg(true);
   }
 }
 
-// stop ecg measurement
-static void stopEcgMeas( void )
+// stop ecg Sampling
+static void stopEcgSampling( void )
 {  
   if(status == STATUS_ECG_START)
   {
@@ -420,7 +421,7 @@ static void stopEcgMeas( void )
   }
 }
 
-static void batteryServiceCB( uint8 event )
+static void battServiceCB( uint8 event )
 {
   if (event == BATTERY_LEVEL_NOTI_ENABLED)
   {

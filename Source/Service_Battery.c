@@ -68,7 +68,7 @@ static gattAttribute_t batteryServAttrTbl[] =
 };
 
 // save the instance of the callback struct in the application
-static BatteryServiceCBs_t *batteryService_AppCBs = NULL;
+static BattServiceCBs_t *battService_AppCBs = NULL;
 
 static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen );
@@ -109,9 +109,9 @@ extern bStatus_t Battery_AddService( uint32 services )
 }
 
 // register battery service callback struct in the application
-extern bStatus_t Battery_RegisterAppCBs( BatteryServiceCBs_t *appCallbacks )
+extern bStatus_t Battery_RegisterAppCBs( BattServiceCBs_t *appCallbacks )
 {
-  batteryService_AppCBs = appCallbacks;
+  battService_AppCBs = appCallbacks;
     
   return ( SUCCESS );
 }
@@ -229,7 +229,7 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       {
         uint16 charCfg = BUILD_UINT16( pValue[0], pValue[1] );
 
-        batteryService_AppCBs->pfnBatteryServiceCB( (charCfg == GATT_CFG_NO_OPERATION) ?
+        battService_AppCBs->pfnBattServiceCB( (charCfg == GATT_CFG_NO_OPERATION) ?
                                 BATTERY_LEVEL_NOTI_DISABLED :
                                 BATTERY_LEVEL_NOTI_ENABLED );
       }
