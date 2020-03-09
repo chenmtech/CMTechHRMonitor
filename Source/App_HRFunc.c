@@ -5,14 +5,17 @@
 #include "QRSDET.h"
 #include "Service_HRMonitor.h"
 #include "service_ecg.h"
+#include "cmtechhrmonitor.h"
 #if defined ( PLUS_BROADCASTER )
   #include "peripheralBroadcaster.h"
 #else
   #include "peripheral.h"
 #endif
 
-#define ECG_PACK_MAX_BYTE_NUM 19 // max byte number per ecg packet, 1+9*2
+#define ECG_PACK_BYTE_NUM 19 // byte number per ecg packet, 1+9*2
 #define ECG_MAX_PACK_NUM 255 // max packet num
+
+static uint8 taskId; // taskId of application
 
 // is the heart rate calculated?
 static bool hrCalc = false;
@@ -34,9 +37,11 @@ static uint16 caliValue = 0;
 static bool ecgSend = false;
 // the number of the current ecg data packet, from 0 to ECG_MAX_PACK_NUM
 static uint8 pckNum = 0;
-// pointer to the value address in the ecg notification struct
-static uint8* pEcgByte;
-// ecg packet value stored in this structure
+// ecg packet buffer
+static uint8 ecgBuff[ECG_PACK_BYTE_NUM] = {0};
+// pointer to the current position of the ecg buff
+static uint8* pEcgBuff;
+// ecg packet structure need to send out
 static attHandleValueNoti_t ecgNoti;
 
 static uint16 calRRInterval(int16 x);
@@ -45,8 +50,10 @@ static void processTestSignal(int16 x, uint8 status);
 static uint16 median(uint16 *array, uint8 datnum);
 static void saveEcgSignal(int16 ecg);
 
-extern void HRFunc_Init()
+extern void HRFunc_Init(uint8 taskID)
 { 
+  taskId = taskID;
+  
   // initilize the ADS1x9x and set the data process callback function
 #if defined(CALIBRATE_1MV)
   ADS1x9x_Init(processTestSignal);  
@@ -92,18 +99,14 @@ extern void HRFunc_StartSendingEcg(bool send)
   if(send)
   {
     pckNum = 0;
-    pEcgByte = ecgNoti.value;
-    ecgNoti.len = 0;
+    pEcgBuff = ecgBuff;
+    osal_clear_event(taskId, HRM_ECG_PERIODIC_EVT);
   }
 }
 
 extern void HRFunc_SendEcgPacket(uint16 connHandle)
 {
-  if(ecgNoti.len <= 1) return;
-  
   ECG_PacketNotify( connHandle, &ecgNoti );
-  ecgNoti.len = 0;
-  pEcgByte = ecgNoti.value; 
 }
 
 // send HR packet
@@ -229,17 +232,20 @@ static uint16 calRRInterval(int16 x)
 
 static void saveEcgSignal(int16 ecg)
 {
-  if(ecgNoti.len == 0)
+  if(pEcgBuff == ecgBuff)
   {
-    *pEcgByte++ = pckNum;
+    *pEcgBuff++ = pckNum;
     pckNum = (pckNum == ECG_MAX_PACK_NUM) ? 0 : pckNum+1;
-    ecgNoti.len++;
   }
-  if(ecgNoti.len < ECG_PACK_MAX_BYTE_NUM)
+  *pEcgBuff++ = LO_UINT16(ecg);  
+  *pEcgBuff++ = HI_UINT16(ecg);
+  
+  if(pEcgBuff-ecgBuff >= ECG_PACK_BYTE_NUM)
   {
-    *pEcgByte++ = LO_UINT16(ecg);  
-    *pEcgByte++ = HI_UINT16(ecg);
-    ecgNoti.len += 2;
+    osal_memcpy(ecgNoti.value, ecgBuff, ECG_PACK_BYTE_NUM);
+    ecgNoti.len = ECG_PACK_BYTE_NUM;
+    osal_set_event(taskId, HRM_ECG_PERIODIC_EVT);
+    pEcgBuff = ecgBuff;
   }
 }
 

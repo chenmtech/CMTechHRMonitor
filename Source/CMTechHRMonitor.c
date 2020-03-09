@@ -226,7 +226,7 @@ extern void HRM_Init( uint8 task_id )
   //第三：对于会用到的IO，就要根据具体外部电路连接情况进行有效设置，防止耗电
   initIOPin();
   
-  HRFunc_Init();
+  HRFunc_Init(taskID);
   
   HCI_EXT_ClkDivOnHaltCmd( HCI_EXT_ENABLE_CLK_DIVIDE_ON_HALT );  
 
@@ -311,7 +311,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     if (gapProfileState == GAPROLE_CONNECTED)
     {
       HRFunc_SendEcgPacket(gapConnHandle);
-      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
+      //osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
     }
 
     return (events ^ HRM_ECG_PERIODIC_EVT);
@@ -346,7 +346,7 @@ static void gapStateCB( gaprole_States_t newState )
     stopEcgSampling();
     HRFunc_StartCalcingHR(false);
     HRFunc_StartSendingEcg(false); 
-    osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
+    //osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
     osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     //initIOPin();
@@ -444,12 +444,12 @@ static void ecgServiceCB( uint8 event )
   {
     case ECG_PACK_NOTI_ENABLED:
       HRFunc_StartSendingEcg(true); 
-      osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
+      //osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
       break;
         
     case ECG_PACK_NOTI_DISABLED:
       HRFunc_StartSendingEcg(false); 
-      osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
+      //osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
       break;
       
     default:
