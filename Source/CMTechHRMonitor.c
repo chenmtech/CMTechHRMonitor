@@ -47,8 +47,8 @@
 #if defined(WITHECG)
 // connection parameter when with ecg data sent
 #define MIN_INTERVAL 16
-#define MAX_INTERVAL 28
-#define SLAVE_LATENCY 1
+#define MAX_INTERVAL 32
+#define SLAVE_LATENCY 0
 #else
 // connection parameter when without ecg data sent
 #define MIN_INTERVAL 160 

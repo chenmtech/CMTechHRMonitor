@@ -11,7 +11,7 @@
   #include "peripheral.h"
 #endif
 
-#define ECG_PACK_MAX_DATA_NUM 9 // max data number per ecg packet
+#define ECG_PACK_MAX_BYTE_NUM 19 // max byte number per ecg packet, 1+9*2
 #define ECG_MAX_PACK_NUM 255 // max packet num
 
 // is the heart rate calculated?
@@ -176,9 +176,9 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
   *p++ = HI_UINT16(*pNoise++);  
   */
   
-  rrNum = 0;
   hrNoti.len = (uint8)(p-pTmp);
   HRM_MeasNotify( connHandle, &hrNoti );
+  rrNum = 0;
 }
 
 static void processEcgSignal(int16 x, uint8 status)
@@ -235,7 +235,7 @@ static void saveEcgSignal(int16 ecg)
     pckNum = (pckNum == ECG_MAX_PACK_NUM) ? 0 : pckNum+1;
     ecgNoti.len++;
   }
-  if(ecgNoti.len < 1+ECG_PACK_MAX_DATA_NUM*2)
+  if(ecgNoti.len < ECG_PACK_MAX_BYTE_NUM)
   {
     *pEcgByte++ = LO_UINT16(ecg);  
     *pEcgByte++ = HI_UINT16(ecg);
