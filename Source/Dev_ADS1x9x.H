@@ -65,7 +65,5 @@ extern void ADS1x9x_ReadAllRegister(uint8 * pRegs); // read all registers
 extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte); // write one register
 extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len); // write multi registers
 extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs); // write all registers
-extern void ADS1x9x_SetRegsAsTestSignal(); //set registers as outputing test signal
-extern void ADS1x9x_SetRegsAsNormalECGSignal(); // set registers as outputing normal ECG signal
 
 #endif

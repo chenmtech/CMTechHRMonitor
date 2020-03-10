@@ -4,6 +4,53 @@
 static void setADSCtrlPin(); //set ctrl pins for the ADS chip, e.g. DRDY, START, CS, PWDN
 static void setADSSpiPin();  //set SPI pin for the ADS chip. here use SPI 1, alt.2，that is：MI:P17, MO:P16, SCLK:P15
 
+//ADS chip initialization
+extern void SPI_ADS_Init()
+{
+  setADSCtrlPin();
+  setADSSpiPin();
+}
+
+// send one byte data, return the sent byte
+extern uint8 SPI_ADS_SendByte(const uint8 data)
+{
+  SPI_SEND(data); 
+  while (!SPITXDONE);
+  U1TX_BYTE = 0;
+  return (U1DBUF);
+}
+
+// read one byte data
+extern uint8 SPI_ADS_ReadByte()
+{
+  return SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+}
+
+// send a frame data in pBuffer
+extern void SPI_ADS_SendFrame(const uint8* pBuffer, uint16 size)
+{
+  uint16 i = 0;
+  for (i = 0; i < size; i++){
+    SPI_SEND(pBuffer[i]);
+    while (!SPITXDONE);
+    U1TX_BYTE = 0;
+  }  
+  return;
+}
+
+// read a frame data to pBuffer
+extern void SPI_ADS_ReadFrame(uint8* pBuffer, uint16 size)
+{
+  uint16 i = 0;
+  for (i = 0; i < size; i++){
+    SPI_SEND(ADS_DUMMY_CHAR);
+    while (!SPITXDONE);
+    U1TX_BYTE = 0;
+    pBuffer[i] = U1DBUF;
+  } 
+  return; 
+}
+
 //
 static void setADSCtrlPin()
 {
@@ -66,53 +113,4 @@ static void setADSSpiPin()
   //U1DBUF = 0x00;
 }
 
-
-
-//ADS chip initialization
-extern void SPI_ADS_Init()
-{
-  setADSCtrlPin();
-  setADSSpiPin();
-}
-
-//发送单字节
-// 返回发送的字节
-extern uint8 SPI_ADS_SendByte(const uint8 data)
-{
-  SPI_SEND(data); 
-  while (!SPITXDONE);
-  U1TX_BYTE = 0;
-  return (U1DBUF);
-}
-
-// 读单个字节
-extern uint8 SPI_ADS_ReadByte()
-{
-  return SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-}
-
-//发送指定大小的帧
-extern void SPI_ADS_SendFrame(const uint8* pBuffer, uint16 size)
-{
-  uint16 i = 0;
-  for (i = 0; i < size; i++){
-    SPI_SEND(pBuffer[i]);
-    while (!SPITXDONE);
-    U1TX_BYTE = 0;
-  }  
-  return;
-}
-
-//读指定大小的帧
-extern void SPI_ADS_ReadFrame(uint8* pBuffer, uint16 size)
-{
-  uint16 i = 0;
-  for (i = 0; i < size; i++){
-    SPI_SEND(ADS_DUMMY_CHAR);
-    while (!SPITXDONE);
-    U1TX_BYTE = 0;
-    pBuffer[i] = U1DBUF;
-  } 
-  return; 
-}
 

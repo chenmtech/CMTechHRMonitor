@@ -36,6 +36,24 @@
 #include "service_ecg.h"
 #include "App_HRFunc.h"
 
+#define ADVERTISING_INTERVAL 3200 // units of 0.625ms
+
+#if defined(WITHECG)
+  // connection parameter with ecg data sent
+  #define MIN_INTERVAL 16
+  #define MAX_INTERVAL 32
+  #define SLAVE_LATENCY 0
+  #define CONNECT_TIMEOUT 50 // If no connection event occurred during this timeout, the connect will be shut down.
+#else
+  // connection parameter without ecg data sent
+  #define MIN_INTERVAL 160 
+  #define MAX_INTERVAL 319
+  #define SLAVE_LATENCY 4
+  #define CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
+#endif
+
+#define CONN_PAUSE_PERIPHERAL 4  // the pause time from the connection establishment to the update of the connection parameters
+
 #define INVALID_CONNHANDLE 0xFFFF // invalid connection handle
 #define STATUS_ECG_STOP 0     // ecg sampling stopped status
 #define STATUS_ECG_START 1    // ecg sampling started status
@@ -43,20 +61,6 @@
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
-#if defined(WITHECG)
-  // connection parameter with ecg data sent
-  #define MIN_INTERVAL 16
-  #define MAX_INTERVAL 32
-  #define SLAVE_LATENCY 0
-#else
-  // connection parameter without ecg data sent
-  #define MIN_INTERVAL 160 
-  #define MAX_INTERVAL 319
-  #define SLAVE_LATENCY 4
-#endif
-
-#define CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
-#define CONN_PAUSE_PERIPHERAL 4  // the pause time from the connection establishment to the update of the connection parameters
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
@@ -144,8 +148,8 @@ extern void HRM_Init( uint8 task_id )
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanResponseData ), scanResponseData );
     
     // set the advertising parameters
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 3200 ); // units of 0.625ms
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 3200 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, ADVERTISING_INTERVAL ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, ADVERTISING_INTERVAL ); // units of 0.625ms
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // advertising forever
     
     // enable advertising
@@ -210,8 +214,6 @@ extern void HRM_Init( uint8 task_id )
   {
     uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
-    //uint8 leadType = ECG_LEAD_TYPE_I;
-    //ECG_SetParameter( ECG_LEAD_TYPE, sizeof ( uint8 ), &leadType );
   }    
   
   //在这里初始化GPIO

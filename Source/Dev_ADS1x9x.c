@@ -3,7 +3,6 @@
 #include "hal_mcu.h"
 #include "CMUtil.h"
     
-
 // all registers for outputing the test signal
 const static uint8 test1mVRegs[12] = {  
   0x52,
@@ -66,13 +65,14 @@ const static uint8 normalECGRegs[12] = {
   0x0C                      //
 };
 
-static ADS_DataCB_t pfnADSDataCB; // processing data callback function 
+static ADS_DataCB_t pfnADSDataCB; // callback function processing data 
 static int16 ecg; // ECG data readed
 
-
 static void execute(uint8 cmd); // execute command
-static void ADS1291_ReadOneSample(void); // read one data with ADS1291
-static void ADS1191_ReadOneSample(void); // read one data with ADS1191
+static void setRegsAsTestSignal(); //set registers as outputing test signal
+static void setRegsAsNormalECGSignal(); // set registers as outputing normal ECG signal
+static void readOneSampleUsingADS1291(void); // read one data with ADS1291
+static void readOneSampleUsingADS1191(void); // read one data with ADS1191
 
 // ADS init
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
@@ -82,9 +82,9 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
   ADS1x9x_Reset();
   
 #if defined(CALIBRATE_1MV) 
-  ADS1x9x_SetRegsAsTestSignal();
+  setRegsAsTestSignal();
 #else
-  ADS1x9x_SetRegsAsNormalECGSignal();
+  setRegsAsNormalECGSignal();
 #endif  
   
   ADS1x9x_StandBy();
@@ -97,13 +97,13 @@ extern void ADS1x9x_WakeUp(void)
   execute(WAKEUP);
 }
 
-// 待机
+// enter in standby mode
 extern void ADS1x9x_StandBy(void)
 {
   execute(STANDBY);
 }
 
-
+// reset chip
 extern void ADS1x9x_Reset(void)
 {
   ADS_RST_LOW();     //PWDN/RESET 低电平
@@ -112,7 +112,7 @@ extern void ADS1x9x_Reset(void)
   delayus(50);
 }
 
-// 启动采样
+// start continuous sampling
 extern void ADS1x9x_StartConvert(void)
 {
   //设置连续采样模式
@@ -131,7 +131,7 @@ extern void ADS1x9x_StartConvert(void)
   delayus(32000); 
 }
 
-// 停止采样
+// stop continuous sampling
 extern void ADS1x9x_StopConvert(void)
 {
   ADS_CS_LOW();  
@@ -147,13 +147,13 @@ extern void ADS1x9x_StopConvert(void)
   delayus(160); 
 }
 
-// 读所有12个寄存器值
+// read all 12 registers
 extern void ADS1x9x_ReadAllRegister(uint8 * pRegs)
 {
   ADS1x9x_ReadMultipleRegister(0x00, pRegs, 12);
 }
 
-// 读多个寄存器值
+// read len registers into pRegs from the address beginaddr
 extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len)
 {
   ADS_CS_LOW();
@@ -170,7 +170,7 @@ extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 l
   ADS_CS_HIGH();
 }
 
-// 读一个寄存器值
+// read a register with address
 extern uint8 ADS1x9x_ReadRegister(uint8 address)
 {
   uint8 result = 0;
@@ -188,24 +188,14 @@ extern uint8 ADS1x9x_ReadRegister(uint8 address)
   return result;
 }
 
-// 写所有12个寄存器
+// write all 12 registers
 extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs)
 {
   ADS1x9x_WriteMultipleRegister(0x00, pRegs, 12);
 }
 
-//使用内部测试信号
-extern void ADS1x9x_SetRegsAsTestSignal()
-{
-  ADS1x9x_WriteAllRegister(test1mVRegs); 
-}
 
-extern void ADS1x9x_SetRegsAsNormalECGSignal()
-{
-  ADS1x9x_WriteAllRegister(normalECGRegs);   
-}
-
-// 写多个寄存器值
+// write multiple registers
 extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len)
 {
   ADS_CS_LOW();
@@ -222,7 +212,7 @@ extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, 
   ADS_CS_HIGH();
 } 
 
-// 写一个寄存器
+// write one register
 extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte)
 {
   ADS_CS_LOW();
@@ -237,25 +227,16 @@ extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte)
   ADS_CS_HIGH();
 }  
 
-#pragma vector = P0INT_VECTOR
-__interrupt void PORT0_ISR(void)
-{ 
-  halIntState_t intState;
-  HAL_ENTER_CRITICAL_SECTION( intState );  // Hold off interrupts.
-  
-  if(P0IFG & 0x02)  //P0_1中断
-  {
-    P0IFG &= ~(1<<1);   //clear P0_1 IFG 
-    P0IF = 0;   //clear P0 interrupt flag
+//set registers as test mode
+static void setRegsAsTestSignal()
+{
+  ADS1x9x_WriteAllRegister(test1mVRegs); 
+}
 
-#if defined(ADS1291)    
-    ADS1291_ReadOneSample();
-#elif defined(ADS1191)
-    ADS1191_ReadOneSample();
-#endif
-  }
-  
-  HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
+// set registers as normal ecg mode
+static void setRegsAsNormalECGSignal()
+{
+  ADS1x9x_WriteAllRegister(normalECGRegs);   
 }
 
 //execute command
@@ -271,8 +252,29 @@ static void execute(uint8 cmd)
   ADS_CS_HIGH();
 }
 
+#pragma vector = P0INT_VECTOR
+__interrupt void PORT0_ISR(void)
+{ 
+  halIntState_t intState;
+  HAL_ENTER_CRITICAL_SECTION( intState );  // Hold off interrupts.
+  
+  if(P0IFG & 0x02)  //P0_1中断
+  {
+    P0IFG &= ~(1<<1);   //clear P0_1 IFG 
+    P0IF = 0;   //clear P0 interrupt flag
+
+#if defined(ADS1291)    
+    readOneSampleUsingADS1291();
+#elif defined(ADS1191)
+    readOneSampleUsingADS1191();
+#endif
+  }
+  
+  HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
+}
+
 // ADS1291: high precise(24bits) chip with only one channel
-static void ADS1291_ReadOneSample(void)
+static void readOneSampleUsingADS1291(void)
 {  
   ADS_CS_LOW();
   
@@ -306,7 +308,7 @@ static void ADS1291_ReadOneSample(void)
 }
 
 // ADS1191: low precise(16bits) chip with only one channel
-static void ADS1191_ReadOneSample(void)
+static void readOneSampleUsingADS1191(void)
 {  
   ADS_CS_LOW();
   
