@@ -45,9 +45,9 @@
 #define HRM_SERVICE                   0x00000001
 
 // Callback events
-#define HRM_MEAS_NOTI_ENABLED         1 // measurement enabled
-#define HRM_MEAS_NOTI_DISABLED        2 // measurement disabled
-#define HRM_CTRL_PT_SET               3 // control point setting
+#define HRM_HR_NOTI_ENABLED         1 // heart rate notification enabled
+#define HRM_HR_NOTI_DISABLED        2 // heart rate notification disabled
+#define HRM_CTRL_PT_SET             3 // control point setting
 
 // Heart Rate Service callback function
 typedef void (*HRMServiceCB_t)(uint8 event);

@@ -295,8 +295,8 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
         uint16 charCfg = BUILD_UINT16( pValue[0], pValue[1] );
 
         (hrmServiceCBs->pfnHRMServiceCB)( (charCfg == GATT_CFG_NO_OPERATION) ?
-                                HRM_MEAS_NOTI_DISABLED :
-                                HRM_MEAS_NOTI_ENABLED );
+                                HRM_HR_NOTI_DISABLED :
+                                HRM_HR_NOTI_ENABLED );
       }
       break;       
  

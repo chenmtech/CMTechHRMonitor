@@ -77,7 +77,7 @@ static void ADS1191_ReadOneSample(void); // read one data with ADS1191
 // ADS init
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
 {
-  // init ADS
+  // init ADS1x9x chip
   SPI_ADS_Init();  
   ADS1x9x_Reset();
   
@@ -87,8 +87,8 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
   ADS1x9x_SetRegsAsNormalECGSignal();
 #endif  
   
-  pfnADSDataCB = pfnADS_DataCB_t;
   ADS1x9x_StandBy();
+  pfnADSDataCB = pfnADS_DataCB_t;
 }
 
 // wakeup

@@ -40,20 +40,19 @@
 #define STATUS_ECG_STOP 0     // ecg sampling stopped status
 #define STATUS_ECG_START 1    // ecg sampling started status
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
-#define ECG_NOTI_PERIOD 65 // ecg data packet notification period, ms
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  164  // ecg 1mV calibration value
 
 #if defined(WITHECG)
-// connection parameter when with ecg data sent
-#define MIN_INTERVAL 16
-#define MAX_INTERVAL 32
-#define SLAVE_LATENCY 0
+  // connection parameter with ecg data sent
+  #define MIN_INTERVAL 16
+  #define MAX_INTERVAL 32
+  #define SLAVE_LATENCY 0
 #else
-// connection parameter when without ecg data sent
-#define MIN_INTERVAL 160 
-#define MAX_INTERVAL 320
-#define SLAVE_LATENCY 4
+  // connection parameter without ecg data sent
+  #define MIN_INTERVAL 160 
+  #define MAX_INTERVAL 319
+  #define SLAVE_LATENCY 4
 #endif
 
 #define CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
@@ -62,6 +61,8 @@
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
 static gaprole_States_t gapProfileState = GAPROLE_INIT;
+static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor"; // GGS device name
+static uint8 status = STATUS_ECG_STOP; // ecg sampling status
 
 // advertise data
 static uint8 advertData[] = 
@@ -91,13 +92,7 @@ static uint8 scanResponseData[] =
   'M'
 };
 
-// GGS device name
-static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor";
-
-// ecg sampling status
-static uint8 status = STATUS_ECG_STOP;
-
-static void gapStateCB( gaprole_States_t newState ); // GAP state change callback
+static void gapStateCB( gaprole_States_t newState ); // gap state callback function
 static void hrServiceCB( uint8 event ); // heart rate service callback function
 static void battServiceCB( uint8 event ); // battery service callback function
 static void ecgServiceCB( uint8 event ); // ecg service callback function
@@ -106,7 +101,7 @@ static void ecgServiceCB( uint8 event ); // ecg service callback function
 static gapRolesCBs_t gapStateCBs =
 {
   gapStateCB,         // Profile State Change Callbacks
-  NULL                   // When a valid RSSI is read from controller (not used by application)
+  NULL                // When a valid RSSI is read from controller (not used by application)
 };
 
 static gapBondCBs_t bondCBs =
@@ -149,17 +144,14 @@ extern void HRM_Init( uint8 task_id )
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanResponseData ), scanResponseData );
     
     // set the advertising parameters
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 3200 ); // units of 0.625ms
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 3200 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 16000 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 16000 ); // units of 0.625ms
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // advertising forever
     
     // enable advertising
     uint8 advertising = TRUE;
     GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &advertising );
-    
-    // set the pause time from the connection establishment to the update of the connection parameters
-    // during this time, client can finish the tasks e.g. service discovery 
-    // the unit of time is second
+
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, CONN_PAUSE_PERIPHERAL ); 
     
     // set the connection parameter
@@ -218,6 +210,8 @@ extern void HRM_Init( uint8 task_id )
   {
     uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
+    //uint8 leadType = ECG_LEAD_TYPE_I;
+    //ECG_SetParameter( ECG_LEAD_TYPE, sizeof ( uint8 ), &leadType );
   }    
   
   //在这里初始化GPIO
@@ -306,15 +300,14 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     return (events ^ HRM_BATT_PERIODIC_EVT);
   }
   
-  if ( events & HRM_ECG_PERIODIC_EVT )
+  if ( events & HRM_ECG_NOTI_EVT )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
       HRFunc_SendEcgPacket(gapConnHandle);
-      //osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
     }
 
-    return (events ^ HRM_ECG_PERIODIC_EVT);
+    return (events ^ HRM_ECG_NOTI_EVT);
   }
   
   // Discard unknown events
@@ -344,13 +337,11 @@ static void gapStateCB( gaprole_States_t newState )
             newState != GAPROLE_CONNECTED)
   {
     stopEcgSampling();
-    HRFunc_StartCalcingHR(false);
-    HRFunc_StartSendingEcg(false); 
-    //osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
+    HRFunc_SwitchCalcingHR(false);
+    HRFunc_SwitchSendingEcg(false);
     osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     //initIOPin();
-    //HRFunc_Init();
   }
   // if started
   else if (newState == GAPROLE_STARTED)
@@ -379,15 +370,15 @@ static void hrServiceCB( uint8 event )
 {
   switch (event)
   {
-    case HRM_MEAS_NOTI_ENABLED:
+    case HRM_HR_NOTI_ENABLED:
       startEcgSampling();  
-      HRFunc_StartCalcingHR(true);
+      HRFunc_SwitchCalcingHR(true);
       osal_start_timerEx( taskID, HRM_HR_PERIODIC_EVT, HR_NOTI_PERIOD);
       break;
         
-    case HRM_MEAS_NOTI_DISABLED:
+    case HRM_HR_NOTI_DISABLED:
       stopEcgSampling();
-      HRFunc_StartCalcingHR(false);
+      HRFunc_SwitchCalcingHR(false);
       osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
       break;
 
@@ -407,7 +398,7 @@ static void startEcgSampling( void )
   if(status == STATUS_ECG_STOP) 
   {
     status = STATUS_ECG_START;
-    HRFunc_StartSamplingEcg(true);
+    HRFunc_SwitchSamplingEcg(true);
   }
 }
 
@@ -417,7 +408,7 @@ static void stopEcgSampling( void )
   if(status == STATUS_ECG_START)
   {
     status = STATUS_ECG_STOP;
-    HRFunc_StartSamplingEcg(false);
+    HRFunc_SwitchSamplingEcg(false);
   }
 }
 
@@ -443,13 +434,11 @@ static void ecgServiceCB( uint8 event )
   switch (event)
   {
     case ECG_PACK_NOTI_ENABLED:
-      HRFunc_StartSendingEcg(true); 
-      //osal_start_timerEx( taskID, HRM_ECG_PERIODIC_EVT, ECG_NOTI_PERIOD );
+      HRFunc_SwitchSendingEcg(true); 
       break;
         
     case ECG_PACK_NOTI_DISABLED:
-      HRFunc_StartSendingEcg(false); 
-      //osal_stop_timerEx( taskID, HRM_ECG_PERIODIC_EVT );
+      HRFunc_SwitchSendingEcg(false); 
       break;
       
     default:

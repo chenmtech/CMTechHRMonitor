@@ -1,5 +1,5 @@
 /*
- * App_HRFunc.h : Heart Rate Calculation Function Model header file
+ * App_HRFunc.h : Heart Rate application Function Model header file
  * Written by Chenm
  */
 
@@ -9,9 +9,9 @@
 #include "hal_types.h"
 
 extern void HRFunc_Init(uint8 taskID); //init
-extern void HRFunc_StartSamplingEcg(bool start); // is the ecg signal sampled
-extern void HRFunc_StartCalcingHR(bool calc); // is the Heart rate calculated?
-extern void HRFunc_StartSendingEcg(bool send); // is the ecg data sent?
+extern void HRFunc_SwitchSamplingEcg(bool start); // is the ecg signal sampled
+extern void HRFunc_SwitchCalcingHR(bool calc); // is the Heart rate calculated?
+extern void HRFunc_SwitchSendingEcg(bool send); // is the ecg data sent?
 extern void HRFunc_SendHRPacket(uint16 connHandle); // send HR packet
 extern void HRFunc_SendEcgPacket(uint16 connHandle); // send ecg packet
 

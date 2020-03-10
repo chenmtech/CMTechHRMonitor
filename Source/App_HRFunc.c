@@ -1,3 +1,7 @@
+/*
+ * App_HRFunc.h : Heart Rate application Function Model source file
+ * Written by Chenm
+ */
 
 #include "App_HRFunc.h"
 #include "CMUtil.h"
@@ -6,11 +10,7 @@
 #include "Service_HRMonitor.h"
 #include "service_ecg.h"
 #include "cmtechhrmonitor.h"
-#if defined ( PLUS_BROADCASTER )
-  #include "peripheralBroadcaster.h"
-#else
-  #include "peripheral.h"
-#endif
+
 
 #define ECG_PACK_BYTE_NUM 19 // byte number per ecg packet, 1+9*2
 #define ECG_MAX_PACK_NUM 255 // max packet num
@@ -39,16 +39,16 @@ static bool ecgSend = false;
 static uint8 pckNum = 0;
 // ecg packet buffer
 static uint8 ecgBuff[ECG_PACK_BYTE_NUM] = {0};
-// pointer to the current position of the ecg buff
+// pointer to the ecg buff
 static uint8* pEcgBuff;
-// ecg packet structure need to send out
+// ecg packet structure sent out
 static attHandleValueNoti_t ecgNoti;
 
-static uint16 calRRInterval(int16 x);
 static void processEcgSignal(int16 x, uint8 status);
-static void processTestSignal(int16 x, uint8 status);
-static uint16 median(uint16 *array, uint8 datnum);
+static uint16 calRRInterval(int16 x);
 static void saveEcgSignal(int16 ecg);
+static uint16 median(uint16 *array, uint8 datnum);
+static void processTestSignal(int16 x, uint8 status);
 
 extern void HRFunc_Init(uint8 taskID)
 { 
@@ -63,7 +63,7 @@ extern void HRFunc_Init(uint8 taskID)
   delayus(1000);
 }
 
-extern void HRFunc_StartSamplingEcg(bool start)
+extern void HRFunc_SwitchSamplingEcg(bool start)
 {
   if(start)
   {
@@ -81,7 +81,7 @@ extern void HRFunc_StartSamplingEcg(bool start)
   }
 }
 
-extern void HRFunc_StartCalcingHR(bool calc)
+extern void HRFunc_SwitchCalcingHR(bool calc)
 {
   hrCalc = calc;
   if(calc)
@@ -93,14 +93,13 @@ extern void HRFunc_StartCalcingHR(bool calc)
   }
 }
 
-extern void HRFunc_StartSendingEcg(bool send)
+extern void HRFunc_SwitchSendingEcg(bool send)
 {
   ecgSend = send;
   if(send)
   {
     pckNum = 0;
     pEcgBuff = ecgBuff;
-    osal_clear_event(taskId, HRM_ECG_PERIODIC_EVT);
   }
 }
 
@@ -244,7 +243,7 @@ static void saveEcgSignal(int16 ecg)
   {
     osal_memcpy(ecgNoti.value, ecgBuff, ECG_PACK_BYTE_NUM);
     ecgNoti.len = ECG_PACK_BYTE_NUM;
-    osal_set_event(taskId, HRM_ECG_PERIODIC_EVT);
+    osal_set_event(taskId, HRM_ECG_NOTI_EVT);
     pEcgBuff = ecgBuff;
   }
 }
