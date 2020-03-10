@@ -144,8 +144,8 @@ extern void HRM_Init( uint8 task_id )
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanResponseData ), scanResponseData );
     
     // set the advertising parameters
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 16000 ); // units of 0.625ms
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 16000 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, 3200 ); // units of 0.625ms
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, 3200 ); // units of 0.625ms
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // advertising forever
     
     // enable advertising

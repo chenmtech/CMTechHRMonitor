@@ -100,6 +100,7 @@ extern void HRFunc_SwitchSendingEcg(bool send)
   {
     pckNum = 0;
     pEcgBuff = ecgBuff;
+    osal_clear_event(taskId, HRM_ECG_NOTI_EVT);
   }
 }
 
