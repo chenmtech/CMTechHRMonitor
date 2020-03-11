@@ -45,6 +45,12 @@ CONST uint8 ECGLeadTypeUUID[ATT_UUID_SIZE] =
   CM_UUID(ECG_LEAD_TYPE_UUID)
 };
 
+// Switch characteristic
+CONST uint8 ECGSwitchUUID[ATT_UUID_SIZE] =
+{ 
+  CM_UUID(ECG_SWITCH_UUID)
+};
+
 static ECGServiceCBs_t* ecgServiceCBs;
 
 // Ecg Service attribute
@@ -67,6 +73,10 @@ static uint16 ecgSampleRate = SAMPLERATE;
 // Lead Type Characteristic
 static uint8 ecgLeadTypeProps = GATT_PROP_READ;
 static uint8 ecgLeadType = ECG_LEAD_TYPE_I;
+
+// Switch Characteristic
+static uint8 ecgSwitchProps = GATT_PROP_READ | GATT_PROP_WRITE;
+static uint8 ecgSwitch = 0x00;
 
 /*********************************************************************
  * Profile Attributes - Table
@@ -152,7 +162,23 @@ static gattAttribute_t ECGAttrTbl[] =
         GATT_PERMIT_READ, 
         0, 
         &ecgLeadType 
-      }
+      },
+      
+    // 5. Switch Declaration
+    { 
+      { ATT_BT_UUID_SIZE, characterUUID },
+      GATT_PERMIT_READ, 
+      0,
+      &ecgSwitchProps 
+    },
+
+      // Switch Value
+      { 
+        { ATT_UUID_SIZE, ECGSwitchUUID },
+        GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
+        0, 
+        &ecgSwitch 
+      }      
 };
 
 static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr, 
@@ -213,6 +239,10 @@ extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value )
     case ECG_LEAD_TYPE:  
       ecgLeadType = *((uint8*)value);
       break;
+      
+    case ECG_SWITCH:  
+      ecgSwitch = *((uint8*)value);
+      break;      
 
     default:
       ret = INVALIDPARAMETER;
@@ -239,6 +269,10 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value )
     case ECG_LEAD_TYPE:  
       *((uint8*)value) = ecgLeadType;
       break; 
+      
+    case ECG_SWITCH:  
+      *((uint8*)value) = ecgSwitch;
+      break;      
 
     default:
       ret = INVALIDPARAMETER;
@@ -292,6 +326,7 @@ static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
        break;
        
     case ECG_LEAD_TYPE_UUID:
+    case ECG_SWITCH_UUID:
       *pLen = 1;
       pValue[0] = *pAttr->pValue;
       break;
@@ -329,7 +364,15 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                 ECG_PACK_NOTI_DISABLED :
                                 ECG_PACK_NOTI_ENABLED );
       }
-      break;       
+      break;   
+      
+    case ECG_SWITCH_UUID: 
+      if(len == 1 && ecgSwitch != pValue[0])
+      {
+        ecgSwitch = pValue[0];
+        (ecgServiceCBs->pfnEcgServiceCB)(ECG_SWITCH_EVT);
+      }
+      break;
  
     default:
       status = ATT_ERR_ATTR_NOT_FOUND;

@@ -36,13 +36,15 @@
 #include "service_ecg.h"
 #include "App_HRFunc.h"
 
+#define NVID_ECG_SWITCH 0x80      // the NVID of the "ecgSwitch", saved value: 0x00:ECG_OFF, 0x01:ECG_ON
+
 #define ADVERTISING_INTERVAL 3200 // units of 0.625ms
 
 // connection parameter without ecg data sent
-#define MIN_INTERVAL 160 
-#define MAX_INTERVAL 319
-#define SLAVE_LATENCY 4
-#define CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
+#define NOECG_MIN_INTERVAL 160 
+#define NOECG_MAX_INTERVAL 319
+#define NOECG_SLAVE_LATENCY 4
+#define NOECG_CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
 
 // connection parameter with ecg data sent
 #define ECG_MIN_INTERVAL 16
@@ -94,12 +96,9 @@ static uint8 scanResponseData[] =
 };
 
 static void gapStateCB( gaprole_States_t newState ); // gap state callback function
-static void gapParamUpdateCB( uint16 connInterval, uint16 connSlaveLatency, uint16 connTimeout );
 static void hrServiceCB( uint8 event ); // heart rate service callback function
 static void battServiceCB( uint8 event ); // battery service callback function
 static void ecgServiceCB( uint8 event ); // ecg service callback function
-
-static gapRolesParamUpdateCB_t paramUpdateCB = gapParamUpdateCB;
 
 // GAP Role callback struct
 static gapRolesCBs_t gapStateCBs =
@@ -141,6 +140,7 @@ static void stopEcgSampling( void ); // stop ecg sampling
 extern void HRM_Init( uint8 task_id )
 { 
   taskID = task_id;
+  uint8 ecgSwitch = 0x00;
   
   // Setup the GAP Peripheral Role Profile
   {
@@ -159,20 +159,36 @@ extern void HRM_Init( uint8 task_id )
 
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, CONN_PAUSE_PERIPHERAL ); 
     
+    // read ecgSwitch from NV
+    uint8 rtn = osal_snv_read(NVID_ECG_SWITCH, sizeof(uint8), (uint8*)&ecgSwitch);
+    if(rtn != SUCCESS)
+      ecgSwitch = 0x00;   
+    
     // set the connection parameter
-    uint16 desired_min_interval = MIN_INTERVAL; // units of 1.25ms, Note: the ios device require the min interval more than 20ms
-    uint16 desired_max_interval = MAX_INTERVAL; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
-    uint16 desired_slave_latency = SLAVE_LATENCY;//0; // Note: the ios device require the slave latency <=4
-    uint16 desired_conn_timeout = CONNECT_TIMEOUT; // units of 10ms, Note: the ios device require the timeout <= 6s
+    uint16 desired_min_interval; // units of 1.25ms, Note: the ios device require min_interval>=20ms, max_interval>=min_interval+20
+    uint16 desired_max_interval; // units of 1.25ms, Note: the ios device require max_interval*(1+latency)<=2s
+    uint16 desired_slave_latency; // Note: the ios device require the slave latency <=4
+    uint16 desired_conn_timeout; // units of 10ms, Note: the ios device require the timeout <= 6s
+    if(ecgSwitch != 0x00)
+    {
+      desired_min_interval = ECG_MIN_INTERVAL;
+      desired_max_interval = ECG_MAX_INTERVAL;
+      desired_slave_latency = ECG_SLAVE_LATENCY;
+      desired_conn_timeout = ECG_CONNECT_TIMEOUT;
+    }
+    else
+    {
+      desired_min_interval = NOECG_MIN_INTERVAL;
+      desired_max_interval = NOECG_MAX_INTERVAL;
+      desired_slave_latency = NOECG_SLAVE_LATENCY;
+      desired_conn_timeout = NOECG_CONNECT_TIMEOUT;      
+    }
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
     GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
     GAPRole_SetParameter( GAPROLE_TIMEOUT_MULTIPLIER, sizeof( uint16 ), &desired_conn_timeout );
     uint8 enable_update_request = TRUE;
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
-    
-    // set connection param updated callback function
-    GAPRole_RegisterAppCBs(&paramUpdateCB);
   }
   
   // set GGS device name
@@ -203,10 +219,8 @@ extern void HRM_Init( uint8 task_id )
   Battery_AddService(GATT_ALL_SERVICES); // battery service
   Battery_RegisterAppCBs(&battServCBs);
   
-#if defined(WITHECG)  
   ECG_AddService(GATT_ALL_SERVICES); // ecg service
   ECG_RegisterAppCBs( &ecgServCBs );  
-#endif  
   
   // set characteristic in heart rate service
   {
@@ -218,6 +232,7 @@ extern void HRM_Init( uint8 task_id )
   {
     uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
+    ECG_SetParameter( ECG_SWITCH, sizeof ( uint8 ), &ecgSwitch );
   }    
   
   //在这里初始化GPIO
@@ -314,17 +329,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     }
 
     return (events ^ HRM_ECG_NOTI_EVT);
-  }
-  
-  if ( events & HRM_ENABLE_ECG_NOTI_EVT )
-  {
-    if (gapProfileState == GAPROLE_CONNECTED)
-    {
-      HRFunc_SwitchSendingEcg(true);
-    }
-
-    return (events ^ HRM_ENABLE_ECG_NOTI_EVT);
-  }  
+  } 
   
   // Discard unknown events
   return 0;
@@ -357,16 +362,6 @@ static void gapStateCB( gaprole_States_t newState )
     HRFunc_SwitchSendingEcg(false);
     VOID osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     VOID osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
-    
-    // recover the connection parameter
-    uint16 desired_min_interval = MIN_INTERVAL; // units of 1.25ms, Note: the ios device require the min interval more than 20ms
-    uint16 desired_max_interval = MAX_INTERVAL; // units of 1.25ms, Note: the ios device require the interval including the latency must be less than 2s
-    uint16 desired_slave_latency = SLAVE_LATENCY;//0; // Note: the ios device require the slave latency <=4
-    uint16 desired_conn_timeout = CONNECT_TIMEOUT; // units of 10ms, Note: the ios device require the timeout <= 6s
-    GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
-    GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
-    GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
-    GAPRole_SetParameter( GAPROLE_TIMEOUT_MULTIPLIER, sizeof( uint16 ), &desired_conn_timeout );
     //initIOPin();
   }
   // if started
@@ -389,20 +384,6 @@ static void gapStateCB( gaprole_States_t newState )
   }
   
   gapProfileState = newState;
-
-}
-
-static void gapParamUpdateCB( uint16 connInterval, uint16 connSlaveLatency, uint16 connTimeout )
-{
-  if(connInterval <= ECG_MAX_INTERVAL)
-  {
-    osal_start_timerEx(taskID, HRM_ENABLE_ECG_NOTI_EVT, 2000);
-  }
-  else
-  {
-    osal_stop_timerEx(taskID, HRM_ENABLE_ECG_NOTI_EVT);
-    HRFunc_SwitchSendingEcg(false);
-  }
 }
 
 static void hrServiceCB( uint8 event )
@@ -470,32 +451,24 @@ static void battServiceCB( uint8 event )
 
 static void ecgServiceCB( uint8 event )
 {
-  uint16 interval = 0;
-  GAPRole_GetParameter( GAPROLE_CONN_INTERVAL, &interval );
+  uint8 ecgSwitch;
   switch (event)
   {
     case ECG_PACK_NOTI_ENABLED:
-      if(interval <= ECG_MAX_INTERVAL)
-      {
-        HRFunc_SwitchSendingEcg(true);
-      }
-      else
-      {
-        // update the connection parameter
-        GAPRole_SendUpdateParam(ECG_MIN_INTERVAL, ECG_MAX_INTERVAL, 
-                                ECG_SLAVE_LATENCY, ECG_CONNECT_TIMEOUT, GAPROLE_RESEND_PARAM_UPDATE);
-      }
+      HRFunc_SwitchSendingEcg(true);
       break;
         
     case ECG_PACK_NOTI_DISABLED:
-      if(interval <= ECG_MAX_INTERVAL)
+      HRFunc_SwitchSendingEcg(false);
+      break;
+      
+    case ECG_SWITCH:
+      ECG_GetParameter( ECG_SWITCH, &ecgSwitch );
+      if(osal_snv_write(NVID_ECG_SWITCH, sizeof(uint8), (uint8*)&ecgSwitch) == SUCCESS)
       {
-        GAPRole_SendUpdateParam(MIN_INTERVAL, MAX_INTERVAL, 
-                              SLAVE_LATENCY, CONNECT_TIMEOUT, GAPROLE_RESEND_PARAM_UPDATE);
-      }
-      else
-      {
-        HRFunc_SwitchSendingEcg(false);
+        while(1) {
+          HAL_SYSTEM_RESET();  
+        }
       }
       break;
       
