@@ -10,7 +10,7 @@
 #define HRM_HR_PERIODIC_EVT 0x0002     // periodic heart rate measurement event
 #define HRM_BATT_PERIODIC_EVT 0x0004     // periodic battery measurement event
 #define HRM_ECG_NOTI_EVT 0x0008 // ecg packet notification event
-#define HRM_START_ECG_SEND_EVT 0x0010 // start sending ecg packet
+#define HRM_ENABLE_ECG_NOTI_EVT 0x0010 // enable ecg packet notification event
 /*
  * Task Initialization for the BLE Application
  */

@@ -83,7 +83,6 @@ extern void HRFunc_SwitchSamplingEcg(bool start)
 
 extern void HRFunc_SwitchCalcingHR(bool calc)
 {
-  hrCalc = calc;
   if(calc)
   {
     QRSDet(0, 1);
@@ -91,17 +90,18 @@ extern void HRFunc_SwitchCalcingHR(bool calc)
     rrSampleCount = 0;
     rrNum = 0; 
   }
+  hrCalc = calc;
 }
 
 extern void HRFunc_SwitchSendingEcg(bool send)
 {
-  ecgSend = send;
   if(send)
   {
     pckNum = 0;
     pEcgBuff = ecgBuff;
     osal_clear_event(taskId, HRM_ECG_NOTI_EVT);
   }
+  ecgSend = send;
 }
 
 extern void HRFunc_SendEcgPacket(uint16 connHandle)
