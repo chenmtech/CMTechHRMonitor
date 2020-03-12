@@ -2,7 +2,7 @@
 #                                                                              #
 #      IAR Universal Linker V5.0.2.5/W32                                       #
 #                                                                              #
-#           Link time     =  12/Mar/2020  12:19:22                             #
+#           Link time     =  12/Mar/2020  16:18:31                             #
 #           Target CPU    =  x51                                               #
 #           List file     =  "C:\Texas Instruments\BLE-CC254x-1.3.2\Projects\b #
 #                            le\CMTechHRMonitor\CC2541DB\CMTechHRMonitor\List\ #
@@ -4765,7 +4765,7 @@ BANK_RELAYS
   Segment part 11.            Intra module refs:   Segment part 32
            ENTRY                   ADDRESS         REF BY
            =====                   =======         ======
-           ECGSwitchUUID           000080C1 
+           ECGLockStatusUUID       000080C1 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 00000462 - 00000463 (0x2 bytes), align: 0
@@ -4857,7 +4857,7 @@ XDATA_I
   Segment part 28.            Intra module refs:   Segment part 32
            LOCAL                   ADDRESS         
            =====                   =======         
-           ecgSwitchProps          00000B74 
+           ecgLockStatusProps      00000B74 
     -------------------------------------------------------------------------
 XDATA_Z
   Relative segment, address: XDATA 0000046E - 0000046E (0x1 bytes), align: 0
@@ -4867,7 +4867,7 @@ XDATA_Z
                                                    writeAttrCB
            LOCAL                   ADDRESS         
            =====                   =======         
-           ecgSwitch               0000046E 
+           ecgLockStatus           0000046E 
     -------------------------------------------------------------------------
 XDATA_I
   Relative segment, address: XDATA 00000B75 - 00000BD4 (0x60 bytes), align: 0
@@ -5003,7 +5003,7 @@ XDATA_ID
     -------------------------------------------------------------------------
 XDATA_ID
   Relative segment, address: CODE 000001E6 - 000001E6 (0x1 bytes), align: 0
-  Segment part 29.            Intra module refs:   ecgSwitchProps
+  Segment part 29.            Intra module refs:   ecgLockStatusProps
     -------------------------------------------------------------------------
 XDATA_ID
   Relative segment, address: CODE 000001E7 - 00000246 (0x60 bytes), align: 0
@@ -5093,7 +5093,7 @@ BANK_RELAYS
     -------------------------------------------------------------------------
 <BANKED_CODE,XDATA_ROM_C_FLASH> 1 (was XDATA_ROM_C_FLASH)
   Relative segment, address: CODE 000080C1 - 000080D0 (0x10 bytes), align: 0
-  Segment part 58.            Intra module refs:   ECGSwitchUUID
+  Segment part 58.            Intra module refs:   ECGLockStatusUUID
     -------------------------------------------------------------------------
 <BANKED_CODE,XDATA_ROM_C_FLASH> 1 (was XDATA_ROM_C_FLASH)
   Relative segment, address: CODE 00008230 - 00008232 (0x3 bytes), align: 0
@@ -24198,12 +24198,12 @@ CSTART
                                                    ecg1mVCali (Service_Ecg)
                                                    ecgBuff (App_HRFunc)
                                                    ecgLeadType (Service_Ecg)
+                                                   ecgLockStatus (Service_Ecg)
                                                    ecgNoti (App_HRFunc)
                                                    ecgPack (Service_Ecg)
                                                    ecgPackClientCharCfg (Service_Ecg)
                                                    ecgSend (App_HRFunc)
                                                    ecgServiceCBs (Service_Ecg)
-                                                   ecgSwitch (Service_Ecg)
                                                    eraseAllBonds (gapbondmgr)
                                                    extendRfRange (ll)
                                                    failF (osal_snv)
@@ -24375,11 +24375,11 @@ CSTART
                                                    devInfoSystemIdProps (Service_DevInfo)
                                                    ecg1mVCaliProps (Service_Ecg)
                                                    ecgLeadTypeProps (Service_Ecg)
+                                                   ecgLockStatusProps (Service_Ecg)
                                                    ecgPackProps (Service_Ecg)
                                                    ecgSampleRate (Service_Ecg)
                                                    ecgSampleRateProps (Service_Ecg)
                                                    ecgServCBs (CMTechHRMonitor)
-                                                   ecgSwitchProps (Service_Ecg)
                                                    gapAppTaskID (gap_configmgr)
                                                    gapBond_AutoFailReason (gapbondmgr)
                                                    gapBond_InitiateWait (gapbondmgr)

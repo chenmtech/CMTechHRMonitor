@@ -45,10 +45,10 @@ CONST uint8 ECGLeadTypeUUID[ATT_UUID_SIZE] =
   CM_UUID(ECG_LEAD_TYPE_UUID)
 };
 
-// Switch characteristic
-CONST uint8 ECGSwitchUUID[ATT_UUID_SIZE] =
+// lock status characteristic
+CONST uint8 ECGLockStatusUUID[ATT_UUID_SIZE] =
 { 
-  CM_UUID(ECG_SWITCH_UUID)
+  CM_UUID(ECG_LOCK_STATUS_UUID)
 };
 
 static ECGServiceCBs_t* ecgServiceCBs;
@@ -74,9 +74,9 @@ static uint16 ecgSampleRate = SAMPLERATE;
 static uint8 ecgLeadTypeProps = GATT_PROP_READ;
 static uint8 ecgLeadType = ECG_LEAD_TYPE_I;
 
-// Switch Characteristic
-static uint8 ecgSwitchProps = GATT_PROP_READ | GATT_PROP_WRITE;
-static uint8 ecgSwitch = 0x00;
+// Lock Status Characteristic
+static uint8 ecgLockStatusProps = GATT_PROP_READ | GATT_PROP_WRITE;
+static uint8 ecgLockStatus = 0x00;
 
 /*********************************************************************
  * Profile Attributes - Table
@@ -164,20 +164,20 @@ static gattAttribute_t ECGAttrTbl[] =
         &ecgLeadType 
       },
       
-    // 5. Switch Declaration
+    // 5. Lock status Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &ecgSwitchProps 
+      &ecgLockStatusProps 
     },
 
-      // Switch Value
+      // Lock status Value
       { 
-        { ATT_UUID_SIZE, ECGSwitchUUID },
+        { ATT_UUID_SIZE, ECGLockStatusUUID },
         GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
         0, 
-        &ecgSwitch 
+        &ecgLockStatus 
       }      
 };
 
@@ -240,8 +240,8 @@ extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value )
       ecgLeadType = *((uint8*)value);
       break;
       
-    case ECG_SWITCH:  
-      ecgSwitch = *((uint8*)value);
+    case ECG_LOCK_STATUS:  
+      ecgLockStatus = *((uint8*)value);
       break;      
 
     default:
@@ -270,8 +270,8 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value )
       *((uint8*)value) = ecgLeadType;
       break; 
       
-    case ECG_SWITCH:  
-      *((uint8*)value) = ecgSwitch;
+    case ECG_LOCK_STATUS:  
+      *((uint8*)value) = ecgLockStatus;
       break;      
 
     default:
@@ -326,7 +326,7 @@ static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
        break;
        
     case ECG_LEAD_TYPE_UUID:
-    case ECG_SWITCH_UUID:
+    case ECG_LOCK_STATUS_UUID:
       *pLen = 1;
       pValue[0] = *pAttr->pValue;
       break;
@@ -366,11 +366,11 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       }
       break;   
       
-    case ECG_SWITCH_UUID: 
-      if(len == 1 && ecgSwitch != pValue[0])
+    case ECG_LOCK_STATUS_UUID: 
+      if(len == 1 && ecgLockStatus != pValue[0])
       {
-        ecgSwitch = pValue[0];
-        (ecgServiceCBs->pfnEcgServiceCB)(ECG_SWITCH_EVT);
+        ecgLockStatus = pValue[0];
+        (ecgServiceCBs->pfnEcgServiceCB)(ECG_LOCK_STATUS_CHANGED);
       }
       break;
  
