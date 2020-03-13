@@ -90,7 +90,7 @@ extern int QRSFilter(int datum,int init)
 *
 *  Filter delay is DERIV_LENGTH/2
 *****************************************************************************/
-
+/*
 extern int deriv1(int x, int init)
 {
   static int derBuff[DERIV_LENGTH], derI = 0 ;
@@ -108,6 +108,23 @@ extern int deriv1(int x, int init)
   derBuff[derI] = x ;
   if(++derI == DERIV_LENGTH)
     derI = 0 ;
+  return(y) ;
+}
+*/
+// because DERIV_LENGTH = 1, so I simplify the function, by chenm
+extern int deriv1(int x, int init)
+{
+  static int derBuff;
+  int y ;
+  
+  if(init != 0)
+  {
+    derBuff = 0 ;
+    return(0) ;
+  }
+  
+  y = x - (long)derBuff;
+  derBuff = x ;
   return(y) ;
 }
 
@@ -193,6 +210,7 @@ extern int hpfilt( int datum, int init )
 *
 *  Filter delay is DERIV_LENGTH/2
 *****************************************************************************/
+/*
 static int deriv2(int x, int init)
 {
   static int derBuff[DERIV_LENGTH], derI = 0 ;
@@ -212,8 +230,23 @@ static int deriv2(int x, int init)
     derI = 0 ;
   return(y) ;
 }
-
-
+*/
+// because DERIV_LENGTH = 1, so I simplify the function, by chenm
+static int deriv2(int x, int init)
+{
+  static int derBuff;
+  int y ;
+  
+  if(init != 0)
+  {
+    derBuff = 0 ;
+    return(0) ;
+  }
+  
+  y = x - (long)derBuff;
+  derBuff = x ;
+  return(y) ;
+}
 
 
 /*****************************************************************************
@@ -225,7 +258,7 @@ static int mvwint(int datum, int init)
 {
   static long sum = 0;
   static int data[WINDOW_WIDTH], ptr = 0 ;
-  int output;
+  long output;
   if(init)
   {
     for(ptr = 0; ptr < WINDOW_WIDTH ; ++ptr)
@@ -238,9 +271,14 @@ static int mvwint(int datum, int init)
   data[ptr] = datum ;
   if(++ptr == WINDOW_WIDTH)
     ptr = 0 ;
+  
+  output = sum/WINDOW_WIDTH;
+  if(output > 32000) output = 32000;
+  /*
   if((sum / WINDOW_WIDTH) > 32000)
     output = 32000 ;
   else
     output = sum / WINDOW_WIDTH ;
+  */
   return(output) ;
 }

@@ -43,9 +43,9 @@
 #define ADVERTISING_INTERVAL 3200 // units of 0.625ms
 
 // connection parameter when ecg function is locked
-#define ECG_LOCKED_MIN_INTERVAL 1580 
-#define ECG_LOCKED_MAX_INTERVAL 1598
-#define ECG_LOCKED_SLAVE_LATENCY 0
+#define ECG_LOCKED_MIN_INTERVAL 302//1580 
+#define ECG_LOCKED_MAX_INTERVAL 319//1598
+#define ECG_LOCKED_SLAVE_LATENCY 4//0
 #define ECG_LOCKED_CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
 
 // connection parameter when ecg function is unlocked
