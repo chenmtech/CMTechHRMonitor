@@ -96,6 +96,11 @@ extern int * getQRSBuffer()
   return qrsbuf;
 }
 
+extern int getRRInterval()
+{
+  return rrbuf[0];
+}
+
 extern int QRSDet( int datum, int init )
 {
   static int det_thresh, qpkcnt = 0 ;

@@ -40,7 +40,9 @@
 #define ECG_LOCKED 0x00 
 #define ECG_UNLOCKED 0x01
 
-#define ADVERTISING_INTERVAL 3200 // units of 0.625ms
+#define ADVERTISING_INTERVAL 48 // ad interval, units of 0.625ms
+#define ADVERTISING_DURATION 1000 // ad duration, units of ms
+#define ADVERTISING_OFFTIME 9000 // ad offtime, units of ms
 
 // connection parameter when ecg function is locked
 #define ECG_LOCKED_MIN_INTERVAL 302//1580 
@@ -66,7 +68,7 @@
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
 static gaprole_States_t gapProfileState = GAPROLE_INIT;
-static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "CM HR Monitor"; // GGS device name
+static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "KM HR Monitor"; // GGS device name
 static uint8 status = STATUS_ECG_STOP; // ecg sampling status
 
 // advertise data
@@ -89,7 +91,7 @@ static uint8 scanResponseData[] =
 {
   0x07,   // length of this data
   GAP_ADTYPE_LOCAL_NAME_SHORT,   
-  'C',
+  'K',
   'M',
   '_',
   'H',
@@ -153,7 +155,9 @@ extern void HRM_Init( uint8 task_id )
     // set the advertising parameters
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, ADVERTISING_INTERVAL ); // units of 0.625ms
     GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, ADVERTISING_INTERVAL ); // units of 0.625ms
-    GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, 0 ); // advertising forever
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_MIN, ADVERTISING_DURATION ); // advertising duration
+    uint16 gapRole_AdvertOffTime = ADVERTISING_OFFTIME;
+    GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
     
     // enable advertising
     uint8 advertising = TRUE;

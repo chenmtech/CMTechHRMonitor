@@ -20,9 +20,7 @@ static uint8 taskId; // taskId of application
 // is the heart rate calculated?
 static bool hrCalc = false;
 // the flag of the initial beat
-static uint8 initBeatFlag = 1 ;
-// the sample count
-static uint16 rrSampleCount = 0 ;
+static uint8 initBeat = 1 ;
 // RR interval buffer, the max number in the buffer is 9
 static uint16 rrBuf[9] = {0};
 // the current number in rrBuf
@@ -45,7 +43,6 @@ static uint8* pEcgBuff;
 static attHandleValueNoti_t ecgNoti;
 
 static void processEcgSignal(int16 x, uint8 status);
-static uint16 calRRInterval(int16 x);
 static void saveEcgSignal(int16 ecg);
 static uint16 median(uint16 *array, uint8 datnum);
 static void processTestSignal(int16 x, uint8 status);
@@ -86,8 +83,6 @@ extern void HRFunc_SwitchCalcingHR(bool calc)
   if(calc)
   {
     QRSDet(0, 1);
-    initBeatFlag = 1;
-    rrSampleCount = 0;
     rrNum = 0; 
   }
   hrCalc = calc;
@@ -190,11 +185,17 @@ static void processEcgSignal(int16 x, uint8 status)
   {
     if(hrCalc) // need calculate HR
     {
-      uint16 RR = calRRInterval(x);
-      if(RR != 0)
+      if(QRSDet(x, 0))
       {
-        rrBuf[rrNum++] = RR;
-        if(rrNum >= 9) rrNum = 8;
+        if(initBeat) 
+        {
+          initBeat = 0;
+        }
+        else
+        {
+          rrBuf[rrNum++] = getRRInterval();
+          if(rrNum >= 9) rrNum = 8;
+        }
       }
     }
     
@@ -203,31 +204,6 @@ static void processEcgSignal(int16 x, uint8 status)
       saveEcgSignal(x);
     }
   }
-}
-
-static uint16 calRRInterval(int16 x)
-{
-  uint16 RR = 0;
-  int16 detectDelay = 0;
-  
-  rrSampleCount++;
-  detectDelay = QRSDet(x, 0);
-  
-  if(detectDelay != 0)
-  {
-    if(initBeatFlag)
-    {
-      initBeatFlag = 0;
-    }
-    else
-    {
-      RR = (uint16)(rrSampleCount - detectDelay);
-    }
-    rrSampleCount = detectDelay;
-    return RR;
-  }
- 
-  return 0;
 }
 
 static void saveEcgSignal(int16 ecg)

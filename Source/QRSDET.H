@@ -36,3 +36,5 @@ extern int QRSDet( int datum, int init );
 extern int * getNoiseBuffer();
 
 extern int * getQRSBuffer();
+
+extern int getRRInterval();
