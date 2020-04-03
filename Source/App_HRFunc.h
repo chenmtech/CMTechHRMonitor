@@ -9,9 +9,9 @@
 #include "hal_types.h"
 
 extern void HRFunc_Init(uint8 taskID); //init
-extern void HRFunc_SwitchSamplingEcg(bool start); // is the ecg signal sampled
-extern void HRFunc_SwitchCalcingHR(bool calc); // is the Heart rate calculated?
-extern void HRFunc_SwitchSendingEcg(bool send); // is the ecg data sent?
+extern void HRFunc_SetEcgSampling(bool start); // is the ecg sampling started
+extern void HRFunc_SetHRCalcing(bool calc); // is the Heart rate calculated?
+extern void HRFunc_SetEcgSending(bool send); // is the ecg data sent?
 extern void HRFunc_SendHRPacket(uint16 connHandle); // send HR packet
 extern void HRFunc_SendEcgPacket(uint16 connHandle); // send ecg packet
 

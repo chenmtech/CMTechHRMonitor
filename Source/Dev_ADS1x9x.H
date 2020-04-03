@@ -61,7 +61,6 @@ extern void ADS1x9x_StartConvert(void); // start convert
 extern void ADS1x9x_StopConvert(void); // stop convert
 extern uint8 ADS1x9x_ReadRegister(uint8 address); // read one register
 extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len); // read multi registers
-extern void ADS1x9x_ReadAllRegister(uint8 * pRegs); // read all registers
 extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte); // write one register
 extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len); // write multi registers
 extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs); // write all registers

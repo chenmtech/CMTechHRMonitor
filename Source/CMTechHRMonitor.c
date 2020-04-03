@@ -40,9 +40,9 @@
 #define ECG_LOCKED 0x00 
 #define ECG_UNLOCKED 0x01
 
-#define ADVERTISING_INTERVAL 320 // ad interval, units of 0.625ms
+#define ADVERTISING_INTERVAL 160 // ad interval, units of 0.625ms
 #define ADVERTISING_DURATION 1000 // ad duration, units of ms
-#define ADVERTISING_OFFTIME 9000 // ad offtime, units of ms
+#define ADVERTISING_OFFTIME 7000 // ad offtime to wait for a next ad, units of ms
 
 // connection parameter when ecg function is locked
 #define ECG_LOCKED_MIN_INTERVAL 302//1580 
@@ -382,8 +382,8 @@ static void gapStateCB( gaprole_States_t newState )
             newState != GAPROLE_CONNECTED)
   {
     stopEcgSampling();
-    HRFunc_SwitchCalcingHR(false);
-    HRFunc_SwitchSendingEcg(false);
+    HRFunc_SetHRCalcing(false);
+    HRFunc_SetEcgSending(false);
     VOID osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     VOID osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     //initIOPin();
@@ -416,13 +416,13 @@ static void hrServiceCB( uint8 event )
   {
     case HRM_HR_NOTI_ENABLED:
       startEcgSampling();  
-      HRFunc_SwitchCalcingHR(true);
+      HRFunc_SetHRCalcing(true);
       osal_start_timerEx( taskID, HRM_HR_PERIODIC_EVT, HR_NOTI_PERIOD);
       break;
         
     case HRM_HR_NOTI_DISABLED:
       stopEcgSampling();
-      HRFunc_SwitchCalcingHR(false);
+      HRFunc_SetHRCalcing(false);
       osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
       break;
 
@@ -442,7 +442,7 @@ static void startEcgSampling( void )
   if(status == STATUS_ECG_STOP) 
   {
     status = STATUS_ECG_START;
-    HRFunc_SwitchSamplingEcg(true);
+    HRFunc_SetEcgSampling(true);
   }
 }
 
@@ -452,7 +452,7 @@ static void stopEcgSampling( void )
   if(status == STATUS_ECG_START)
   {
     status = STATUS_ECG_STOP;
-    HRFunc_SwitchSamplingEcg(false);
+    HRFunc_SetEcgSampling(false);
   }
 }
 
@@ -479,11 +479,11 @@ static void ecgServiceCB( uint8 event )
   switch (event)
   {
     case ECG_PACK_NOTI_ENABLED:
-      HRFunc_SwitchSendingEcg(true);
+      HRFunc_SetEcgSending(true);
       break;
         
     case ECG_PACK_NOTI_DISABLED:
-      HRFunc_SwitchSendingEcg(false);
+      HRFunc_SetEcgSending(false);
       break;
       
     case ECG_LOCK_STATUS_CHANGED:

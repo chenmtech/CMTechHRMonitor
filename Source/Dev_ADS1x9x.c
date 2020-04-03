@@ -147,12 +147,6 @@ extern void ADS1x9x_StopConvert(void)
   delayus(160); 
 }
 
-// read all 12 registers
-extern void ADS1x9x_ReadAllRegister(uint8 * pRegs)
-{
-  ADS1x9x_ReadMultipleRegister(0x00, pRegs, 12);
-}
-
 // read len registers into pRegs from the address beginaddr
 extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 len)
 {

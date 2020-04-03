@@ -60,7 +60,7 @@ extern void HRFunc_Init(uint8 taskID)
   delayus(1000);
 }
 
-extern void HRFunc_SwitchSamplingEcg(bool start)
+extern void HRFunc_SetEcgSampling(bool start)
 {
   if(start)
   {
@@ -78,7 +78,7 @@ extern void HRFunc_SwitchSamplingEcg(bool start)
   }
 }
 
-extern void HRFunc_SwitchCalcingHR(bool calc)
+extern void HRFunc_SetHRCalcing(bool calc)
 {
   if(calc)
   {
@@ -88,7 +88,7 @@ extern void HRFunc_SwitchCalcingHR(bool calc)
   hrCalc = calc;
 }
 
-extern void HRFunc_SwitchSendingEcg(bool send)
+extern void HRFunc_SetEcgSending(bool send)
 {
   if(send)
   {
