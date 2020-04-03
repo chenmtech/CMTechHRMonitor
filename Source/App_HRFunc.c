@@ -58,6 +58,8 @@ extern void HRFunc_Init(uint8 taskID)
   ADS1x9x_Init(processEcgSignal);  
 #endif
   delayus(1000);
+  
+  QRSDet(0, 1);
 }
 
 extern void HRFunc_SetEcgSampling(bool start)
@@ -82,7 +84,7 @@ extern void HRFunc_SetHRCalcing(bool calc)
 {
   if(calc)
   {
-    QRSDet(0, 1);
+    initBeat = 1;
     rrNum = 0; 
   }
   hrCalc = calc;
@@ -250,18 +252,18 @@ static uint16 median(uint16 *array, uint8 datnum)
 
 static void processTestSignal(int16 x, uint8 status)
 {
-  static int16 data1mV[125] = {0};
+  static int16 data1mV[SAMPLERATE] = {0};
   static uint8 index = 0;
   uint8 i,j;
   
   data1mV[index++] = x;
   
-  if(index >= 125)
+  if(index >= SAMPLERATE)
   {
     uint16 tmp; 
-    for(i = 0; i < 125; ++i)
+    for(i = 0; i < SAMPLERATE; ++i)
     {
-      for(j = i+1; j < 125; j++)
+      for(j = i+1; j < SAMPLERATE; j++)
       {
         if(data1mV[j] < data1mV[i])
         {
