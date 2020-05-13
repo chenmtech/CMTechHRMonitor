@@ -79,15 +79,9 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
 {
   // init ADS1x9x chip
   SPI_ADS_Init();  
+  
   ADS1x9x_Reset();
   
-#if defined(CALIBRATE_1MV) 
-  setRegsAsTestSignal();
-#else
-  setRegsAsNormalECGSignal();
-#endif  
-  
-  ADS1x9x_StandBy();
   pfnADSDataCB = pfnADS_DataCB_t;
 }
 
@@ -105,11 +99,17 @@ extern void ADS1x9x_StandBy(void)
 
 // reset chip
 extern void ADS1x9x_Reset(void)
-{
+{  
   ADS_RST_LOW();     //PWDN/RESET 低电平
   delayus(50);
   ADS_RST_HIGH();    //PWDN/RESET 高电平
   delayus(50);
+  
+#if defined(CALIBRATE_1MV) 
+  setRegsAsTestSignal();
+#else
+  setRegsAsNormalECGSignal();
+#endif  
 }
 
 // start continuous sampling

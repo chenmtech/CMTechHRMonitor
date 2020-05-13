@@ -57,6 +57,9 @@ extern void HRFunc_Init(uint8 taskID)
 #else
   ADS1x9x_Init(processEcgSignal);  
 #endif
+  
+  ADS1x9x_StandBy();  
+  
   delayus(1000);
   
   QRSDet(0, 1);
@@ -66,7 +69,9 @@ extern void HRFunc_SetEcgSampling(bool start)
 {
   if(start)
   {
-    ADS1x9x_WakeUp();
+    ADS1x9x_WakeUp(); 
+    ADS1x9x_Reset();
+      
     // 这里一定要延时，否则容易死机
     delayus(1000);
     ADS1x9x_StartConvert();
@@ -133,13 +138,14 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
   if(BPM > 255) BPM = 255;
   
   ////////Three different way to output HR data
-  /*
+  
   //1. bpm only
   *p++ = 0x00;
   *p++ = (uint8)BPM;
-  */
+  
 
   //2. bpm and RRInterval
+  /*
   *p++ = 0x10;
   *p++ = (uint8)BPM;
   uint16 MS1024 = 0;
@@ -151,6 +157,7 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
     *p++ = LO_UINT16(rrBuf[i]);
     *p++ = HI_UINT16(rrBuf[i]);
   }
+  */
   
   /*
   // 3. bpm and Q&N as RRInterval for debug
