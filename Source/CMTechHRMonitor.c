@@ -42,7 +42,7 @@
 
 #define ADVERTISING_INTERVAL 320 // ad interval, units of 0.625ms
 #define ADVERTISING_DURATION 2000 // ad duration, units of ms
-#define ADVERTISING_OFFTIME 16000 // ad offtime to wait for a next ad, units of ms
+#define ADVERTISING_OFFTIME 8000 // ad offtime to wait for a next ad, units of ms
 
 // connection parameter when ecg function is locked
 #define ECG_LOCKED_MIN_INTERVAL 302 //782//1580 
