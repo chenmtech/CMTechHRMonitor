@@ -70,8 +70,6 @@ extern void HRFunc_SetEcgSampling(bool start)
   if(start)
   {
     ADS1x9x_WakeUp(); 
-    ADS1x9x_Reset();
-      
     // 这里一定要延时，否则容易死机
     delayus(1000);
     ADS1x9x_StartConvert();

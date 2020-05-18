@@ -35,6 +35,8 @@
 #include "service_battery.h"
 #include "service_ecg.h"
 #include "App_HRFunc.h"
+#include "Dev_ADS1x9x.H"
+#include "CMUtil.h"
 
 #define NVID_ECG_LOCK_STATUS 0x80      // the NVID of the Ecg lock status
 #define ECG_LOCKED 0x00 
@@ -376,6 +378,13 @@ static void gapStateCB( gaprole_States_t newState )
   {
     // Get connection handle
     GAPRole_GetParameter( GAPROLE_CONNHANDLE, &gapConnHandle );
+    
+    ADS1x9x_WakeUp();  
+    delayus(1000);
+    ADS1x9x_Reset(); 
+    delayus(1000);
+    ADS1x9x_StandBy();  
+    delayus(1000);
   }
   // disconnected
   else if(gapProfileState == GAPROLE_CONNECTED && 
