@@ -105,11 +105,12 @@ extern void ADS1x9x_Reset(void)
   ADS_RST_HIGH();    //PWDN/RESET ∏ﬂµÁ∆Ω
   delayus(50);
   
-#if defined(CALIBRATE_1MV) 
-  setRegsAsTestSignal();
-#else
+//#if defined(CALIBRATE_1MV) 
+//  setRegsAsTestSignal();
+//#else
+//  setRegsAsNormalECGSignal();
+//#endif  
   setRegsAsNormalECGSignal();
-#endif  
 }
 
 // start continuous sampling

@@ -56,7 +56,7 @@ extern void HRFunc_Init(uint8 taskID)
   ADS1x9x_Init(processTestSignal);  
 #else
   ADS1x9x_Init(processEcgSignal);  
-#endif
+#endif 
   
   ADS1x9x_StandBy();  
   
