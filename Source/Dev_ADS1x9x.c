@@ -11,6 +11,8 @@ const static uint8 test1mVRegs[12] = {
   0x00,                     //contineus sample,125sps
 #elif (SAMPLERATE == 250)
   0x01,                     //contineus sample,250sps
+#elif (SAMPLERATE == 500)
+  0x02,                     //contineus sample,500sps  
 #endif
   //CONFIG2
   0xA3,                     //0xA3: 1mV square test signal, 0xA2: 1mV DC test signal
@@ -42,6 +44,8 @@ const static uint8 normalECGRegs[12] = {
   0x00,                     //contineus sample,125sps
 #elif (SAMPLERATE == 250)
   0x01,                     //contineus sample,250sps
+#elif (SAMPLERATE == 500)
+  0x02,                     //contineus sample,500sps  
 #endif
   //CONFIG2
   0xE0,                     //
