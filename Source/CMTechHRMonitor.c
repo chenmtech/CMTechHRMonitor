@@ -65,7 +65,7 @@
 #define STATUS_ECG_START 1    // ecg sampling started status
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
-#define ECG_1MV_CALI_VALUE  155  //164  // ecg 1mV calibration value
+#define ECG_1MV_CALI_VALUE  160  //164  // ecg 1mV calibration value
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;

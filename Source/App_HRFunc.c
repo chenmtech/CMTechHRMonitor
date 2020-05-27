@@ -19,6 +19,7 @@ static uint8 taskId; // taskId of application
 
 // is the heart rate calculated?
 static bool hrCalc = false;
+static bool hrSample = false;
 // the flag of the initial beat
 static uint8 initBeat = 1 ;
 // RR interval buffer, the max number in the buffer is 9
@@ -89,6 +90,7 @@ extern void HRFunc_SetHRCalcing(bool calc)
   {
     initBeat = 1;
     rrNum = 0; 
+    hrSample = false;
   }
   hrCalc = calc;
 }
@@ -190,7 +192,8 @@ static void processEcgSignal(int16 x, uint8 status)
 {
   if(!status)
   {
-    if(hrCalc) // need calculate HR
+    hrSample = !hrSample;
+    if(hrSample && hrCalc) // need calculate HR
     {
       if(QRSDet(x, 0))
       {
