@@ -43,10 +43,10 @@ static uint8* pEcgBuff;
 // ecg packet structure sent out
 static attHandleValueNoti_t ecgNoti;
 
-static void processEcgSignal(int16 x, uint8 status);
+static void processEcgSignal(int16 x);
 static void saveEcgSignal(int16 ecg);
 static uint16 median(uint16 *array, uint8 datnum);
-static void processTestSignal(int16 x, uint8 status);
+static void processTestSignal(int16 x);
 
 extern void HRFunc_Init(uint8 taskID)
 { 
@@ -188,31 +188,29 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
   rrNum = 0;
 }
 
-static void processEcgSignal(int16 x, uint8 status)
+static void processEcgSignal(int16 x)
 {
-  if(!status)
+  //hrSample = !hrSample;
+  hrSample = true;
+  if(hrSample && hrCalc) // need calculate HR
   {
-    hrSample = !hrSample;
-    if(hrSample && hrCalc) // need calculate HR
+    if(QRSDet(x, 0))
     {
-      if(QRSDet(x, 0))
+      if(initBeat) 
       {
-        if(initBeat) 
-        {
-          initBeat = 0;
-        }
-        else
-        {
-          rrBuf[rrNum++] = getRRInterval();
-          if(rrNum >= 9) rrNum = 8;
-        }
+        initBeat = 0;
+      }
+      else
+      {
+        rrBuf[rrNum++] = getRRInterval();
+        if(rrNum >= 9) rrNum = 8;
       }
     }
-    
-    if(ecgSend) // need send ecg
-    {
-      saveEcgSignal(x);
-    }
+  }
+  
+  if(ecgSend) // need send ecg
+  {
+    saveEcgSignal(x);
   }
 }
 
@@ -258,7 +256,7 @@ static uint16 median(uint16 *array, uint8 datnum)
   return(sort[half]);
 }
 
-static void processTestSignal(int16 x, uint8 status)
+static void processTestSignal(int16 x)
 {
   static int16 data1mV[SAMPLERATE] = {0};
   static uint8 index = 0;

@@ -70,7 +70,8 @@ const static uint8 normalECGRegs[12] = {
 };
 
 static ADS_DataCB_t pfnADSDataCB; // callback function processing data 
-static int16 ecg; // ECG data readed
+static uint8 data[2];
+static int16 * pEcg = (int16*)data;
 
 static void execute(uint8 cmd); // execute command
 static void setRegsAsTestSignal(); //set registers as outputing test signal
@@ -276,13 +277,11 @@ __interrupt void PORT0_ISR(void)
 static void readOneSampleUsingADS1291(void)
 {  
   ADS_CS_LOW();
-  
-  uint8 status[3] = {0}; // received status data with 24 bits: 1100 + LOFF_STAT[4:0] + GPIO[1:0] + 13 '0's
   uint8 data[3]; // received channel 1 data buffer
   
-  status[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
   
   data[2] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
   data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
@@ -290,20 +289,9 @@ static void readOneSampleUsingADS1291(void)
   
   ADS_CS_HIGH();
   
-  uint8 stat = 0x00;
-  if(status[2] & 0x01)
-  {
-    stat = 0x02;
-  }
-  if(status[1] & 0x80)
-  {
-    stat |= 0x01;
-  }
-  ecg = (int16)((data[1] & 0x00FF) | ((data[2] & 0x00FF) << 8));
+  int16 ecg = (int16)((data[1] & 0x00FF) | ((data[2] & 0x00FF) << 8));
    
-  if(pfnADSDataCB != 0) {
-    pfnADSDataCB(ecg, stat);
-  }
+  pfnADSDataCB(ecg);
 }
 
 // ADS1191: low precise(16bits) chip with only one channel
@@ -311,31 +299,15 @@ static void readOneSampleUsingADS1191(void)
 {  
   ADS_CS_LOW();
   
-  uint8 status[2] = {0}; // received status data with 16 bits: 1100 + LOFF_STAT[4:0] + GPIO[1:0] + 5 '0's
-  uint8 data[2]; // received channel 1 data buffer
-  
-  status[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  status[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
   
   data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
   data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
-  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   
   ADS_CS_HIGH();
-  
-  uint8 stat = 0x00;
-  if(status[1] & 0x01)
-  {
-    stat = 0x02;
-  }
-  if(status[0] & 0x80)
-  {
-    stat |= 0x01;
-  }
-  ecg = (int16)((data[0] & 0x00FF) | ((data[1] & 0x00FF) << 8));
    
-  if(pfnADSDataCB != 0) {
-    pfnADSDataCB(ecg, stat);
-  }
+  pfnADSDataCB(*pEcg);
 }

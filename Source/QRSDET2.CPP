@@ -83,6 +83,7 @@ static int mean(int *array, int datnum) ;
 static int thresh(int qmean, int nmean) ;
 static int BLSCheck(int *dBuf,int dbPtr,int *maxder) ;
 static void rightshift(int * buf, int L);
+static int rightshiftthenmean(int* buf, int data);
 
 static int qrsbuf[8], noise[8], rrbuf[8] ;
 
@@ -223,14 +224,16 @@ extern int QRSDet( int datum, int init )
         if(newPeak > det_thresh)
         {
           //memmove(&qrsbuf[1], qrsbuf, MEMMOVELEN) ;
-          rightshift(qrsbuf, 8);
-          qrsbuf[0] = newPeak ;
-          qmean = mean(qrsbuf,8) ;
+          //rightshift(qrsbuf, 8);
+          //qrsbuf[0] = newPeak ;
+          //qmean = mean(qrsbuf,8) ;
+          qmean = rightshiftthenmean(qrsbuf, newPeak);
           det_thresh = thresh(qmean,nmean) ;
           //memmove(&rrbuf[1], rrbuf, MEMMOVELEN) ;
-          rightshift(rrbuf, 8);
-          rrbuf[0] = count - WINDOW_WIDTH ;
-          rrmean = mean(rrbuf,8) ;
+          //rightshift(rrbuf, 8);
+          //rrbuf[0] = count - WINDOW_WIDTH ;
+          //rrmean = mean(rrbuf,8) ;
+          rrmean = rightshiftthenmean(rrbuf, count-WINDOW_WIDTH);
           sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
           count = WINDOW_WIDTH ;
           sbpeak = 0 ;
@@ -246,9 +249,10 @@ extern int QRSDet( int datum, int init )
         else
         {
           //memmove(&noise[1],noise,MEMMOVELEN) ;
-          rightshift(noise, 8);
-          noise[0] = newPeak ;
-          nmean = mean(noise,8) ;
+          //rightshift(noise, 8);
+          //noise[0] = newPeak ;
+          //nmean = mean(noise,8) ;
+          nmean = rightshiftthenmean(noise, newPeak);
           det_thresh = thresh(qmean,nmean) ;
   
           // Don't include early peaks (which might be T-waves)
@@ -270,14 +274,16 @@ extern int QRSDet( int datum, int init )
     if((count > sbcount) && (sbpeak > (det_thresh >> 1)))
     {
       //memmove(&qrsbuf[1],qrsbuf,MEMMOVELEN) ;
-      rightshift(qrsbuf, 8);
-      qrsbuf[0] = sbpeak ;
-      qmean = mean(qrsbuf,8) ;
+      //rightshift(qrsbuf, 8);
+      //qrsbuf[0] = sbpeak ;
+      //qmean = mean(qrsbuf,8) ;
+      qmean = rightshiftthenmean(qrsbuf, sbpeak);
       det_thresh = thresh(qmean,nmean) ;
       //memmove(&rrbuf[1],rrbuf,MEMMOVELEN) ;
-      rightshift(rrbuf, 8);
-      rrbuf[0] = sbloc ;
-      rrmean = mean(rrbuf,8) ;
+      //rightshift(rrbuf, 8);
+      //rrbuf[0] = sbloc ;
+      //rrmean = mean(rrbuf,8) ;
+      rrmean = rightshiftthenmean(rrbuf, sbloc);
       sbcount = rrmean + (rrmean >> 1) + WINDOW_WIDTH ;
       count -= sbloc;
       QrsDelay = count;
@@ -395,12 +401,13 @@ static int thresh(int qmean, int nmean)
   int thrsh, dmed ;
   double temp ;
   dmed = qmean - nmean ;
-  /*	thrsh = nmean + (dmed>>2) + (dmed>>3) + (dmed>>4); */
-  temp = dmed ;
-  temp *= TH ;
-  dmed = (int)temp ;
-  thrsh = nmean + dmed ; /* dmed * THRESHOLD */
-  return(thrsh) ;
+  	thrsh = nmean + (dmed>>2) + (dmed>>3) + (dmed>>4); 
+  return thrsh;
+//  temp = dmed ;
+//  temp *= TH ;
+//  dmed = (int)temp ;
+//  thrsh = nmean + dmed ; /* dmed * THRESHOLD */
+//  return(thrsh) ;
 }
 
 /***********************************************************************
@@ -452,4 +459,18 @@ static void rightshift(int* buf, int L)
     *buf1 = *(buf1-1);
     buf1--;
   }
+}
+
+// right shift the buffer with 8 data, push the data into buffer[0], and then mean
+static int rightshiftthenmean(int* buf, int data)
+{
+  int sum = 0;
+  int* buf1 = buf + 7;
+  while(buf1 > buf)
+  {
+    sum += (*buf1 = *(buf1-1));
+    buf1--;
+  }
+  sum += (*buf = data);
+  return (sum>>3);
 }
