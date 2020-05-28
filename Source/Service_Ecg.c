@@ -68,7 +68,7 @@ static uint16 ecg1mVCali = 0;
 
 // Sample Rate Characteristic
 static uint8 ecgSampleRateProps = GATT_PROP_READ;
-static uint16 ecgSampleRate = SAMPLERATE;
+static uint16 ecgSampleRate = 125;
 
 // Lead Type Characteristic
 static uint8 ecgLeadTypeProps = GATT_PROP_READ;
@@ -236,6 +236,10 @@ extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value )
       osal_memcpy((uint8*)&ecg1mVCali, value, len);
       break;
       
+    case ECG_SAMPLE_RATE:
+      osal_memcpy((uint8*)&ecgSampleRate, value, len);
+      break;
+      
     case ECG_LEAD_TYPE:  
       ecgLeadType = *((uint8*)value);
       break;
@@ -265,6 +269,10 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value )
     case ECG_1MV_CALI:
       osal_memcpy(value, (uint8*)&ecg1mVCali, 2);
       break;
+      
+    case ECG_SAMPLE_RATE:
+      osal_memcpy(value, (uint8*)&ecgSampleRate, 2);
+      break;      
       
     case ECG_LEAD_TYPE:  
       *((uint8*)value) = ecgLeadType;

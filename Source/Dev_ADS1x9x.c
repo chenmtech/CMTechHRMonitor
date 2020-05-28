@@ -11,8 +11,6 @@ const static uint8 test1mVRegs[12] = {
   0x00,                     //contineus sample,125sps
 #elif (SAMPLERATE == 250)
   0x01,                     //contineus sample,250sps
-#elif (SAMPLERATE == 500)
-  0x02,                     //contineus sample,500sps  
 #endif
   //CONFIG2
   0xA3,                     //0xA3: 1mV square test signal, 0xA2: 1mV DC test signal
@@ -44,8 +42,6 @@ const static uint8 normalECGRegs[12] = {
   0x00,                     //contineus sample,125sps
 #elif (SAMPLERATE == 250)
   0x01,                     //contineus sample,250sps
-#elif (SAMPLERATE == 500)
-  0x02,                     //contineus sample,500sps  
 #endif
   //CONFIG2
   0xE0,                     //
@@ -74,7 +70,6 @@ static uint8 data[2];
 static int16 * pEcg = (int16*)data;
 
 static void execute(uint8 cmd); // execute command
-static void setRegsAsTestSignal(); //set registers as outputing test signal
 static void setRegsAsNormalECGSignal(); // set registers as outputing normal ECG signal
 static void readOneSampleUsingADS1291(void); // read one data with ADS1291
 static void readOneSampleUsingADS1191(void); // read one data with ADS1191
@@ -110,11 +105,6 @@ extern void ADS1x9x_Reset(void)
   ADS_RST_HIGH();    //PWDN/RESET ∏ﬂµÁ∆Ω
   delayus(50);
   
-//#if defined(CALIBRATE_1MV) 
-//  setRegsAsTestSignal();
-//#else
-//  setRegsAsNormalECGSignal();
-//#endif  
   setRegsAsNormalECGSignal();
 }
 
@@ -226,12 +216,6 @@ extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte)
   delayus(100);
   ADS_CS_HIGH();
 }  
-
-//set registers as test mode
-static void setRegsAsTestSignal()
-{
-  ADS1x9x_WriteAllRegister(test1mVRegs); 
-}
 
 // set registers as normal ecg mode
 static void setRegsAsNormalECGSignal()

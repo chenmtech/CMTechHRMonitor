@@ -11,6 +11,9 @@
 #define HRM_BATT_PERIODIC_EVT 0x0004     // periodic battery measurement event
 #define HRM_ECG_NOTI_EVT 0x0008 // ecg packet notification event
 #define HRM_ECG_LOCK_EVT 0x0010 //ecg lock event
+
+extern uint16 SAMPLERATE;
+
 /*
  * Task Initialization for the BLE Application
  */

@@ -141,7 +141,9 @@ static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process fu
 static void initIOPin(); // initialize IO pins
 static void startEcgSampling( void ); // start ecg sampling
 static void stopEcgSampling( void ); // stop ecg sampling
-static void setConnPara(uint8 ecgSwitch);
+static void setParameter(uint8 ecgSwitch);
+
+uint16 SAMPLERATE;
 
 extern void HRM_Init( uint8 task_id )
 { 
@@ -172,7 +174,7 @@ extern void HRM_Init( uint8 task_id )
     if(rtn != SUCCESS)
       ecgLock = ECG_LOCKED;   
     
-    setConnPara(ecgLock);
+    setParameter(ecgLock);
     
     uint8 enable_update_request = TRUE;
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
@@ -219,6 +221,7 @@ extern void HRM_Init( uint8 task_id )
   {
     uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
+    ECG_SetParameter( ECG_SAMPLE_RATE, sizeof ( uint16 ), &SAMPLERATE );
     ECG_SetParameter( ECG_LOCK_STATUS, sizeof ( uint8 ), &ecgLock );
   }    
   
@@ -236,7 +239,7 @@ extern void HRM_Init( uint8 task_id )
   osal_set_event( taskID, HRM_START_DEVICE_EVT );
 }
 
-static void setConnPara(uint8 ecgLock) 
+static void setParameter(uint8 ecgLock) 
 {
     // set the connection parameter according to the ecg lock status
     uint16 desired_min_interval; // units of 1.25ms, Note: the ios device require min_interval>=20ms, max_interval>=min_interval+20
@@ -249,13 +252,15 @@ static void setConnPara(uint8 ecgLock)
       desired_max_interval = ECG_LOCKED_MAX_INTERVAL;
       desired_slave_latency = ECG_LOCKED_SLAVE_LATENCY;
       desired_conn_timeout = ECG_LOCKED_CONNECT_TIMEOUT;
+      SAMPLERATE = 125;
     }
     else
     {
       desired_min_interval = ECG_UNLOCKED_MIN_INTERVAL;
       desired_max_interval = ECG_UNLOCKED_MAX_INTERVAL;
       desired_slave_latency = ECG_UNLOCKED_SLAVE_LATENCY;
-      desired_conn_timeout = ECG_UNLOCKED_CONNECT_TIMEOUT;      
+      desired_conn_timeout = ECG_UNLOCKED_CONNECT_TIMEOUT;  
+      SAMPLERATE = 250;
     }
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
@@ -350,7 +355,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     if (gapProfileState == GAPROLE_CONNECTED)
     {
       ECG_GetParameter(ECG_LOCK_STATUS, &ecgLock);
-      setConnPara(ecgLock);
+      setParameter(ecgLock);
       GAPRole_TerminateConnection();
     }
 

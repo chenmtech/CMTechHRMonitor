@@ -30,7 +30,7 @@ static uint8 rrNum = 0;
 static attHandleValueNoti_t hrNoti;
 
 // 1mV calibration value, only used for getting the calibration value when CALIBRATE_1MV is set in preprocessing
-static uint16 caliValue = 0;
+//static uint16 caliValue = 0;
 
 // is the ecg data sent?
 static bool ecgSend = false;
@@ -46,18 +46,14 @@ static attHandleValueNoti_t ecgNoti;
 static void processEcgSignal(int16 x);
 static void saveEcgSignal(int16 ecg);
 static uint16 median(uint16 *array, uint8 datnum);
-static void processTestSignal(int16 x);
+//static void processTestSignal(int16 x);
 
 extern void HRFunc_Init(uint8 taskID)
 { 
   taskId = taskID;
   
   // initilize the ADS1x9x and set the data process callback function
-#if defined(CALIBRATE_1MV)
-  ADS1x9x_Init(processTestSignal);  
-#else
-  ADS1x9x_Init(processEcgSignal);  
-#endif 
+  ADS1x9x_Init(processEcgSignal); 
   
   ADS1x9x_StandBy();  
   
@@ -256,40 +252,40 @@ static uint16 median(uint16 *array, uint8 datnum)
   return(sort[half]);
 }
 
-static void processTestSignal(int16 x)
-{
-  static int16 data1mV[SAMPLERATE] = {0};
-  static uint8 index = 0;
-  uint8 i,j;
-  
-  data1mV[index++] = x;
-  
-  if(index >= SAMPLERATE)
-  {
-    uint16 tmp; 
-    for(i = 0; i < SAMPLERATE; ++i)
-    {
-      for(j = i+1; j < SAMPLERATE; j++)
-      {
-        if(data1mV[j] < data1mV[i])
-        {
-          tmp = data1mV[i];
-          data1mV[i] = data1mV[j];
-          data1mV[j] = tmp;
-        }
-      }
-    }
-    long smin = 0;
-    long smax = 0;
-    for(i = 25; i < 35; i++)
-    {
-      smin += data1mV[i];
-    }
-    for(i = 90; i < 100; i++)
-    {
-      smax += data1mV[i];
-    }
-    caliValue = (smax-smin)/20;
-    index = 0;
-  }
-}
+//static void processTestSignal(int16 x)
+//{
+//  static int16 data1mV[125] = {0};
+//  static uint8 index = 0;
+//  uint8 i,j;
+//  
+//  data1mV[index++] = x;
+//  
+//  if(index >= SAMPLERATE)
+//  {
+//    uint16 tmp; 
+//    for(i = 0; i < SAMPLERATE; ++i)
+//    {
+//      for(j = i+1; j < SAMPLERATE; j++)
+//      {
+//        if(data1mV[j] < data1mV[i])
+//        {
+//          tmp = data1mV[i];
+//          data1mV[i] = data1mV[j];
+//          data1mV[j] = tmp;
+//        }
+//      }
+//    }
+//    long smin = 0;
+//    long smax = 0;
+//    for(i = 25; i < 35; i++)
+//    {
+//      smin += data1mV[i];
+//    }
+//    for(i = 90; i < 100; i++)
+//    {
+//      smax += data1mV[i];
+//    }
+//    caliValue = (smax-smin)/20;
+//    index = 0;
+//  }
+//}
