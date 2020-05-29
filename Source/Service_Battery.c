@@ -274,7 +274,7 @@ static uint8 batteryMeasure()
   // MAXadc = (3/3)/1.24*511 = 412
   // MINadc = (2.27/3)/1.24*511 = 312 , where 2.7V is the required lowest voltage of ADS1X91, but the experiment shows 2.27V still can work
   // then the percent value is equal to:
-  // percent = (adc - MINadc)/(MAXadc - MINadc)*100 = (adc - 370)*100/100
+  // percent = (adc - MINadc)/(MAXadc - MINadc)*100 = (adc - 312)*100/100
   */
   
   if(adc >= 412)
@@ -287,7 +287,7 @@ static uint8 batteryMeasure()
   }
   else
   {
-    percent = (uint8)( (adc-312) );
+    percent = (uint8)(adc - 312);
   }  
   
   return percent;
