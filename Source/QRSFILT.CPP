@@ -38,6 +38,7 @@ MA 02143 USA).  For updates to this software, please visit our website
 *******************************************************************************/
 
 #include "QRSFILT.h"
+#include "hal_types.h"
 
 
 static int lpfilt( int datum ,int init) ;
@@ -104,13 +105,14 @@ extern int deriv1(int x, int init)
     return(0) ;
   }
   
-  y = x - (long)derBuff[derI] ;
+  y = x - (int)derBuff[derI] ;
   derBuff[derI] = x ;
   if(++derI == DERIV_LENGTH)
     derI = 0 ;
   return(y) ;
 }
 */
+
 // because DERIV_LENGTH = 1, so I simplify the function, by chenm
 extern int deriv1(int x, int init)
 {
@@ -123,7 +125,7 @@ extern int deriv1(int x, int init)
     return(0) ;
   }
   
-  y = x - (long)derBuff;
+  y = x - (int)derBuff;
   derBuff = x ;
   return(y) ;
 }
@@ -140,10 +142,12 @@ extern int deriv1(int x, int init)
 
 static int lpfilt( int datum ,int init)
 {
-  static long y1 = 0, y2 = 0 ;
-  static int data[LPBUFFER_LGTH], ptr = 0 ;
-  long y0 ;
-  int output, halfPtr ;
+  static int y1 = 0, y2 = 0 ;
+  static int data[LPBUFFER_LGTH];
+  static int8 ptr = 0;
+  int y0 ;
+  int output;
+  int8 halfPtr ;
   if(init)
   {
     for(ptr = 0; ptr < LPBUFFER_LGTH; ++ptr)
@@ -154,7 +158,7 @@ static int lpfilt( int datum ,int init)
   halfPtr = ptr-(LPBUFFER_LGTH/2) ;	// Use halfPtr to index
   if(halfPtr < 0)							// to x[n-6].
     halfPtr += LPBUFFER_LGTH ;
-  y0 = (y1 << 1) - y2 + datum - (((long)data[halfPtr]) << 1) + data[ptr] ;
+  y0 = (y1 << 1) - y2 + datum - (((int)data[halfPtr]) << 1) + data[ptr] ;
   y2 = y1;
   y1 = y0;
   output = y0 / ((LPBUFFER_LGTH*LPBUFFER_LGTH)/4);
@@ -177,9 +181,11 @@ static int lpfilt( int datum ,int init)
 
 extern int hpfilt( int datum, int init )
 {
-  static long y=0 ;
-  static int data[HPBUFFER_LGTH], ptr = 0 ;
-  int z, halfPtr ;
+  static int y=0 ;
+  static int data[HPBUFFER_LGTH];
+  static int8 ptr = 0 ;
+  int z;
+  int8 halfPtr ;
   
   if(init)
   {
@@ -189,7 +195,7 @@ extern int hpfilt( int datum, int init )
     y = 0 ;
   }
   
-  y += (datum - (long)data[ptr]);
+  y += (datum - (int)data[ptr]);
   halfPtr = ptr-(HPBUFFER_LGTH/2) ;
   if(halfPtr < 0)
     halfPtr += HPBUFFER_LGTH ;
@@ -224,7 +230,7 @@ static int deriv2(int x, int init)
     return(0) ;
   }
   
-  y = x - (long)derBuff[derI] ;
+  y = x - (int)derBuff[derI] ;
   derBuff[derI] = x ;
   if(++derI == DERIV_LENGTH)
     derI = 0 ;
@@ -243,7 +249,7 @@ static int deriv2(int x, int init)
     return(0) ;
   }
   
-  y = x - (long)derBuff;
+  y = x - (int)derBuff;
   derBuff = x ;
   return(y) ;
 }
@@ -256,9 +262,10 @@ static int deriv2(int x, int init)
 
 static int mvwint(int datum, int init)
 {
-  static long sum = 0;
-  static int data[WINDOW_WIDTH], ptr = 0 ;
-  long output;
+  static int sum = 0;
+  static int data[WINDOW_WIDTH];
+  static int8 ptr = 0 ;
+  int output;
   if(init)
   {
     for(ptr = 0; ptr < WINDOW_WIDTH ; ++ptr)

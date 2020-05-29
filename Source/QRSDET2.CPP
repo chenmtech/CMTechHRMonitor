@@ -72,7 +72,7 @@ Returns:
 #define	FILTER_DELAY (int) (((double) DERIV_LENGTH/2) + ((double) LPBUFFER_LGTH/2 - 1) + (((double) HPBUFFER_LGTH-1)/2) + PRE_BLANK)  // filter delays plus 200 ms blanking delay
 #define DER_DELAY	WINDOW_WIDTH + FILTER_DELAY + MS100
 
-static const double TH = 0.475 ;
+//static const double TH = 0.475 ;
 
 static int DDBuffer[DER_DELAY], DDPtr ;	/* Buffer holding derivative data. */
 //static int Dly  = 0 ;
@@ -82,7 +82,7 @@ static int Peak( int datum, int init ) ;
 static int mean(int *array, int datnum) ;
 static int thresh(int qmean, int nmean) ;
 static int BLSCheck(int *dBuf,int dbPtr,int *maxder) ;
-static void rightshift(int * buf, int L);
+//static void rightshift(int * buf, int L);
 static int rightshiftthenmean(int* buf, int data);
 
 static int qrsbuf[8], noise[8], rrbuf[8] ;
@@ -399,9 +399,9 @@ static int mean(int *array, int datnum)
 static int thresh(int qmean, int nmean)
 {
   int thrsh, dmed ;
-  double temp ;
+  //double temp ;
   dmed = qmean - nmean ;
-  	thrsh = nmean + (dmed>>2) + (dmed>>3) + (dmed>>4); 
+  thrsh = nmean + (dmed>>2) + (dmed>>3) + (dmed>>4); 
   return thrsh;
 //  temp = dmed ;
 //  temp *= TH ;
@@ -451,6 +451,7 @@ static int BLSCheck(int *dBuf,int dbPtr,int *maxder)
 }
 
 // right shift the buffer with L data
+/*
 static void rightshift(int* buf, int L)
 {
   int* buf1 = buf + L -1;
@@ -460,8 +461,9 @@ static void rightshift(int* buf, int L)
     buf1--;
   }
 }
+*/
 
-// right shift the buffer with 8 data, push the data into buffer[0], and then mean
+// right shift the buffer with 8 length, push the data into buffer[0], and then mean
 static int rightshiftthenmean(int* buf, int data)
 {
   int sum = 0;

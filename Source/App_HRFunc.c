@@ -14,6 +14,7 @@
 
 #define ECG_PACK_BYTE_NUM 19 // byte number per ecg packet, 1+9*2
 #define ECG_MAX_PACK_NUM 255 // max packet num
+#define RRBUF_LEN 9 // the length of rrbuf
 
 static uint8 taskId; // taskId of application
 
@@ -22,14 +23,11 @@ static bool hrCalc = false;
 // the flag of the initial beat
 static uint8 initBeat = 1 ;
 // RR interval buffer, the max number in the buffer is 9
-static uint16 rrBuf[9] = {0};
+static uint16 rrBuf[RRBUF_LEN] = {0};
 // the current number in rrBuf
 static uint8 rrNum = 0;
 // HR notification struct
 static attHandleValueNoti_t hrNoti;
-
-// 1mV calibration value, only used for getting the calibration value when CALIBRATE_1MV is set in preprocessing
-//static uint16 caliValue = 0;
 
 // is the ecg data processed
 static bool ecgProcess = false;
@@ -129,7 +127,7 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
   
   // 2. using median method
   uint16 rrMedian = ((rrNum == 1) ? rrBuf[0] : median(rrBuf, rrNum));
-  int16 BPM = 7500L/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
+  int16 BPM = 7500/rrMedian; // BPM = (60*1000ms)/(RRInterval*8ms) = 7500/RRInterval
   ////////////////////////////////////////
   
   if(BPM > 255) BPM = 255;
@@ -238,10 +236,10 @@ static uint16 median(uint16 *array, uint8 datnum)
 {
   uint8 i, j;
   uint8 half = ((datnum-2)>>1);
-  uint16 tmp, sort[9] ;
-  osal_memcpy(sort, array, 2*datnum);
+  uint16 tmp, sort[RRBUF_LEN] ;
+  osal_memcpy(sort, array, 2*datnum); // the length unit is BYTE not uint16
   // sort array using up-order
-  // only half of data need to be sorted for finding out the median
+  // only half of data need to be sorted to find out the median
   for(i = 0; i <= half; ++i)
   {
     for(j = i+1; j < datnum; j++)
