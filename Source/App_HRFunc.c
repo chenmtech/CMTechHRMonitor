@@ -19,7 +19,6 @@ static uint8 taskId; // taskId of application
 
 // is the heart rate calculated?
 static bool hrCalc = false;
-static bool hrSample = false;
 // the flag of the initial beat
 static uint8 initBeat = 1 ;
 // RR interval buffer, the max number in the buffer is 9
@@ -32,6 +31,8 @@ static attHandleValueNoti_t hrNoti;
 // 1mV calibration value, only used for getting the calibration value when CALIBRATE_1MV is set in preprocessing
 //static uint16 caliValue = 0;
 
+// is the ecg data processed
+static bool ecgProcess = false;
 // is the ecg data sent?
 static bool ecgSend = false;
 // the number of the current ecg data packet, from 0 to ECG_MAX_PACK_NUM
@@ -86,7 +87,7 @@ extern void HRFunc_SetHRCalcing(bool calc)
   {
     initBeat = 1;
     rrNum = 0; 
-    hrSample = false;
+    ecgProcess = false;
   }
   hrCalc = calc;
 }
@@ -186,9 +187,13 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
 
 static void processEcgSignal(int16 x)
 {
-  //hrSample = !hrSample;
-  hrSample = true;
-  if(hrSample && hrCalc) // need calculate HR
+  if(SAMPLERATE == 125)
+    ecgProcess = true;
+  else {
+    ecgProcess = !ecgProcess;
+  }
+  
+  if(ecgProcess && hrCalc) // need calculate HR
   {
     if(QRSDet(x, 0))
     {

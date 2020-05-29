@@ -355,7 +355,8 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     if (gapProfileState == GAPROLE_CONNECTED)
     {
       ECG_GetParameter(ECG_LOCK_STATUS, &ecgLock);
-      setParameter(ecgLock);
+      setParameter(ecgLock);      
+      ECG_SetParameter( ECG_SAMPLE_RATE, sizeof ( uint16 ), &SAMPLERATE );
       GAPRole_TerminateConnection();
     }
 

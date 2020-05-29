@@ -2,47 +2,14 @@
 #include "Dev_ADS1x9x.H"
 #include "hal_mcu.h"
 #include "CMUtil.h"
+#include "CMTechHRMonitor.h"
     
 // all registers for outputing the test signal
-const static uint8 test1mVRegs[12] = {  
-  0x52,
-  //CONFIG1
-#if (SAMPLERATE == 125)
-  0x00,                     //contineus sample,125sps
-#elif (SAMPLERATE == 250)
-  0x01,                     //contineus sample,250sps
-#endif
-  //CONFIG2
-  0xA3,                     //0xA3: 1mV square test signal, 0xA2: 1mV DC test signal
-  //LOFF
-  0x10,                     //
-  //CH1SET 
-  0x65,                     //PGA=12, and test signal
-  //CH2SET
-  0x80,                     //close CH2
-  //RLD_SENS (default)      
-  0x23,                     //default
-  //LOFF_SENS (default)
-  0x00,                     //default
-  //LOFF_STAT
-  0x00,                     //default
-  //RESP1
-  0x02,                     //
-  //RESP2
-  0x07,                     //
-  //GPIO
-  0x0C                      //
-};	
-
-// all registers for outputing the normal ECG signal
-const static uint8 normalECGRegs[12] = {  
+const static uint8 ECGRegs125[12] = {  
   //DEVID
   0x52,
-#if (SAMPLERATE == 125)
-  0x00,                     //contineus sample,125sps
-#elif (SAMPLERATE == 250)
-  0x01,                     //contineus sample,250sps
-#endif
+  //CONFIG1
+  0x00,                     //continous sample,125sps
   //CONFIG2
   0xE0,                     //
   //LOFF
@@ -54,7 +21,35 @@ const static uint8 normalECGRegs[12] = {
   //RLD_SENS     
   0x23,                     //
   //LOFF_SENS (default)
-  0x03,                     //enable channel 1 lead-off detect
+  0x00,                     //disable channel 1 lead-off detect
+  //LOFF_STAT
+  0x00,                     //default
+  //RESP1
+  0x02,                     //
+  //RESP2
+  0x07,
+  //GPIO
+  0x0C                      //
+};	
+
+// all registers for outputing the normal ECG signal with 250 sample rate
+const static uint8 ECGRegs250[12] = {  
+  //DEVID
+  0x52,
+  //CONFIG1
+  0x01,                     //continous sample,250sps
+  //CONFIG2
+  0xE0,                     //
+  //LOFF
+  0x10,                     //
+  //CH1SET 
+  0x60,                     //PGA=12£¬and ECG input
+  //CH2SET
+  0x80,                     //close CH2
+  //RLD_SENS     
+  0x23,                     //
+  //LOFF_SENS (default)
+  0x00,                     //disable channel 1 lead-off detect
   //LOFF_STAT
   0x00,                     //default
   //RESP1
@@ -70,7 +65,7 @@ static uint8 data[2];
 static int16 * pEcg = (int16*)data;
 
 static void execute(uint8 cmd); // execute command
-static void setRegsAsNormalECGSignal(); // set registers as outputing normal ECG signal
+static void setRegsAsNormalECGSignal(uint16 sampleRate); // set registers as outputing normal ECG signal
 static void readOneSampleUsingADS1291(void); // read one data with ADS1291
 static void readOneSampleUsingADS1191(void); // read one data with ADS1191
 
@@ -105,7 +100,7 @@ extern void ADS1x9x_Reset(void)
   ADS_RST_HIGH();    //PWDN/RESET ¸ßµçÆ½
   delayus(50);
   
-  setRegsAsNormalECGSignal();
+  setRegsAsNormalECGSignal(SAMPLERATE);
 }
 
 // start continuous sampling
@@ -218,9 +213,12 @@ extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte)
 }  
 
 // set registers as normal ecg mode
-static void setRegsAsNormalECGSignal()
+static void setRegsAsNormalECGSignal(uint16 sampleRate)
 {
-  ADS1x9x_WriteAllRegister(normalECGRegs);   
+  if(sampleRate == 125)
+    ADS1x9x_WriteAllRegister(ECGRegs125);
+  if(sampleRate == 250)
+    ADS1x9x_WriteAllRegister(ECGRegs250);
 }
 
 //execute command
@@ -293,5 +291,10 @@ static void readOneSampleUsingADS1191(void)
   
   ADS_CS_HIGH();
    
-  pfnADSDataCB(*pEcg);
+  if(*pEcg > 4095)
+    pfnADSDataCB(4095);
+  else if(*pEcg < -4095)
+    pfnADSDataCB(-4095);
+  else
+    pfnADSDataCB(*pEcg);
 }
