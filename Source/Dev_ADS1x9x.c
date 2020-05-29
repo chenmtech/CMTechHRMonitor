@@ -75,7 +75,7 @@ extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
   // init ADS1x9x chip
   SPI_ADS_Init();  
   
-  ADS1x9x_Reset();
+  ADS1x9x_Reset(); 
   
   pfnADSDataCB = pfnADS_DataCB_t;
 }
@@ -286,6 +286,7 @@ static void readOneSampleUsingADS1191(void)
   
   data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
   data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
+  
   //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   

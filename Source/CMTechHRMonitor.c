@@ -47,16 +47,16 @@
 #define ADVERTISING_OFFTIME 8000 // ad offtime to wait for a next ad, units of ms
 
 // connection parameter when ecg function is locked
-#define ECG_LOCKED_MIN_INTERVAL 302 //782//1580 
-#define ECG_LOCKED_MAX_INTERVAL 319 //799//1598
+#define ECG_LOCKED_MIN_INTERVAL 302 //782//1580  , unit: 1.25ms
+#define ECG_LOCKED_MAX_INTERVAL 319 //799//1598  , unit: 1.25ms
 #define ECG_LOCKED_SLAVE_LATENCY 4 //1//0
-#define ECG_LOCKED_CONNECT_TIMEOUT 600 // If no connection event occurred during this timeout, the connect will be shut down.
+#define ECG_LOCKED_CONNECT_TIMEOUT 600 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
 
 // connection parameter when ecg function is unlocked
-#define ECG_UNLOCKED_MIN_INTERVAL 16
-#define ECG_UNLOCKED_MAX_INTERVAL 32
-#define ECG_UNLOCKED_SLAVE_LATENCY 0
-#define ECG_UNLOCKED_CONNECT_TIMEOUT 50 // If no connection event occurred during this timeout, the connect will be shut down.
+#define ECG_UNLOCKED_MIN_INTERVAL 16  // unit: 1.25ms
+#define ECG_UNLOCKED_MAX_INTERVAL 32  // unit: 1.25ms
+#define ECG_UNLOCKED_SLAVE_LATENCY 49
+#define ECG_UNLOCKED_CONNECT_TIMEOUT 600 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
 
 #define CONN_PAUSE_PERIPHERAL 4  // the pause time from the connection establishment to the update of the connection parameters
 
@@ -148,7 +148,7 @@ uint16 SAMPLERATE;
 extern void HRM_Init( uint8 task_id )
 { 
   taskID = task_id;
-  uint8 ecgLock = ECG_LOCKED;
+  uint8 ecgLock;
   
   // Setup the GAP Peripheral Role Profile
   {
