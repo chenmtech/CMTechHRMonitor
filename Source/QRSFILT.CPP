@@ -181,7 +181,7 @@ static int lpfilt( int datum ,int init)
 
 extern int hpfilt( int datum, int init )
 {
-  static int y=0 ;
+  static long y=0 ;
   static int data[HPBUFFER_LGTH];
   static int8 ptr = 0 ;
   int z;
@@ -195,7 +195,7 @@ extern int hpfilt( int datum, int init )
     y = 0 ;
   }
   
-  y += (datum - (int)data[ptr]);
+  y += (datum - (long)data[ptr]);
   halfPtr = ptr-(HPBUFFER_LGTH/2) ;
   if(halfPtr < 0)
     halfPtr += HPBUFFER_LGTH ;
