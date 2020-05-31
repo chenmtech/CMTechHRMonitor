@@ -47,10 +47,10 @@
 #define ADVERTISING_OFFTIME 8000 // ad offtime to wait for a next ad, units of ms
 
 // connection parameter when ecg function is locked
-#define ECG_LOCKED_MIN_INTERVAL 1584 // 302 //782//1580  , unit: 1.25ms
-#define ECG_LOCKED_MAX_INTERVAL 1600 // 319 //799//1598  , unit: 1.25ms
-#define ECG_LOCKED_SLAVE_LATENCY 2 // 4 //1//0
-#define ECG_LOCKED_CONNECT_TIMEOUT 1800 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
+#define ECG_LOCKED_MIN_INTERVAL  302// 1584 //782//1580  , unit: 1.25ms
+#define ECG_LOCKED_MAX_INTERVAL  319// 1600 //799//1598  , unit: 1.25ms
+#define ECG_LOCKED_SLAVE_LATENCY  4// 2 //1//0
+#define ECG_LOCKED_CONNECT_TIMEOUT 600 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
 
 // connection parameter when ecg function is unlocked
 #define ECG_UNLOCKED_MIN_INTERVAL 16  // unit: 1.25ms

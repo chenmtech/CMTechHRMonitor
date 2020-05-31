@@ -113,7 +113,7 @@ extern void ADS1x9x_StartConvert(void)
   delayus(100);
   SPI_ADS_SendByte(RDATAC);  
   delayus(100);
-  ADS_CS_HIGH();  
+  //ADS_CS_HIGH();  
   
   delayus(100);   
   
@@ -125,7 +125,7 @@ extern void ADS1x9x_StartConvert(void)
 // stop continuous sampling
 extern void ADS1x9x_StopConvert(void)
 {
-  ADS_CS_LOW();  
+  //ADS_CS_LOW();  
   delayus(100);
   SPI_ADS_SendByte(SDATAC);
   delayus(100);
@@ -237,8 +237,7 @@ static void execute(uint8 cmd)
 #pragma vector = P0INT_VECTOR
 __interrupt void PORT0_ISR(void)
 { 
-  halIntState_t intState;
-  HAL_ENTER_CRITICAL_SECTION( intState );  // Hold off interrupts.
+  HAL_ENTER_ISR();  // Hold off interrupts.
   
   if(P0IFG & 0x02)  //P0_1ÖÐ¶Ï
   {
@@ -252,7 +251,7 @@ __interrupt void PORT0_ISR(void)
 #endif
   }
   
-  HAL_EXIT_CRITICAL_SECTION( intState );   // Re-enable interrupts.  
+  HAL_EXIT_ISR();   // Re-enable interrupts.  
 }
 
 // ADS1291: high precise(24bits) chip with only one channel
@@ -279,7 +278,7 @@ static void readOneSampleUsingADS1291(void)
 // ADS1191: low precise(16bits) chip with only one channel
 static void readOneSampleUsingADS1191(void)
 {  
-  ADS_CS_LOW();
+  //ADS_CS_LOW();
   
   SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
@@ -290,7 +289,7 @@ static void readOneSampleUsingADS1191(void)
   //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   
-  ADS_CS_HIGH();
+  //ADS_CS_HIGH();
    
   if(*pEcg > 8091)
     pfnADSDataCB(8091);

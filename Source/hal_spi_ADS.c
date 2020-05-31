@@ -15,7 +15,7 @@ extern void SPI_ADS_Init()
 extern uint8 SPI_ADS_SendByte(const uint8 data)
 {
   SPI_SEND(data); 
-  while (!SPITXDONE);
+  while (!U1TX_BYTE);
   U1TX_BYTE = 0;
   return (U1DBUF);
 }
