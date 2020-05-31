@@ -292,10 +292,10 @@ static void readOneSampleUsingADS1191(void)
   
   ADS_CS_HIGH();
    
-//  if(*pEcg > 8091)
-//    pfnADSDataCB(8091);
-//  else if(*pEcg < -8091)
-//    pfnADSDataCB(-8091);
-//  else
+  if(*pEcg > 8091)
+    pfnADSDataCB(8091);
+  else if(*pEcg < -8091)
+    pfnADSDataCB(-8091);
+  else
     pfnADSDataCB(*pEcg);
 }

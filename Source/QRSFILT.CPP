@@ -67,18 +67,18 @@ extern int QRSFilter(int datum,int init)
   
   if(init)
   {
-    lpfilt( 0, 1 ) ;		// Initialize filters.
-    hpfilt( 0, 1 ) ;
+    hpfilt( 0, 1 ) ;		// Initialize filters.
+    lpfilt( 0, 1 ) ;
     mvwint( 0, 1 ) ;
     deriv1( 0, 1 ) ;
     deriv2( 0, 1 ) ;
   }
   
-  fdatum = lpfilt( datum, 0 ) ;		// Low pass filter data.
-  fdatum = hpfilt( fdatum, 0 ) ;	// High pass filter data.
+  fdatum = hpfilt( datum, 0 ) ;	// High pass filter data.
+  fdatum = lpfilt( fdatum, 0 ) ;	// Low pass filter data.
   fdatum = deriv2( fdatum, 0 ) ;	// Take the derivative.
-  //fdatum = abs(fdatum) ;				// Take the absolute value.
-  fdatum = (fdatum < 0) ? -fdatum : fdatum;
+  //fdatum = abs(fdatum) ;		// Take the absolute value.
+  if(fdatum < 0) fdatum = -fdatum;
   fdatum = mvwint( fdatum, 0 ) ;	// Average over an 80 ms window .
   return(fdatum) ;
 }
@@ -181,7 +181,7 @@ static int lpfilt( int datum ,int init)
 
 extern int hpfilt( int datum, int init )
 {
-  static long y=0 ;
+  static int y=0 ;
   static int data[HPBUFFER_LGTH];
   static int8 ptr = 0 ;
   int z;
@@ -195,7 +195,7 @@ extern int hpfilt( int datum, int init )
     y = 0 ;
   }
   
-  y += (datum - (long)data[ptr]);
+  y += (datum - (int)data[ptr]);
   halfPtr = ptr-(HPBUFFER_LGTH/2) ;
   if(halfPtr < 0)
     halfPtr += HPBUFFER_LGTH ;
