@@ -67,8 +67,8 @@ static uint8 ecg1mVCaliProps = GATT_PROP_READ;
 static uint16 ecg1mVCali = 0;
 
 // Sample Rate Characteristic
-static uint8 ecgSampleRateProps = GATT_PROP_READ;
-static uint16 ecgSampleRate = 125;
+static uint8 ecgSampleRateProps = GATT_PROP_READ | GATT_PROP_WRITE;
+static uint16 ecgSampleRate = DEFAULT_SAMPLERATE;
 
 // Lead Type Characteristic
 static uint8 ecgLeadTypeProps = GATT_PROP_READ;
@@ -143,7 +143,7 @@ static gattAttribute_t ECGAttrTbl[] =
       // Sample Rate Value
       { 
         { ATT_UUID_SIZE, ECGSampleRateUUID },
-        GATT_PERMIT_READ, 
+        GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
         0, 
         (uint8*)&ecgSampleRate 
       },
@@ -373,6 +373,17 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
                                 ECG_PACK_NOTI_ENABLED );
       }
       break;   
+      
+    case ECG_SAMPLE_RATE_UUID:
+      if(len == 2) 
+      {
+        uint8 *pCurValue = (uint8 *)pAttr->pValue;
+
+        *pCurValue++ = pValue[0];
+        *pCurValue = pValue[1];
+        (ecgServiceCBs->pfnEcgServiceCB)(ECG_SAMPLE_RATE_CHANGED);
+      }
+      break;
       
     case ECG_LOCK_STATUS_UUID: 
       if(len == 1 && ecgLockStatus != pValue[0])

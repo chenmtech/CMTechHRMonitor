@@ -33,6 +33,9 @@
 #define ECG_PACK_NOTI_ENABLED         0 // ecg data packet notification enabled
 #define ECG_PACK_NOTI_DISABLED        1 // ecg data packet notification disabled
 #define ECG_LOCK_STATUS_CHANGED       2 // ecg lock status changed
+#define ECG_SAMPLE_RATE_CHANGED       3 // ecg sample rate changed
+
+#define DEFAULT_SAMPLERATE 125
 
 // ecg Service callback function
 typedef void (*ecgServiceCB_t)(uint8 event);

@@ -65,17 +65,16 @@ static uint8 data[2];
 static int16 * pEcg = (int16*)data;
 
 static void execute(uint8 cmd); // execute command
-static void setRegsAsNormalECGSignal(uint16 sampleRate); // set registers as outputing normal ECG signal
 static void readOneSampleUsingADS1291(void); // read one data with ADS1291
 static void readOneSampleUsingADS1191(void); // read one data with ADS1191
 
 // ADS init
-extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
+extern void ADS1x9x_Init(uint16 sampleRate, ADS_DataCB_t pfnADS_DataCB_t)
 {
   // init ADS1x9x chip
   SPI_ADS_Init();  
   
-  ADS1x9x_Reset(); 
+  ADS1x9x_Reset(sampleRate); 
   
   pfnADSDataCB = pfnADS_DataCB_t;
 }
@@ -93,14 +92,14 @@ extern void ADS1x9x_StandBy(void)
 }
 
 // reset chip
-extern void ADS1x9x_Reset(void)
+extern void ADS1x9x_Reset(uint16 sampleRate)
 {  
   ADS_RST_LOW();     //PWDN/RESET 低电平
   delayus(50);
   ADS_RST_HIGH();    //PWDN/RESET 高电平
   delayus(50);
   
-  setRegsAsNormalECGSignal(SAMPLERATE);
+  ADS1x9x_SetRegsAsNormalECGSignal(sampleRate);
 }
 
 // start continuous sampling
@@ -213,7 +212,7 @@ extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte)
 }  
 
 // set registers as normal ecg mode
-static void setRegsAsNormalECGSignal(uint16 sampleRate)
+extern void ADS1x9x_SetRegsAsNormalECGSignal(uint16 sampleRate)
 {
   if(sampleRate == 125)
     ADS1x9x_WriteAllRegister(ECGRegs125);

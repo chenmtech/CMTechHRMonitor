@@ -53,10 +53,10 @@
 typedef void (*ADS_DataCB_t)(int16 data); // callback function to handle one sample data
 
 
-extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // init
+extern void ADS1x9x_Init(uint16 sampleRate, ADS_DataCB_t pfnADS_DataCB_t); // init
 extern void ADS1x9x_WakeUp(void); // wakeup
 extern void ADS1x9x_StandBy(void); // standby
-extern void ADS1x9x_Reset(void); // reset
+extern void ADS1x9x_Reset(uint16 sampleRate); // reset
 extern void ADS1x9x_StartConvert(void); // start convert
 extern void ADS1x9x_StopConvert(void); // stop convert
 extern uint8 ADS1x9x_ReadRegister(uint8 address); // read one register
@@ -64,5 +64,5 @@ extern void ADS1x9x_ReadMultipleRegister(uint8 beginaddr, uint8 * pRegs, uint8 l
 extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte); // write one register
 extern void ADS1x9x_WriteMultipleRegister(uint8 beginaddr, const uint8 * pRegs, uint8 len); // write multi registers
 extern void ADS1x9x_WriteAllRegister(const uint8 * pRegs); // write all registers
-
+extern void ADS1x9x_SetRegsAsNormalECGSignal(uint16 sampleRate); // set registers as outputing normal ECG signal
 #endif
