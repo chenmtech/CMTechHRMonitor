@@ -41,7 +41,6 @@
 #define NVID_ECG_LOCK_STATUS 0x80      // the NVID of the Ecg lock status
 #define ECG_LOCKED 0x00 
 #define ECG_UNLOCKED 0x01
-#define ECG_DEFAULT_LOCK ECG_UNLOCKED
 
 #define ADVERTISING_INTERVAL 640 // ad interval, units of 0.625ms
 #define ADVERTISING_DURATION 2000 // ad duration, units of ms
@@ -67,7 +66,6 @@
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
 #define BATT_NOTI_PERIOD 60000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  160  //164  // ecg 1mV calibration value
-
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
@@ -145,7 +143,7 @@ static void startEcgSampling( void ); // start ecg sampling
 static void stopEcgSampling( void ); // stop ecg sampling
 static void setParameter(uint8 ecgSwitch);
 
-uint16 SAMPLERATE = DEFAULT_SAMPLERATE;
+uint16 SAMPLERATE;
 
 extern void HRM_Init( uint8 task_id )
 { 
@@ -174,7 +172,7 @@ extern void HRM_Init( uint8 task_id )
     // read ecg lock status from NV
     uint8 rtn = osal_snv_read(NVID_ECG_LOCK_STATUS, sizeof(uint8), (uint8*)&ecgLock);
     if(rtn != SUCCESS)
-      ecgLock = ECG_DEFAULT_LOCK;   
+      ecgLock = ECG_LOCKED;   
     
     setParameter(ecgLock);
     
@@ -233,7 +231,7 @@ extern void HRM_Init( uint8 task_id )
   //第三：对于会用到的IO，就要根据具体外部电路连接情况进行有效设置，防止耗电
   initIOPin();
   
-  HRFunc_Init(taskID, SAMPLERATE);
+  HRFunc_Init(taskID);
   
   HCI_EXT_ClkDivOnHaltCmd( HCI_EXT_ENABLE_CLK_DIVIDE_ON_HALT );  
 
@@ -254,6 +252,7 @@ static void setParameter(uint8 ecgLock)
       desired_max_interval = ECG_LOCKED_MAX_INTERVAL;
       desired_slave_latency = ECG_LOCKED_SLAVE_LATENCY;
       desired_conn_timeout = ECG_LOCKED_CONNECT_TIMEOUT;
+      SAMPLERATE = 125;
     }
     else
     {
@@ -261,6 +260,7 @@ static void setParameter(uint8 ecgLock)
       desired_max_interval = ECG_UNLOCKED_MAX_INTERVAL;
       desired_slave_latency = ECG_UNLOCKED_SLAVE_LATENCY;
       desired_conn_timeout = ECG_UNLOCKED_CONNECT_TIMEOUT;  
+      SAMPLERATE = 250;
     }
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
@@ -289,7 +289,7 @@ static void initIOPin()
 extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
 {
   VOID task_id; // OSAL required parameter that isn't used in this function
-  uint8 ecgLock;
+  uint8 ecgLock = ECG_LOCKED;
 
   if ( events & SYS_EVENT_MSG )
   {
@@ -356,7 +356,6 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     {
       ECG_GetParameter(ECG_LOCK_STATUS, &ecgLock);
       setParameter(ecgLock);      
-      SAMPLERATE = DEFAULT_SAMPLERATE;
       ECG_SetParameter( ECG_SAMPLE_RATE, sizeof ( uint16 ), &SAMPLERATE );
       GAPRole_TerminateConnection();
     }
@@ -388,7 +387,7 @@ static void gapStateCB( gaprole_States_t newState )
     
     ADS1x9x_WakeUp();  
     delayus(1000);
-    ADS1x9x_Reset(DEFAULT_SAMPLERATE); 
+    ADS1x9x_Reset(); 
     delayus(1000);
     ADS1x9x_StandBy();  
     delayus(1000);
@@ -500,11 +499,6 @@ static void ecgServiceCB( uint8 event )
         
     case ECG_PACK_NOTI_DISABLED:
       HRFunc_SetEcgSending(false);
-      break;
-      
-    case ECG_SAMPLE_RATE_CHANGED:
-      ECG_GetParameter( ECG_SAMPLE_RATE, &SAMPLERATE);
-      ADS1x9x_SetRegsAsNormalECGSignal(SAMPLERATE);
       break;
       
     case ECG_LOCK_STATUS_CHANGED:

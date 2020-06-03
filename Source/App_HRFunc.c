@@ -47,12 +47,12 @@ static void saveEcgSignal(int16 ecg);
 static uint16 median(uint16 *array, uint8 datnum);
 //static void processTestSignal(int16 x);
 
-extern void HRFunc_Init(uint8 taskID, uint16 sampleRate)
+extern void HRFunc_Init(uint8 taskID)
 { 
   taskId = taskID;
   
   // initilize the ADS1x9x and set the data process callback function
-  ADS1x9x_Init(sampleRate, processEcgSignal); 
+  ADS1x9x_Init(processEcgSignal); 
   
   ADS1x9x_StandBy();  
   
