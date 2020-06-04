@@ -11,7 +11,7 @@ const static uint8 ECGRegs125[12] = {
   //CONFIG1
   0x00,                     //continous sample,125sps
   //CONFIG2
-  0xE0,                     //
+  0xA0,                     //
   //LOFF
   0x10,                     //
   //CH1SET 
@@ -39,7 +39,7 @@ const static uint8 ECGRegs250[12] = {
   //CONFIG1
   0x01,                     //continous sample,250sps
   //CONFIG2
-  0xE0,                     //
+  0xA0,                     //
   //LOFF
   0x10,                     //
   //CH1SET 
@@ -66,7 +66,7 @@ static int16 * pEcg = (int16*)data;
 
 static void execute(uint8 cmd); // execute command
 static void setRegsAsNormalECGSignal(uint16 sampleRate); // set registers as outputing normal ECG signal
-static void readOneSampleUsingADS1291(void); // read one data with ADS1291
+//static void readOneSampleUsingADS1291(void); // read one data with ADS1291
 static void readOneSampleUsingADS1191(void); // read one data with ADS1191
 
 // ADS init
@@ -239,9 +239,9 @@ __interrupt void PORT0_ISR(void)
 { 
   HAL_ENTER_ISR();  // Hold off interrupts.
   
-  if(P0IFG & 0x02)  //P0_1ÖÐ¶Ï
-  {
-    P0IFG &= ~(1<<1);   //clear P0_1 IFG 
+  //if(P0IFG & 0x02)  //P0_1ÖÐ¶Ï
+  //{
+    P0IFG &= 0xFD; //~(1<<1);   //clear P0_1 IFG 
     P0IF = 0;   //clear P0 interrupt flag
 
 #if defined(ADS1291)    
@@ -249,12 +249,13 @@ __interrupt void PORT0_ISR(void)
 #elif defined(ADS1191)
     readOneSampleUsingADS1191();
 #endif
-  }
+  //}
   
   HAL_EXIT_ISR();   // Re-enable interrupts.  
 }
 
 // ADS1291: high precise(24bits) chip with only one channel
+/*
 static void readOneSampleUsingADS1291(void)
 {  
   ADS_CS_LOW();
@@ -274,6 +275,7 @@ static void readOneSampleUsingADS1291(void)
    
   pfnADSDataCB(ecg);
 }
+*/
 
 // ADS1191: low precise(16bits) chip with only one channel
 static void readOneSampleUsingADS1191(void)
@@ -296,5 +298,5 @@ static void readOneSampleUsingADS1191(void)
 //  else if(*pEcg < -8091)
 //    pfnADSDataCB(-8091);
 //  else
-    pfnADSDataCB(*pEcg);
+    /pfnADSDataCB(*pEcg);
 }

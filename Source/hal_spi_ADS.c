@@ -107,8 +107,12 @@ static void setADSSpiPin()
   U1CSR = 0x00; //SPI 1 master mode
   
   // SPI时钟频率为512KHz
-  U1GCR = 0x6E; // CPOL = 0, CPHA = 1, order = MSB, BAUD_E = 14
-  U1BAUD = 0;   //BAUD_M = 0, SCLK = 512KHz
+  //U1GCR = 0x6E; // CPOL = 0, CPHA = 1, order = MSB, BAUD_E = 14
+  //U1BAUD = 0;   //BAUD_M = 0, SCLK = 512KHz
+  
+  // SPI时钟频率为1MHz
+  U1GCR = 0x6F; // CPOL = 0, CPHA = 1, order = MSB, BAUD_E = 15
+  U1BAUD = 0x00;   //BAUD_M = 0, SCLK = 1MHz  
   
   //U1DBUF = 0x00;
 }

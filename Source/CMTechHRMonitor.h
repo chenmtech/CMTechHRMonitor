@@ -10,7 +10,7 @@
 #define HRM_HR_PERIODIC_EVT 0x0002     // periodic heart rate measurement event
 #define HRM_BATT_PERIODIC_EVT 0x0004     // periodic battery measurement event
 #define HRM_ECG_NOTI_EVT 0x0008 // ecg packet notification event
-#define HRM_ECG_LOCK_EVT 0x0010 //ecg lock event
+#define HRM_MODE_CHANGED_EVT 0x0010 //work mode changed event
 
 #define HR_MODE_SAMPLERATE 125 // sample rate in HR mode
 #define ECG_MODE_SAMPLERATE 250 // sample rate in ECG mode

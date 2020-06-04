@@ -351,7 +351,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
     return (events ^ HRM_ECG_NOTI_EVT);
   } 
   
-  if ( events & HRM_ECG_LOCK_EVT )
+  if ( events & HRM_MODE_CHANGED_EVT )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
@@ -361,7 +361,7 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
       GAPRole_TerminateConnection();
     }
 
-    return (events ^ HRM_ECG_LOCK_EVT);
+    return (events ^ HRM_MODE_CHANGED_EVT);
   }   
   
   // Discard unknown events
@@ -506,7 +506,7 @@ static void ecgServiceCB( uint8 event )
       ECG_GetParameter( ECG_WORK_MODE, &mode );
       if(osal_snv_write(NVID_WORK_MODE, sizeof(uint8), (uint8*)&mode) == SUCCESS)
       {
-        osal_set_event(taskID, HRM_ECG_LOCK_EVT);
+        osal_set_event(taskID, HRM_MODE_CHANGED_EVT);
       }
       break;
       
