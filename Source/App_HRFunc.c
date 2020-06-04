@@ -185,7 +185,7 @@ extern void HRFunc_SendHRPacket(uint16 connHandle)
 
 static void processEcgSignal(int16 x)
 {
-  if(SAMPLERATE == 125)
+  if(SAMPLERATE == HR_MODE_SAMPLERATE)
     ecgProcess = true;
   else {
     ecgProcess = !ecgProcess;

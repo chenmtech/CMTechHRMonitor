@@ -12,7 +12,10 @@
 #define HRM_ECG_NOTI_EVT 0x0008 // ecg packet notification event
 #define HRM_ECG_LOCK_EVT 0x0010 //ecg lock event
 
-extern uint16 SAMPLERATE;
+#define HR_MODE_SAMPLERATE 125 // sample rate in HR mode
+#define ECG_MODE_SAMPLERATE 250 // sample rate in ECG mode
+
+extern uint16 SAMPLERATE; // ecg sample rate
 
 /*
  * Task Initialization for the BLE Application

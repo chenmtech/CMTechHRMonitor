@@ -11,6 +11,7 @@
 #include "gattservapp.h"
 #include "CMUtil.h"
 #include "Service_Ecg.h"
+#include "CMTechHRMonitor.h"
 
 // Position of ECG data packet in attribute array
 #define ECG_PACK_VALUE_POS            2
@@ -45,10 +46,10 @@ CONST uint8 ECGLeadTypeUUID[ATT_UUID_SIZE] =
   CM_UUID(ECG_LEAD_TYPE_UUID)
 };
 
-// lock status characteristic
-CONST uint8 ECGLockStatusUUID[ATT_UUID_SIZE] =
+// Work MOde characteristic
+CONST uint8 ECGWorkModeUUID[ATT_UUID_SIZE] =
 { 
-  CM_UUID(ECG_LOCK_STATUS_UUID)
+  CM_UUID(ECG_WORK_MODE_UUID)
 };
 
 static ECGServiceCBs_t* ecgServiceCBs;
@@ -68,15 +69,15 @@ static uint16 ecg1mVCali = 0;
 
 // Sample Rate Characteristic
 static uint8 ecgSampleRateProps = GATT_PROP_READ;
-static uint16 ecgSampleRate = 125;
+static uint16 ecgSampleRate = HR_MODE_SAMPLERATE;
 
 // Lead Type Characteristic
 static uint8 ecgLeadTypeProps = GATT_PROP_READ;
 static uint8 ecgLeadType = ECG_LEAD_TYPE_I;
 
-// Lock Status Characteristic
-static uint8 ecgLockStatusProps = GATT_PROP_READ | GATT_PROP_WRITE;
-static uint8 ecgLockStatus = 0x00;
+// Work mode Characteristic
+static uint8 ecgWorkModeProps = GATT_PROP_READ | GATT_PROP_WRITE;
+static uint8 ecgWorkMode = 0x00;
 
 /*********************************************************************
  * Profile Attributes - Table
@@ -164,20 +165,20 @@ static gattAttribute_t ECGAttrTbl[] =
         &ecgLeadType 
       },
       
-    // 5. Lock status Declaration
+    // 5. Work Mode Declaration
     { 
       { ATT_BT_UUID_SIZE, characterUUID },
       GATT_PERMIT_READ, 
       0,
-      &ecgLockStatusProps 
+      &ecgWorkModeProps 
     },
 
-      // Lock status Value
+      // Work Mode Value
       { 
-        { ATT_UUID_SIZE, ECGLockStatusUUID },
+        { ATT_UUID_SIZE, ECGWorkModeUUID },
         GATT_PERMIT_READ | GATT_PERMIT_WRITE, 
         0, 
-        &ecgLockStatus 
+        &ecgWorkMode 
       }      
 };
 
@@ -244,8 +245,8 @@ extern bStatus_t ECG_SetParameter( uint8 param, uint8 len, void *value )
       ecgLeadType = *((uint8*)value);
       break;
       
-    case ECG_LOCK_STATUS:  
-      ecgLockStatus = *((uint8*)value);
+    case ECG_WORK_MODE:  
+      ecgWorkMode = *((uint8*)value);
       break;      
 
     default:
@@ -278,8 +279,8 @@ extern bStatus_t ECG_GetParameter( uint8 param, void *value )
       *((uint8*)value) = ecgLeadType;
       break; 
       
-    case ECG_LOCK_STATUS:  
-      *((uint8*)value) = ecgLockStatus;
+    case ECG_WORK_MODE:  
+      *((uint8*)value) = ecgWorkMode;
       break;      
 
     default:
@@ -334,7 +335,7 @@ static uint8 readAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
        break;
        
     case ECG_LEAD_TYPE_UUID:
-    case ECG_LOCK_STATUS_UUID:
+    case ECG_WORK_MODE_UUID:
       *pLen = 1;
       pValue[0] = *pAttr->pValue;
       break;
@@ -374,11 +375,11 @@ static bStatus_t writeAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       }
       break;   
       
-    case ECG_LOCK_STATUS_UUID: 
-      if(len == 1 && ecgLockStatus != pValue[0])
+    case ECG_WORK_MODE_UUID: 
+      if(len == 1 && ecgWorkMode != pValue[0])
       {
-        ecgLockStatus = pValue[0];
-        (ecgServiceCBs->pfnEcgServiceCB)(ECG_LOCK_STATUS_CHANGED);
+        ecgWorkMode = pValue[0];
+        (ecgServiceCBs->pfnEcgServiceCB)(ECG_WORK_MODE_CHANGED);
       }
       break;
  

@@ -38,40 +38,43 @@
 #include "Dev_ADS1x9x.H"
 #include "CMUtil.h"
 
-#define NVID_ECG_LOCK_STATUS 0x80      // the NVID of the Ecg lock status
-#define ECG_LOCKED 0x00 
-#define ECG_UNLOCKED 0x01
-
 #define ADVERTISING_INTERVAL 640 // ad interval, units of 0.625ms
 #define ADVERTISING_DURATION 2000 // ad duration, units of ms
 #define ADVERTISING_OFFTIME 8000 // ad offtime to wait for a next ad, units of ms
 
-// connection parameter when ecg function is locked
-#define ECG_LOCKED_MIN_INTERVAL  302// 1584 //782//1580  , unit: 1.25ms
-#define ECG_LOCKED_MAX_INTERVAL  319// 1600 //799//1598  , unit: 1.25ms
-#define ECG_LOCKED_SLAVE_LATENCY  4// 2 //1//0
-#define ECG_LOCKED_CONNECT_TIMEOUT 600 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
+#define NVID_WORK_MODE 0x80      // the NVID of the work mode
+#define MODE_HR 0x00    // HR work mode
+#define MODE_ECG 0x01   // ECG work mode
 
-// connection parameter when ecg function is unlocked
-#define ECG_UNLOCKED_MIN_INTERVAL 16  // unit: 1.25ms
-#define ECG_UNLOCKED_MAX_INTERVAL 32  // unit: 1.25ms
-#define ECG_UNLOCKED_SLAVE_LATENCY 49
-#define ECG_UNLOCKED_CONNECT_TIMEOUT 600 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
+// connection parameter in HR mode
+#define HR_MODE_MIN_INTERVAL  302// 1584 //782//1580  , unit: 1.25ms
+#define HR_MODE_MAX_INTERVAL  319// 1600 //799//1598  , unit: 1.25ms
+#define HR_MODE_SLAVE_LATENCY  4// 2 //1//0
+#define HR_MODE_CONNECT_TIMEOUT 600 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
+
+// connection parameter in ECG mode
+#define ECG_MODE_MIN_INTERVAL 16  // unit: 1.25ms
+#define ECG_MODE_MAX_INTERVAL 32  // unit: 1.25ms
+#define ECG_MODE_SLAVE_LATENCY 4
+#define ECG_MODE_CONNECT_TIMEOUT 100 // unit: 10ms, If no connection event occurred during this timeout, the connect will be shut down.
 
 #define CONN_PAUSE_PERIPHERAL 4  // the pause time from the connection establishment to the update of the connection parameters
 
 #define INVALID_CONNHANDLE 0xFFFF // invalid connection handle
-#define STATUS_ECG_STOP 0     // ecg sampling stopped status
-#define STATUS_ECG_START 1    // ecg sampling started status
+#define STATUS_ECG_STOP 0x00     // ecg sampling stopped status
+#define STATUS_ECG_START 0x01    // ecg sampling started status
+
 #define HR_NOTI_PERIOD 2000 // heart rate notification period, ms
-#define BATT_NOTI_PERIOD 60000L // battery notification period, ms
+#define BATT_NOTI_PERIOD 120000L // battery notification period, ms
 #define ECG_1MV_CALI_VALUE  160  //164  // ecg 1mV calibration value
 
 static uint8 taskID;   
 static uint16 gapConnHandle = INVALID_CONNHANDLE;
 static gaprole_States_t gapProfileState = GAPROLE_INIT;
-static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "KM HR Monitor"; // GGS device name
+static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "KM HRM"; // GGS device name
 static uint8 status = STATUS_ECG_STOP; // ecg sampling status
+
+uint16 SAMPLERATE; // ecg sample rate
 
 // advertise data
 static uint8 advertData[] = 
@@ -141,14 +144,12 @@ static void processOSALMsg( osal_event_hdr_t *pMsg ); // OSAL message process fu
 static void initIOPin(); // initialize IO pins
 static void startEcgSampling( void ); // start ecg sampling
 static void stopEcgSampling( void ); // stop ecg sampling
-static void setParameter(uint8 ecgSwitch);
-
-uint16 SAMPLERATE;
+static void setParameter(uint8 mode);
 
 extern void HRM_Init( uint8 task_id )
 { 
   taskID = task_id;
-  uint8 ecgLock;
+  uint8 mode;
   
   // Setup the GAP Peripheral Role Profile
   {
@@ -170,11 +171,11 @@ extern void HRM_Init( uint8 task_id )
     GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, CONN_PAUSE_PERIPHERAL ); 
     
     // read ecg lock status from NV
-    uint8 rtn = osal_snv_read(NVID_ECG_LOCK_STATUS, sizeof(uint8), (uint8*)&ecgLock);
+    uint8 rtn = osal_snv_read(NVID_WORK_MODE, sizeof(uint8), (uint8*)&mode);
     if(rtn != SUCCESS)
-      ecgLock = ECG_LOCKED;   
+      mode = MODE_HR;   
     
-    setParameter(ecgLock);
+    setParameter(mode);
     
     uint8 enable_update_request = TRUE;
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
@@ -222,7 +223,7 @@ extern void HRM_Init( uint8 task_id )
     uint16 ecg1mVCali = ECG_1MV_CALI_VALUE;
     ECG_SetParameter( ECG_1MV_CALI, sizeof ( uint16 ), &ecg1mVCali );
     ECG_SetParameter( ECG_SAMPLE_RATE, sizeof ( uint16 ), &SAMPLERATE );
-    ECG_SetParameter( ECG_LOCK_STATUS, sizeof ( uint8 ), &ecgLock );
+    ECG_SetParameter( ECG_WORK_MODE, sizeof ( uint8 ), &mode );
   }    
   
   //在这里初始化GPIO
@@ -239,28 +240,28 @@ extern void HRM_Init( uint8 task_id )
   osal_set_event( taskID, HRM_START_DEVICE_EVT );
 }
 
-static void setParameter(uint8 ecgLock) 
+static void setParameter(uint8 mode) 
 {
     // set the connection parameter according to the ecg lock status
     uint16 desired_min_interval; // units of 1.25ms, Note: the ios device require min_interval>=20ms, max_interval>=min_interval+20
     uint16 desired_max_interval; // units of 1.25ms, Note: the ios device require max_interval*(1+latency)<=2s
     uint16 desired_slave_latency; // Note: the ios device require the slave latency <=4
     uint16 desired_conn_timeout; // units of 10ms, Note: the ios device require the timeout <= 6s
-    if(ecgLock == ECG_LOCKED)
+    if(mode == MODE_HR)
     {
-      desired_min_interval = ECG_LOCKED_MIN_INTERVAL;
-      desired_max_interval = ECG_LOCKED_MAX_INTERVAL;
-      desired_slave_latency = ECG_LOCKED_SLAVE_LATENCY;
-      desired_conn_timeout = ECG_LOCKED_CONNECT_TIMEOUT;
-      SAMPLERATE = 125;
+      desired_min_interval = HR_MODE_MIN_INTERVAL;
+      desired_max_interval = HR_MODE_MAX_INTERVAL;
+      desired_slave_latency = HR_MODE_SLAVE_LATENCY;
+      desired_conn_timeout = HR_MODE_CONNECT_TIMEOUT;
+      SAMPLERATE = HR_MODE_SAMPLERATE;
     }
     else
     {
-      desired_min_interval = ECG_UNLOCKED_MIN_INTERVAL;
-      desired_max_interval = ECG_UNLOCKED_MAX_INTERVAL;
-      desired_slave_latency = ECG_UNLOCKED_SLAVE_LATENCY;
-      desired_conn_timeout = ECG_UNLOCKED_CONNECT_TIMEOUT;  
-      SAMPLERATE = 250;
+      desired_min_interval = ECG_MODE_MIN_INTERVAL;
+      desired_max_interval = ECG_MODE_MAX_INTERVAL;
+      desired_slave_latency = ECG_MODE_SLAVE_LATENCY;
+      desired_conn_timeout = ECG_MODE_CONNECT_TIMEOUT;  
+      SAMPLERATE = ECG_MODE_SAMPLERATE;
     }
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
@@ -289,7 +290,7 @@ static void initIOPin()
 extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
 {
   VOID task_id; // OSAL required parameter that isn't used in this function
-  uint8 ecgLock = ECG_LOCKED;
+  uint8 mode;
 
   if ( events & SYS_EVENT_MSG )
   {
@@ -354,8 +355,8 @@ extern uint16 HRM_ProcessEvent( uint8 task_id, uint16 events )
   {
     if (gapProfileState == GAPROLE_CONNECTED)
     {
-      ECG_GetParameter(ECG_LOCK_STATUS, &ecgLock);
-      setParameter(ecgLock);      
+      ECG_GetParameter(ECG_WORK_MODE, &mode);
+      setParameter(mode);      
       ECG_SetParameter( ECG_SAMPLE_RATE, sizeof ( uint16 ), &SAMPLERATE );
       GAPRole_TerminateConnection();
     }
@@ -490,7 +491,7 @@ static void battServiceCB( uint8 event )
 
 static void ecgServiceCB( uint8 event )
 {
-  uint8 ecgLock;
+  uint8 mode;
   switch (event)
   {
     case ECG_PACK_NOTI_ENABLED:
@@ -501,9 +502,9 @@ static void ecgServiceCB( uint8 event )
       HRFunc_SetEcgSending(false);
       break;
       
-    case ECG_LOCK_STATUS_CHANGED:
-      ECG_GetParameter( ECG_LOCK_STATUS, &ecgLock );
-      if(osal_snv_write(NVID_ECG_LOCK_STATUS, sizeof(uint8), (uint8*)&ecgLock) == SUCCESS)
+    case ECG_WORK_MODE_CHANGED:
+      ECG_GetParameter( ECG_WORK_MODE, &mode );
+      if(osal_snv_write(NVID_WORK_MODE, sizeof(uint8), (uint8*)&mode) == SUCCESS)
       {
         osal_set_event(taskID, HRM_ECG_LOCK_EVT);
       }

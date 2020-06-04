@@ -215,9 +215,9 @@ extern void ADS1x9x_WriteRegister(uint8 address, uint8 onebyte)
 // set registers as normal ecg mode
 static void setRegsAsNormalECGSignal(uint16 sampleRate)
 {
-  if(sampleRate == 125)
+  if(sampleRate == HR_MODE_SAMPLERATE)
     ADS1x9x_WriteAllRegister(ECGRegs125);
-  if(sampleRate == 250)
+  if(sampleRate == ECG_MODE_SAMPLERATE)
     ADS1x9x_WriteAllRegister(ECGRegs250);
 }
 
