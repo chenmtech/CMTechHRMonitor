@@ -284,7 +284,7 @@ static int mvwint(int datum, int init)
     ptr = 0 ;
   
   output = sum/WINDOW_WIDTH;
-  if(output > 32000) output = 32000;
+  if(output > 32000) return 32000;
   /*
   if((sum / WINDOW_WIDTH) > 32000)
     output = 32000 ;

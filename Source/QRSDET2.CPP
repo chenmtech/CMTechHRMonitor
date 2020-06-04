@@ -382,7 +382,7 @@ sort algorithm, but these arrays are small, so it hardly matters.
 
 static int mean(int *array, int datnum)
 {
-  long sum ;
+  int sum ;
   int i ;
   
   for(i = 0, sum = 0; i < datnum; ++i)

@@ -61,8 +61,9 @@ const static uint8 ECGRegs250[12] = {
 };
 
 static ADS_DataCB_t pfnADSDataCB; // callback function processing data 
-static uint8 data[2];
-static int16 * pEcg = (int16*)data;
+//static uint8 data[2];
+//static int16 * pEcg = (int16*)data;
+static int ecgData;
 
 static void execute(uint8 cmd); // execute command
 static void setRegsAsNormalECGSignal(uint16 sampleRate); // set registers as outputing normal ECG signal
@@ -282,21 +283,34 @@ static void readOneSampleUsingADS1191(void)
 {  
   //ADS_CS_LOW();
   
-  SPI_ADS_SendByte(ADS_DUMMY_CHAR);
-  SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
+  //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
+  //SPI_ADS_SendByte(ADS_DUMMY_CHAR);  
   
-  data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
-  data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
+  //data[1] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //MSB
+  //data[0] = SPI_ADS_SendByte(ADS_DUMMY_CHAR);   //LSB
   
   //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   //SPI_ADS_SendByte(ADS_DUMMY_CHAR);
   
   //ADS_CS_HIGH();
+  
+  SPI_SEND(ADS_DUMMY_CHAR); 
+  while (!U1TX_BYTE);
+  U1TX_BYTE = 0;
+  
+  SPI_SEND(ADS_DUMMY_CHAR); 
+  while (!U1TX_BYTE);
+  U1TX_BYTE = 0;
+  
+  SPI_SEND(ADS_DUMMY_CHAR); 
+  while (!U1TX_BYTE);
+  U1TX_BYTE = 0;
+  *((uint8*)&ecgData+1) = U1DBUF;
+  
+  SPI_SEND(ADS_DUMMY_CHAR); 
+  while (!U1TX_BYTE);
+  U1TX_BYTE = 0;  
+  *((uint8*)&ecgData) = U1DBUF;  
    
-//  if(*pEcg > 8091)
-//    pfnADSDataCB(8091);
-//  else if(*pEcg < -8091)
-//    pfnADSDataCB(-8091);
-//  else
-    /pfnADSDataCB(*pEcg);
+  pfnADSDataCB(ecgData);
 }
