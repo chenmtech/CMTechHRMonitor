@@ -54,9 +54,10 @@ typedef void (*ADS_DataCB_t)(int16 data); // callback function to handle one sam
 
 
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t); // init
+extern void ADS1x9x_PowerDown(); // power down
 extern void ADS1x9x_WakeUp(void); // wakeup
 extern void ADS1x9x_StandBy(void); // standby
-extern void ADS1x9x_Reset(void); // reset
+extern void ADS1x9x_PowerUp(void); // power up
 extern void ADS1x9x_StartConvert(void); // start convert
 extern void ADS1x9x_StopConvert(void); // stop convert
 extern uint8 ADS1x9x_ReadRegister(uint8 address); // read one register

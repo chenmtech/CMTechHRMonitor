@@ -38,7 +38,7 @@
 #include "Dev_ADS1x9x.H"
 #include "CMUtil.h"
 
-#define ADVERTISING_INTERVAL 640 // ad interval, units of 0.625ms
+#define ADVERTISING_INTERVAL 800 // ad interval, units of 0.625ms
 #define ADVERTISING_DURATION 2000 // ad duration, units of ms
 #define ADVERTISING_OFFTIME 8000 // ad offtime to wait for a next ad, units of ms
 
@@ -150,6 +150,8 @@ extern void HRM_Init( uint8 task_id )
 { 
   taskID = task_id;
   uint8 mode;
+  
+  HCI_EXT_SetTxPowerCmd (LL_EXT_TX_POWER_MINUS_23_DBM);
   
   // Setup the GAP Peripheral Role Profile
   {
@@ -386,9 +388,8 @@ static void gapStateCB( gaprole_States_t newState )
     // Get connection handle
     GAPRole_GetParameter( GAPROLE_CONNHANDLE, &gapConnHandle );
     
-    ADS1x9x_WakeUp();  
     delayus(1000);
-    ADS1x9x_Reset(); 
+    ADS1x9x_PowerUp(); 
     delayus(1000);
     ADS1x9x_StandBy();  
     delayus(1000);
@@ -403,6 +404,7 @@ static void gapStateCB( gaprole_States_t newState )
     VOID osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     VOID osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
     //initIOPin();
+    ADS1x9x_PowerDown();
   }
   // if started
   else if (newState == GAPROLE_STARTED)

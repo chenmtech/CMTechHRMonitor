@@ -54,8 +54,6 @@ extern void HRFunc_Init(uint8 taskID)
   // initilize the ADS1x9x and set the data process callback function
   ADS1x9x_Init(processEcgSignal); 
   
-  ADS1x9x_StandBy();  
-  
   delayus(1000);
   
   QRSDet(0, 1);

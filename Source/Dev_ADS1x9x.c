@@ -73,12 +73,18 @@ static void readOneSampleUsingADS1191(void); // read one data with ADS1191
 // ADS init
 extern void ADS1x9x_Init(ADS_DataCB_t pfnADS_DataCB_t)
 {
-  // init ADS1x9x chip
-  SPI_ADS_Init();  
-  
-  ADS1x9x_Reset(); 
-  
   pfnADSDataCB = pfnADS_DataCB_t;
+  
+  // init ADS1x9x chip
+  SPI_ADS_Init();
+  
+  ADS1x9x_PowerDown(); 
+}
+
+extern void ADS1x9x_PowerDown()
+{
+  ADS_RST_LOW();     //PWDN/RESET 低电平
+  delayus(10000);
 }
 
 // wakeup
@@ -94,7 +100,7 @@ extern void ADS1x9x_StandBy(void)
 }
 
 // reset chip
-extern void ADS1x9x_Reset(void)
+extern void ADS1x9x_PowerUp(void)
 {  
   ADS_RST_LOW();     //PWDN/RESET 低电平
   delayus(50);
