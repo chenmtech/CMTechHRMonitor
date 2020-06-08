@@ -94,14 +94,12 @@ static uint8 advertData[] =
 // scan response data
 static uint8 scanResponseData[] =
 {
-  0x07,   // length of this data
+  0x05,   // length of this data
   GAP_ADTYPE_LOCAL_NAME_SHORT,   
   'K',
   'M',
-  '_',
   'H',
-  'R',
-  'M'
+  'R'
 };
 
 static void gapStateCB( gaprole_States_t newState ); // gap state callback function
@@ -151,7 +149,7 @@ extern void HRM_Init( uint8 task_id )
   taskID = task_id;
   uint8 mode;
   
-  HCI_EXT_SetTxPowerCmd (LL_EXT_TX_POWER_MINUS_23_DBM);
+  HCI_EXT_SetTxPowerCmd (LL_EXT_TX_POWER_MINUS_6_DBM);
   
   // Setup the GAP Peripheral Role Profile
   {
