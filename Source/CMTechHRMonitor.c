@@ -149,7 +149,7 @@ extern void HRM_Init( uint8 task_id )
   taskID = task_id;
   uint8 mode;
   
-  HCI_EXT_SetTxPowerCmd (LL_EXT_TX_POWER_MINUS_6_DBM);
+  HCI_EXT_SetTxPowerCmd (LL_EXT_TX_POWER_0_DBM);
   
   // Setup the GAP Peripheral Role Profile
   {
