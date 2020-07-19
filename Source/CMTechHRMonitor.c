@@ -38,7 +38,7 @@
 #include "Dev_ADS1x9x.H"
 #include "CMUtil.h"
 
-#define ADVERTISING_INTERVAL 160 // ad interval, units of 0.625ms
+#define ADVERTISING_INTERVAL 320 // ad interval, units of 0.625ms
 #define ADVERTISING_DURATION 2000 // ad duration, units of ms
 #define ADVERTISING_OFFTIME 8000 // ad offtime to wait for a next ad, units of ms
 
