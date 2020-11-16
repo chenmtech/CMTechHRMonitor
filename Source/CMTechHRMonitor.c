@@ -401,9 +401,8 @@ static void gapStateCB( gaprole_States_t newState )
     HRFunc_SetEcgSending(false);
     VOID osal_stop_timerEx( taskID, HRM_HR_PERIODIC_EVT ); 
     VOID osal_stop_timerEx( taskID, HRM_BATT_PERIODIC_EVT );
-    
-    initIOPin();
-    HRFunc_Init(taskID);
+    //initIOPin();
+    ADS1x9x_PowerDown();
   }
   // if started
   else if (newState == GAPROLE_STARTED)
